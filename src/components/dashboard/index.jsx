@@ -1,71 +1,76 @@
-import React, { useState } from "react";
+import React from "react";
 import {
-  DesktopOutlined,
-  FileOutlined,
-  PieChartOutlined,
+  AppstoreOutlined,
+  BarChartOutlined,
+  CloudOutlined,
+  ShopOutlined,
   TeamOutlined,
+  UploadOutlined,
   UserOutlined,
+  VideoCameraOutlined,
 } from "@ant-design/icons";
-import { Breadcrumb, Layout, Menu, theme } from "antd";
+import { Layout, Menu, theme } from "antd";
 const { Header, Content, Footer, Sider } = Layout;
-function getItem(label, key, icon, children) {
-  return {
-    key,
-    icon,
-    children,
-    label,
-  };
-}
+const siderStyle = {
+  overflow: "auto",
+  height: "100vh",
+  position: "sticky",
+  insetInlineStart: 0,
+  top: 0,
+  bottom: 0,
+  scrollbarWidth: "thin",
+  scrollbarGutter: "stable",
+};
 const items = [
-  getItem("Option 1", "1", <PieChartOutlined />),
-  getItem("Option 2", "2", <DesktopOutlined />),
-  getItem("User", "sub1", <UserOutlined />, [
-    getItem("Tom", "3"),
-    getItem("Bill", "4"),
-    getItem("Alex", "5"),
-  ]),
-  getItem("Team", "sub2", <TeamOutlined />, [
-    getItem("Team 1", "6"),
-    getItem("Team 2", "8"),
-  ]),
-  getItem("Files", "9", <FileOutlined />),
-];
+  UserOutlined,
+  VideoCameraOutlined,
+  UploadOutlined,
+  BarChartOutlined,
+  CloudOutlined,
+  AppstoreOutlined,
+  TeamOutlined,
+  ShopOutlined,
+].map((icon, index) => ({
+  key: String(index + 1),
+  icon: React.createElement(icon),
+  label: `nav ${index + 1}`,
+}));
 const Dashboard = () => {
-  const [collapsed, setCollapsed] = useState(false);
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
   return (
-    <Layout style={{ minHeight: "100vh" }}>
-      <Sider
-        collapsible
-        collapsed={collapsed}
-        onCollapse={(value) => setCollapsed(value)}
-      >
+    <Layout hasSider>
+      <Sider style={siderStyle}>
         <div className="demo-logo-vertical" />
         <Menu
           theme="dark"
-          defaultSelectedKeys={["1"]}
           mode="inline"
+          defaultSelectedKeys={["4"]}
           items={items}
         />
       </Sider>
       <Layout>
         <Header style={{ padding: 0, background: colorBgContainer }} />
-        <Content style={{ margin: "0 16px" }}>
-          <Breadcrumb
-            style={{ margin: "16px 0" }}
-            items={[{ title: "User" }, { title: "Bill" }]}
-          />
+        <Content style={{ margin: "24px 16px 0", overflow: "initial" }}>
           <div
             style={{
               padding: 24,
-              minHeight: 360,
+              textAlign: "center",
               background: colorBgContainer,
               borderRadius: borderRadiusLG,
             }}
           >
-            Bill is a cat.
+            <p>long content</p>
+            {
+              // indicates very long content
+              Array.from({ length: 100 }, (_, index) => (
+                <React.Fragment key={index}>
+                  {index % 20 === 0 && index ? "more" : "..."}
+                  <br />
+                </React.Fragment>
+              ))
+            }
           </div>
         </Content>
         <Footer style={{ textAlign: "center" }}>
