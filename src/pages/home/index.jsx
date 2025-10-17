@@ -1,7 +1,8 @@
 import React from "react";
+import Header from "../../components/home-page/header";
 
 function HomePage() {
-  return <h1 class="text-3xl font-bold underline">Hello world!</h1>;
+  return <Header />;
 }
 
 export default HomePage;
