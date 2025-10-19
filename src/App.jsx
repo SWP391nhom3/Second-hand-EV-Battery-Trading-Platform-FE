@@ -1,9 +1,9 @@
 import React from "react";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
-import HomePage from "./pages/home";
-import LoginPage from "./pages/login";
-import RegisterPage from "./pages/register";
-import Dashboard from "./components/dashboard";
+import { HomePage, LoginPage, RegisterPage, ProductsPage } from "./pages";
+import Dashboard from "./components/dashboard/Dashboard";
+import ProductDetailPage from "./pages/product-detail/ProductDetailPage";
+
 function App() {
   const router = createBrowserRouter([
     //đường dẫn của react router dom
@@ -18,6 +18,14 @@ function App() {
     {
       path: "/register",
       element: <RegisterPage />,
+    },
+    {
+      path: "/products",
+      element: <ProductsPage />,
+    },
+    {
+      path: "/product/:id",
+      element: <ProductDetailPage />,
     },
     {
       path: "/dashboard",

@@ -1,0 +1,170 @@
+/* Footer Component Styles */
+.footer {
+  background: #001529;
+  color: rgba(255, 255, 255, 0.85);
+  padding: 60px 24px 24px;
+}
+
+.footerContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Logo and Description */
+.footerLogo {
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footerDescription {
+  color: rgba(255, 255, 255, 0.65);
+  margin-bottom: 24px;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+/* Section Title */
+.footerSectionTitle {
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+/* Links */
+.footerLink {
+  display: block;
+  color: rgba(255, 255, 255, 0.65);
+  margin-bottom: 12px;
+  transition: color 0.3s ease;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.footerLink:hover {
+  color: #1890ff;
+  padding-left: 4px;
+}
+
+/* Social Icons */
+.footerSocial {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.socialIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+}
+
+.socialIcon:hover {
+  background: #1890ff;
+  color: white;
+  transform: translateY(-3px);
+}
+
+/* Contact Items */
+.contactItem {
+  display: flex;
+  align-items: start;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 14px;
+}
+
+.contactItem a {
+  color: rgba(255, 255, 255, 0.65);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.contactItem a:hover {
+  color: #1890ff;
+}
+
+/* Divider */
+.footerDivider {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 32px 0 24px;
+}
+
+/* Footer Bottom */
+.footerBottom {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 14px;
+}
+
+.footerBottom p {
+  margin: 8px 0;
+}
+
+/* Payment Methods */
+.footerPayment {
+  margin: 16px 0;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.paymentIcon {
+  background: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #595959;
+}
+
+/* Policy Links */
+.policyLinks {
+  margin-top: 16px;
+}
+
+.policyLink {
+  color: rgba(255, 255, 255, 0.45);
+  text-decoration: none;
+  margin: 0 8px;
+  transition: color 0.3s ease;
+}
+
+.policyLink:hover {
+  color: #1890ff;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .footer {
+    padding: 40px 16px 16px;
+  }
+  
+  .footerSocial {
+    justify-content: center;
+  }
+  
+  .footerPayment {
+    gap: 8px;
+  }
+  
+  .paymentIcon {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+}

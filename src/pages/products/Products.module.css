@@ -1,0 +1,243 @@
+/* Products Page Styles */
+.productsPage {
+  min-height: calc(100vh - 64px);
+  background: linear-gradient(135deg, #f5f7fa 0%, #f0f2f5 100%);
+  padding: 24px 0 60px;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  margin-bottom: 24px;
+  font-size: 14px;
+}
+
+/* Page Header */
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.pageTitle {
+  font-size: 36px;
+  font-weight: 700;
+  color: #262626;
+  margin: 0 0 8px 0;
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.pageSubtitle {
+  font-size: 16px;
+  color: #8c8c8c;
+  margin: 0;
+}
+
+/* Search Section */
+.searchSection {
+  margin-bottom: 32px;
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.searchTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #262626;
+  margin: 0px 0 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.searchTitle :global(.anticon) {
+  color: #1890ff;
+  font-size: 20px;
+}
+
+.searchBar {
+  max-width: 100%;
+}
+
+.searchBar :global(.ant-input-search) {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.searchBar :global(.ant-input-group-wrapper) {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.searchBar :global(.ant-input-wrapper) {
+  border-radius: 8px !important;
+  overflow: hidden;
+}
+
+.searchBar :global(.ant-input-affix-wrapper) {
+  height: 41px;
+  border: 1px solid #e8e8e8;
+  border-right: none;
+  border-radius: 8px 0 0 8px !important;
+  padding: 0 12px;
+  background: #ffffff;
+  transition: all 0.3s ease;
+}
+
+.searchBar :global(.ant-input-affix-wrapper:hover) {
+  border-color: #1890ff;
+}
+
+.searchBar :global(.ant-input-affix-wrapper-focused) {
+  border-color: #1890ff !important;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1) !important;
+}
+
+.searchBar :global(.ant-input) {
+  height: 46px;
+  font-size: 15px;
+  border: none;
+}
+
+.searchBar :global(.ant-input::placeholder) {
+  color: #bfbfbf;
+}
+
+.searchBar :global(.ant-input-group-addon) {
+  background: transparent;
+  border: none;
+}
+
+.searchBar :global(.ant-btn-primary) {
+  height: 50px;
+  padding: 0 32px;
+  border: none;
+  border-radius: 0 8px 8px 0 !important;
+  font-weight: 600;
+  font-size: 16px;
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  box-shadow: 0 2px 6px rgba(24, 144, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.searchBar :global(.ant-btn-primary:hover) {
+  background: linear-gradient(135deg, #40a9ff 0%, #1890ff 100%);
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.searchBar :global(.ant-btn-primary:active) {
+  transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .container {
+    max-width: 100%;
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .productsPage {
+    padding: 16px 0 40px;
+  }
+
+  .pageHeader {
+    margin-bottom: 24px;
+  }
+
+  .pageTitle {
+    font-size: 28px;
+  }
+
+  .pageSubtitle {
+    font-size: 14px;
+  }
+
+  .searchSection {
+    margin-bottom: 24px;
+    padding: 20px;
+  }
+
+  .searchTitle {
+    font-size: 16px;
+    margin-bottom: 14px;
+  }
+
+  .searchBar :global(.ant-input-affix-wrapper) {
+    height: 44px;
+  }
+
+  .searchBar :global(.ant-input) {
+    height: 40px;
+    font-size: 14px;
+  }
+
+  .searchBar :global(.ant-btn-primary) {
+    height: 44px;
+    padding: 0 20px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 576px) {
+  .productsPage {
+    padding: 12px 0 32px;
+  }
+
+  .breadcrumb {
+    margin-bottom: 16px;
+    font-size: 12px;
+  }
+
+  .pageHeader {
+    margin-bottom: 20px;
+  }
+
+  .pageTitle {
+    font-size: 24px;
+  }
+
+  .pageSubtitle {
+    font-size: 13px;
+  }
+
+  .searchSection {
+    margin-bottom: 20px;
+    padding: 16px;
+  }
+
+  .searchTitle {
+    font-size: 15px;
+    margin-bottom: 12px;
+  }
+
+  .searchTitle :global(.anticon) {
+    font-size: 18px;
+  }
+
+  .searchBar :global(.ant-input-affix-wrapper) {
+    height: 40px;
+  }
+
+  .searchBar :global(.ant-input) {
+    height: 36px;
+    font-size: 13px;
+  }
+
+  .searchBar :global(.ant-btn-primary) {
+    height: 40px;
+    padding: 0 16px;
+    font-size: 13px;
+  }
+}
