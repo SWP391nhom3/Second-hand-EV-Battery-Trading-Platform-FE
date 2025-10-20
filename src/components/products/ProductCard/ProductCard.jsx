@@ -13,6 +13,7 @@ import {
   UserOutlined,
   EnvironmentOutlined,
   CalendarOutlined,
+  CreditCardOutlined,
 } from "@ant-design/icons";
 import styles from "./ProductCard.module.css";
 
@@ -89,6 +90,31 @@ const ProductCard = ({ product, onAddToCart, onViewDetails }) => {
     (originalPrice && price ? 
       `-${Math.round(((originalPrice - price) / originalPrice) * 100)}%` 
       : null);
+
+  const handleBuyNow = (e) => {
+    e.stopPropagation();
+    navigate('/payment', {
+      state: {
+        type: 'product',
+        product: {
+          id,
+          name,
+          brand,
+          capacity,
+          voltage,
+          condition,
+          price,
+          image,
+          warranty,
+          seller,
+          location,
+          batteryHealth,
+          usageYears,
+        },
+        quantity: 1,
+      },
+    });
+  };
 
   return (
     <Card
@@ -227,20 +253,51 @@ const ProductCard = ({ product, onAddToCart, onViewDetails }) => {
 
         {/* Actions */}
         <div className={styles.actions}>
-          <Button
-            type="primary"
-            icon={<ShoppingCartOutlined />}
-            block
-            size="large"
-            className={styles.addToCartButton}
-            onClick={(e) => {
-              e.stopPropagation();
-              onAddToCart(product);
-            }}
-            disabled={!inStock}
-          >
-            {inStock ? "Thêm vào giỏ" : "Hết hàng"}
-          </Button>
+          <div style={{ display: 'flex', gap: '8px', width: '100%', marginBottom: 8 }}>
+            <Button
+              type="default"
+              icon={<ShoppingCartOutlined />}
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddToCart(product);
+              }}
+              disabled={!inStock}
+              style={{ 
+                width: 'calc(50% - 4px)',
+                minWidth: 'calc(50% - 4px)',
+                maxWidth: 'calc(50% - 4px)',
+                flex: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '4px 8px',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              Thêm giỏ
+            </Button>
+            <Button
+              type="primary"
+              icon={<CreditCardOutlined />}
+              onClick={handleBuyNow}
+              disabled={!inStock}
+              style={{ 
+                width: 'calc(50% - 4px)',
+                minWidth: 'calc(50% - 4px)',
+                maxWidth: 'calc(50% - 4px)',
+                flex: 'none',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '4px 8px',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              Mua ngay
+            </Button>
+          </div>
           <Button
             icon={<EyeOutlined />}
             block

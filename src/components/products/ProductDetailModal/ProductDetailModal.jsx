@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Modal,
   Row,
@@ -31,12 +32,14 @@ import {
   CheckCircleOutlined,
   WarningOutlined,
   CalendarOutlined,
+  CreditCardOutlined,
 } from '@ant-design/icons';
 import styles from './ProductDetailModal.module.css';
 
 const { Title, Text, Paragraph } = Typography;
 
 const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
+  const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
 
@@ -95,6 +98,34 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
     Modal.success({
       title: 'Thành công!',
       content: `Đã thêm ${quantity} sản phẩm vào giỏ hàng`,
+    });
+  };
+
+  const handleBuyNow = () => {
+    // Đóng modal trước
+    onClose();
+    
+    // Chuyển đến trang thanh toán
+    navigate('/payment', {
+      state: {
+        type: 'product',
+        product: {
+          id,
+          name,
+          brand,
+          capacity,
+          voltage,
+          condition,
+          price,
+          image,
+          warranty,
+          seller,
+          location,
+          batteryHealth,
+          usageYears,
+        },
+        quantity: quantity,
+      },
     });
   };
 
@@ -318,17 +349,58 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
               </div>
 
               <Space direction="vertical" size="middle" style={{ width: '100%', marginTop: 16 }}>
-                <Button
-                  type="primary"
-                  size="large"
-                  icon={<ShoppingCartOutlined />}
-                  onClick={handleAddToCart}
-                  disabled={!inStock}
-                  block
-                  style={{ height: 50, fontSize: 16, fontWeight: 600 }}
-                >
-                  {inStock ? 'Thêm vào giỏ hàng' : 'Hết hàng'}
-                </Button>
+                <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+                  <Button
+                    type="default"
+                    size="large"
+                    icon={<ShoppingCartOutlined />}
+                    onClick={handleAddToCart}
+                    disabled={!inStock}
+                    style={{ 
+                      width: 'calc(50% - 6px)',
+                      minWidth: 'calc(50% - 6px)',
+                      maxWidth: 'calc(50% - 6px)',
+                      flex: 'none',
+                      height: 50, 
+                      fontSize: 16, 
+                      fontWeight: 600,
+                      borderColor: '#1890ff',
+                      color: '#1890ff',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '0 16px',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    Thêm giỏ hàng
+                  </Button>
+                  <Button
+                    type="primary"
+                    size="large"
+                    icon={<CreditCardOutlined />}
+                    onClick={handleBuyNow}
+                    disabled={!inStock}
+                    style={{ 
+                      width: 'calc(50% - 6px)',
+                      minWidth: 'calc(50% - 6px)',
+                      maxWidth: 'calc(50% - 6px)',
+                      flex: 'none',
+                      height: 50, 
+                      fontSize: 16, 
+                      fontWeight: 600,
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      border: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '0 16px',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    Mua ngay
+                  </Button>
+                </div>
                 <Space style={{ width: '100%', justifyContent: 'center' }}>
                   <Button icon={<HeartOutlined />} size="large">
                     Yêu thích

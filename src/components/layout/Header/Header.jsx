@@ -12,7 +12,7 @@ const Header = () => {
   const navItems = [
     { id: 1, name: "Trang chủ", href: "/" },
     { id: 2, name: "Sản phẩm", href: "/products" },
-    { id: 3, name: "Danh mục", href: "/categories" },
+    { id: 3, name: "Gói đăng tin", href: "/packages" },
     { id: 4, name: "Giới thiệu", href: "/about" },
     { id: 5, name: "Liên hệ", href: "/contact" },
   ];
