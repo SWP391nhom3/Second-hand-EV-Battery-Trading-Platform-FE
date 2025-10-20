@@ -14,11 +14,14 @@ const LoginForm = () => {
 
   const handleSubmit = async (values) => {
     try {
-      const response = await api.post("login", values);
+      // const response = await api.post("login", values);
       toast.success("Đăng nhập thành công!");
+      console.log("Successful Login:", values);
       navigate("/");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Đăng nhập thất bại. Vui lòng thử lại.");
+      toast.error(
+        error.response?.data?.message || "Đăng nhập thất bại. Vui lòng thử lại."
+      );
       console.error("Login error:", error);
     }
   };

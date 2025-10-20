@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Button, Badge, Avatar, Dropdown } from "antd";
-import { MenuOutlined, CloseOutlined, ShoppingCartOutlined, UserOutlined } from "@ant-design/icons";
+import {
+  MenuOutlined,
+  CloseOutlined,
+  ShoppingCartOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import styles from "./Header.module.css";
 
 const Header = () => {
@@ -28,29 +33,22 @@ const Header = () => {
   // Avatar dropdown menu items
   const avatarMenuItems = [
     {
-      key: 'profile',
+      key: "profile",
       label: <a href="/profile">👤 Hồ sơ</a>,
     },
     {
-      key: 'settings',
-      label: <a href="/settings">⚙️ Cài đặt</a>,
-    },
-    {
-      type: 'divider',
-    },
-    {
-      key: 'logout',
-      label: '🚪 Đăng xuất',
+      key: "logout",
+      label: "🚪 Đăng xuất",
       onClick: () => alert("Đã đăng xuất!"),
     },
   ];
 
   return (
-    <header 
+    <header
       className={styles.header}
       style={{
-        backgroundColor: isDarkMode ? '#141414' : '#fff',
-        color: isDarkMode ? '#fff' : 'rgba(0, 0, 0, 0.88)',
+        backgroundColor: isDarkMode ? "#141414" : "#fff",
+        color: isDarkMode ? "#fff" : "rgba(0, 0, 0, 0.88)",
       }}
     >
       <div className={styles.headerContent}>
@@ -67,11 +65,7 @@ const Header = () => {
         {/* Navigation links (hidden on mobile) */}
         <nav className={styles.navLinks}>
           {navItems.map((item) => (
-            <a
-              key={item.id}
-              href={item.href}
-              className={styles.navLink}
-            >
+            <a key={item.id} href={item.href} className={styles.navLink}>
               {item.name}
             </a>
           ))}
@@ -89,21 +83,23 @@ const Header = () => {
           />
 
           {/* Shopping cart */}
-          <div style={{ position: 'relative' }}>
+          <div style={{ position: "relative" }}>
             <Badge count={cartCount} size="small">
               <Button
                 type="text"
                 shape="circle"
-                icon={<ShoppingCartOutlined style={{ fontSize: '20px' }} />}
+                icon={<ShoppingCartOutlined style={{ fontSize: "20px" }} />}
                 onClick={toggleCart}
                 aria-label="Shopping cart"
               />
             </Badge>
-            
+
             {isCartOpen && (
               <div className={styles.dropdownMenu}>
                 <h3 className={styles.dropdownTitle}>Giỏ hàng</h3>
-                <p className={styles.dropdownText}>Giỏ hàng của bạn đang trống</p>
+                <p className={styles.dropdownText}>
+                  Giỏ hàng của bạn đang trống
+                </p>
               </div>
             )}
           </div>
@@ -111,13 +107,13 @@ const Header = () => {
           {/* User avatar with dropdown */}
           <Dropdown
             menu={{ items: avatarMenuItems }}
-            trigger={['click']}
+            trigger={["click"]}
             placement="bottomRight"
           >
             <Avatar
               src="https://i.pravatar.cc/40"
               alt="User avatar"
-              style={{ cursor: 'pointer' }}
+              style={{ cursor: "pointer" }}
               icon={<UserOutlined />}
             />
           </Dropdown>
@@ -136,11 +132,11 @@ const Header = () => {
 
       {/* Mobile menu */}
       {isMenuOpen && (
-        <div 
+        <div
           className={styles.mobileMenu}
           style={{
-            backgroundColor: isDarkMode ? '#141414' : '#fff',
-            borderTopColor: isDarkMode ? '#303030' : '#f0f0f0',
+            backgroundColor: isDarkMode ? "#141414" : "#fff",
+            borderTopColor: isDarkMode ? "#303030" : "#f0f0f0",
           }}
         >
           <div className={styles.mobileMenuContent}>

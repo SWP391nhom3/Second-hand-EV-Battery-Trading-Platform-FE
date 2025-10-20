@@ -1,6 +1,11 @@
 import React from "react";
 import { Button, Checkbox, Form, Input, Typography } from "antd";
-import { UserOutlined, LockOutlined, MailOutlined, IdcardOutlined } from "@ant-design/icons";
+import {
+  UserOutlined,
+  LockOutlined,
+  MailOutlined,
+  IdcardOutlined,
+} from "@ant-design/icons";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import api from "../../../configs/axios";
@@ -16,11 +21,14 @@ const RegisterForm = () => {
     try {
       // Remove confirm password before sending to API
       const { confirm, ...registerData } = values;
-      await api.post("register", registerData);
+      // await api.post("register", registerData);
       toast.success("Tạo tài khoản thành công!");
-      navigate("/login");
+      console.log("Successful register:", values);
+      // navigate("/login");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Đăng ký thất bại. Vui lòng thử lại.");
+      toast.error(
+        error.response?.data?.message || "Đăng ký thất bại. Vui lòng thử lại."
+      );
       console.error("Registration error:", error);
     }
   };
@@ -72,7 +80,11 @@ const RegisterForm = () => {
           rules={[
             { required: true, message: "Vui lòng nhập tên đăng nhập!" },
             { min: 3, message: "Tên đăng nhập phải có ít nhất 3 ký tự!" },
-            { pattern: /^[a-zA-Z0-9_]+$/, message: "Tên đăng nhập chỉ có thể chứa chữ cái, số và dấu gạch dưới!" },
+            {
+              pattern: /^[a-zA-Z0-9_]+$/,
+              message:
+                "Tên đăng nhập chỉ có thể chứa chữ cái, số và dấu gạch dưới!",
+            },
           ]}
         >
           <Input
@@ -89,10 +101,7 @@ const RegisterForm = () => {
             { type: "email", message: "Vui lòng nhập địa chỉ email hợp lệ!" },
           ]}
         >
-          <Input
-            prefix={<MailOutlined />}
-            placeholder="Nhập email của bạn"
-          />
+          <Input prefix={<MailOutlined />} placeholder="Nhập email của bạn" />
         </Form.Item>
 
         <Form.Item
@@ -117,13 +126,13 @@ const RegisterForm = () => {
         <Form.Item
           label="Xác nhận mật khẩu"
           name="confirm"
-          dependencies={['password']}
+          dependencies={["password"]}
           hasFeedback
           rules={[
             { required: true, message: "Vui lòng xác nhận mật khẩu!" },
             ({ getFieldValue }) => ({
               validator(_, value) {
-                if (!value || getFieldValue('password') === value) {
+                if (!value || getFieldValue("password") === value) {
                   return Promise.resolve();
                 }
                 return Promise.reject(new Error("Mật khẩu không khớp!"));
@@ -143,12 +152,16 @@ const RegisterForm = () => {
           rules={[
             {
               validator: (_, value) =>
-                value ? Promise.resolve() : Promise.reject(new Error('Bạn phải chấp nhận điều khoản và điều kiện')),
+                value
+                  ? Promise.resolve()
+                  : Promise.reject(
+                      new Error("Bạn phải chấp nhận điều khoản và điều kiện")
+                    ),
             },
           ]}
         >
           <Checkbox>
-            Tôi đồng ý với{' '}
+            Tôi đồng ý với{" "}
             <Link to="/terms" target="_blank">
               Điều khoản và Điều kiện
             </Link>
