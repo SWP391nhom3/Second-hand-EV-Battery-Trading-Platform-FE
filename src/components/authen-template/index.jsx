@@ -1,5 +1,5 @@
 import React from "react";
-import "./index.css";
+import "./authen-template.css";
 import LoginForm from "../authen-form/LoginForm";
 import RegisterForm from "../authen-form/RegisterForm";
 function AuthenTemplate({ isLogin }) {

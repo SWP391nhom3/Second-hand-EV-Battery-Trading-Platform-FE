@@ -1,27 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { FiMenu, FiX, FiShoppingCart } from "react-icons/fi";
 import { Button, Badge, Avatar, Dropdown } from "antd";
 import { MenuOutlined, CloseOutlined, ShoppingCartOutlined, UserOutlined } from "@ant-design/icons";
-import "./index.css";
+import styles from "./Header.module.css";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isAvatarOpen, setIsAvatarOpen] = useState(false);
 
   const navItems = [
-    { id: 1, name: "Home", href: "#" },
-    { id: 2, name: "Products", href: "#" },
-    { id: 3, name: "Categories", href: "#" },
-    { id: 4, name: "About", href: "#" },
-    { id: 5, name: "Contact", href: "#" },
+    { id: 1, name: "Trang chủ", href: "/" },
+    { id: 2, name: "Sản phẩm", href: "/products" },
+    { id: 3, name: "Gói đăng tin", href: "/packages" },
+    { id: 4, name: "Giới thiệu", href: "/about" },
+    { id: 5, name: "Liên hệ", href: "/contact" },
   ];
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const toggleCart = () => setIsCartOpen(!isCartOpen);
-  const toggleAvatar = () => setIsAvatarOpen(!isAvatarOpen);
   const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
 
   useEffect(() => {
@@ -31,54 +28,49 @@ const Header = () => {
   // Avatar dropdown menu items
   const avatarMenuItems = [
     {
-      key: '1',
-      label: (
-        <a href="#profile" style={{ textDecoration: 'none' }}>
-          👤 Profile
-        </a>
-      ),
+      key: 'profile',
+      label: <a href="/profile">👤 Hồ sơ</a>,
     },
     {
-      key: '2',
-      label: (
-        <a href="#settings" style={{ textDecoration: 'none' }}>
-          ⚙️ Settings
-        </a>
-      ),
+      key: 'settings',
+      label: <a href="/settings">⚙️ Cài đặt</a>,
     },
     {
-      key: '3',
-      label: '🚪 Logout',
-      onClick: () => alert("Logged out!"),
+      type: 'divider',
+    },
+    {
+      key: 'logout',
+      label: '🚪 Đăng xuất',
+      onClick: () => alert("Đã đăng xuất!"),
     },
   ];
 
   return (
     <header 
-      className="custom-header"
+      className={styles.header}
       style={{
         backgroundColor: isDarkMode ? '#141414' : '#fff',
         color: isDarkMode ? '#fff' : 'rgba(0, 0, 0, 0.88)',
       }}
     >
-      <div className="header-content">
+      <div className={styles.headerContent}>
         {/* Logo */}
-        <div className="logo-section">
+        <div className={styles.logoSection}>
           <img
-            className="logo-image"
-            src="/assets/logo.png"
-            alt="Logo"
+            className={styles.logoImage}
+            src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Volkswagen_logo_2019.svg"
+            alt="EV Battery Hub Logo"
           />
-          <span className="logo-text">E-Vehicle</span>
+          <span className={styles.logoText}>EV Battery Hub</span>
         </div>
 
         {/* Navigation links (hidden on mobile) */}
-        <nav className="nav-links">
+        <nav className={styles.navLinks}>
           {navItems.map((item) => (
             <a
               key={item.id}
               href={item.href}
-              className="nav-link"
+              className={styles.navLink}
             >
               {item.name}
             </a>
@@ -86,7 +78,7 @@ const Header = () => {
         </nav>
 
         {/* Actions section */}
-        <div className="actions-section">
+        <div className={styles.actionsSection}>
           {/* Dark mode toggle */}
           <Button
             type="text"
@@ -109,9 +101,9 @@ const Header = () => {
             </Badge>
             
             {isCartOpen && (
-              <div className="dropdown-menu">
-                <h3 className="dropdown-title">Shopping Cart</h3>
-                <p className="dropdown-text">Your cart is empty</p>
+              <div className={styles.dropdownMenu}>
+                <h3 className={styles.dropdownTitle}>Giỏ hàng</h3>
+                <p className={styles.dropdownText}>Giỏ hàng của bạn đang trống</p>
               </div>
             )}
           </div>
@@ -134,7 +126,7 @@ const Header = () => {
           <Button
             type="text"
             shape="circle"
-            className="mobile-menu-toggle"
+            className={styles.mobileMenuToggle}
             onClick={toggleMenu}
             icon={isMenuOpen ? <CloseOutlined /> : <MenuOutlined />}
             aria-label="Toggle menu"
@@ -144,16 +136,19 @@ const Header = () => {
 
       {/* Mobile menu */}
       {isMenuOpen && (
-        <div className="mobile-menu" style={{
-          backgroundColor: isDarkMode ? '#141414' : '#fff',
-          borderTopColor: isDarkMode ? '#303030' : '#f0f0f0',
-        }}>
-          <div className="mobile-menu-content">
+        <div 
+          className={styles.mobileMenu}
+          style={{
+            backgroundColor: isDarkMode ? '#141414' : '#fff',
+            borderTopColor: isDarkMode ? '#303030' : '#f0f0f0',
+          }}
+        >
+          <div className={styles.mobileMenuContent}>
             {navItems.map((item) => (
               <a
                 key={item.id}
                 href={item.href}
-                className="mobile-nav-link"
+                className={styles.mobileNavLink}
               >
                 {item.name}
               </a>
