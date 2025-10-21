@@ -3,8 +3,8 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { HomePage, LoginPage, RegisterPage, ProductsPage } from "./pages";
 import Dashboard from "./components/dashboard/Dashboard";
 import ProductDetailPage from "./pages/product-detail/ProductDetailPage";
-import PackagesPage from "./pages/packages/PackagesPage";
 import PaymentPage from "./pages/payment/PaymentPage";
+import CustomerPage from "./pages/customer/CustomerPage";
 
 function App() {
   const router = createBrowserRouter([
@@ -30,12 +30,12 @@ function App() {
       element: <ProductDetailPage />,
     },
     {
-      path: "/packages",
-      element: <PackagesPage />,
-    },
-    {
       path: "/payment",
       element: <PaymentPage />,
+    },
+    {
+      path: "/customer",
+      element: <CustomerPage />,
     },
     {
       path: "/dashboard",

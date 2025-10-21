@@ -1,0 +1,377 @@
+.customerPage {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f0f2f5 0%, #ffffff 100%);
+}
+
+.pageContainer {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 100px 20px 40px;
+}
+
+/* Hero Section */
+.heroSection {
+  margin-bottom: 40px;
+}
+
+.heroContent {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.profileCard {
+  height: 100%;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.profileCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.profileHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.profileInfo h2 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #262626;
+}
+
+.infoItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+.infoItem span {
+  color: #8c8c8c;
+}
+
+.infoItem strong {
+  color: #262626;
+}
+
+/* Statistics Cards */
+.statCard {
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.statCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.activityCard {
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.activityCard h3 {
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #262626;
+}
+
+.activityItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.activityItem:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.activityValue {
+  font-size: 24px;
+  font-weight: 700;
+  color: #262626;
+}
+
+.activityLabel {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+/* Products Section */
+.productsSection {
+  animation: fadeInUp 0.6s ease-out 0.2s both;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.sectionHeader h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #262626;
+}
+
+.addButton {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  height: 48px;
+  padding: 0 32px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s ease;
+}
+
+.addButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.productsCard {
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Product Cards */
+.productCard {
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  height: 100%;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.productCard:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.productImageWrapper {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.productImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.productCard:hover .productImage {
+  transform: scale(1.1);
+}
+
+.productBadge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1;
+}
+
+.productName {
+  font-size: 16px;
+  font-weight: 700;
+  color: #262626;
+  margin-bottom: 8px;
+}
+
+.productPrice {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f5222d;
+  margin: 8px 0;
+}
+
+.productSpecs {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: #595959;
+  margin: 8px 0;
+}
+
+.productStats {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: #8c8c8c;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* Responsive Views */
+.cardView {
+  display: block;
+}
+
+.tableView {
+  display: none;
+}
+
+@media (min-width: 992px) {
+  .cardView {
+    display: none;
+  }
+
+  .tableView {
+    display: block;
+  }
+}
+
+/* Modal Styles */
+.productModal :global(.ant-modal-header) {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px 16px 0 0;
+}
+
+.productModal :global(.ant-modal-title) {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.productModal :global(.ant-modal-close-x) {
+  color: #fff;
+}
+
+.productModal :global(.ant-modal-body) {
+  padding: 24px;
+}
+
+.productModal :global(.ant-modal-body)::-webkit-scrollbar {
+  width: 8px;
+}
+
+.productModal :global(.ant-modal-body)::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 4px;
+}
+
+.productModal :global(.ant-modal-body)::-webkit-scrollbar-thumb {
+  background: #bfbfbf;
+  border-radius: 4px;
+}
+
+.productModal :global(.ant-modal-body)::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+/* Package Modal */
+.packageModal :global(.ant-modal-body) {
+  padding: 24px;
+}
+
+.packageModal :global(.ant-modal-body)::-webkit-scrollbar {
+  width: 8px;
+}
+
+.packageModal :global(.ant-modal-body)::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 4px;
+}
+
+.packageModal :global(.ant-modal-body)::-webkit-scrollbar-thumb {
+  background: #bfbfbf;
+  border-radius: 4px;
+}
+
+.packageModal :global(.ant-modal-body)::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+.packageCard {
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.packageCard:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .pageContainer {
+    padding: 80px 12px 20px;
+  }
+
+  .sectionHeader {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .sectionHeader h2 {
+    font-size: 22px;
+  }
+
+  .addButton {
+    width: 100%;
+  }
+
+  .profileHeader {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .infoItem {
+    flex-direction: column;
+    gap: 4px;
+    text-align: center;
+  }
+
+  .activityValue {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 576px) {
+  .productPrice {
+    font-size: 18px;
+  }
+
+  .productName {
+    font-size: 14px;
+  }
+
+  .activityItem {
+    flex-direction: column;
+    text-align: center;
+  }
+}

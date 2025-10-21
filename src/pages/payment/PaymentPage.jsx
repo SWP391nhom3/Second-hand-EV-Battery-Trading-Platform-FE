@@ -48,14 +48,20 @@ const PaymentPage = () => {
   const paymentData = location.state || {};
   const isPackage = paymentData.type === "package";
   const isProduct = paymentData.type === "product";
+  const isPostPackage = paymentData.type === "post-package"; // Gói cho bài đăng
 
   // Xử lý dữ liệu cho gói đăng tin
-  const packageData = isPackage
+  const packageData = isPackage || isPostPackage
     ? paymentData.package
     : null;
 
   // Xử lý dữ liệu cho sản phẩm
   const productData = isProduct
+    ? paymentData.product
+    : null;
+
+  // Dữ liệu sản phẩm khi chọn gói cho bài đăng
+  const postProductData = isPostPackage
     ? paymentData.product
     : null;
 
@@ -70,7 +76,13 @@ const PaymentPage = () => {
 
   // Lấy dữ liệu hiển thị
   const displayData = packageData || productData || defaultData;
-  const itemType = isPackage ? "gói đăng tin" : isProduct ? "sản phẩm" : "đơn hàng";
+  const itemType = isPostPackage 
+    ? "gói đăng tin cho sản phẩm" 
+    : isPackage 
+    ? "gói đăng tin" 
+    : isProduct 
+    ? "sản phẩm" 
+    : "đơn hàng";
   const quantity = productData?.quantity || 1;
 
   const paymentMethods = [
@@ -523,8 +535,29 @@ const PaymentPage = () => {
                 <div className={styles.packageHeader}>
                   <Title level={5}>{displayData.name}</Title>
                   {isPackage && <Tag color="blue">{displayData.duration}</Tag>}
+                  {isPostPackage && <Tag color="gold">Gói cho bài đăng</Tag>}
                   {isProduct && <Tag color="green">Sản phẩm</Tag>}
                 </div>
+
+                {isPostPackage && postProductData && (
+                  <div className={styles.postPackageInfo}>
+                    <Alert
+                      message="Gói đăng tin cho sản phẩm"
+                      description={
+                        <div>
+                          <Text strong style={{ display: 'block', marginBottom: 8 }}>
+                            Sản phẩm: {postProductData.name}
+                          </Text>
+                          <Text type="secondary" style={{ fontSize: 12 }}>
+                            Gói {displayData.name} - Hiển thị {displayData.duration} ngày
+                          </Text>
+                        </div>
+                      }
+                      type="info"
+                      style={{ marginBottom: 16 }}
+                    />
+                  </div>
+                )}
 
                 {isProduct && (
                   <div className={styles.productDetails}>
@@ -547,7 +580,7 @@ const PaymentPage = () => {
                   </div>
                 )}
 
-                {isPackage && (
+                {(isPackage || isPostPackage) && (
                   <div className={styles.featuresList}>
                     {displayData.features?.map((feature, index) => (
                       <div key={index} className={styles.featureItem}>
@@ -563,7 +596,7 @@ const PaymentPage = () => {
 
               <div className={styles.priceBreakdown}>
                 <div className={styles.priceRow}>
-                  <Text>{isPackage ? "Giá gói:" : "Giá sản phẩm:"}</Text>
+                  <Text>{(isPackage || isPostPackage) ? "Giá gói:" : "Giá sản phẩm:"}</Text>
                   <Text strong>
                     {displayData.price.toLocaleString("vi-VN")}₫
                   </Text>
