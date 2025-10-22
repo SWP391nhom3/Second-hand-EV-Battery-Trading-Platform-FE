@@ -41,7 +41,11 @@ const ProductCard = ({ product, onAddToCart, onViewDetails }) => {
     usageYears,
     location,
     postedDate,
+    category, // Thêm category để phân biệt xe máy/ô tô
   } = product;
+
+  // Kiểm tra xem có phải xe máy hoặc ô tô không
+  const isVehicle = category === 'motorcycle' || category === 'car';
 
   // Định nghĩa màu sắc cho từng gói membership
   const getMembershipColor = (level) => {
@@ -93,6 +97,17 @@ const ProductCard = ({ product, onAddToCart, onViewDetails }) => {
 
   const handleBuyNow = (e) => {
     e.stopPropagation();
+    
+    // Nếu là xe máy hoặc ô tô, chỉ mở modal để lại thông tin
+    if (isVehicle) {
+      // Sẽ mở modal contact form thay vì thanh toán
+      if (onViewDetails) {
+        onViewDetails(product); // Mở modal detail có form liên hệ
+      }
+      return;
+    }
+    
+    // Các sản phẩm pin bình thường vẫn thanh toán online
     navigate('/payment', {
       state: {
         type: 'product',
@@ -254,39 +269,43 @@ const ProductCard = ({ product, onAddToCart, onViewDetails }) => {
         {/* Actions */}
         <div className={styles.actions}>
           <div style={{ display: 'flex', gap: '8px', width: '100%', marginBottom: 8 }}>
-            <Button
-              type="default"
-              icon={<ShoppingCartOutlined />}
-              onClick={(e) => {
-                e.stopPropagation();
-                onAddToCart(product);
-              }}
-              disabled={!inStock}
-              style={{ 
-                width: 'calc(50% - 4px)',
-                minWidth: 'calc(50% - 4px)',
-                maxWidth: 'calc(50% - 4px)',
-                flex: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '4px 8px',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              Thêm giỏ
-            </Button>
+            {!isVehicle && (
+              <Button
+                type="default"
+                icon={<ShoppingCartOutlined />}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddToCart(product);
+                }}
+                disabled={!inStock}
+                style={{ 
+                  width: isVehicle ? '100%' : 'calc(50% - 4px)',
+                  minWidth: isVehicle ? '100%' : 'calc(50% - 4px)',
+                  maxWidth: isVehicle ? '100%' : 'calc(50% - 4px)',
+                  flex: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '4px 8px',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                Thêm giỏ
+              </Button>
+            )}
             <Button
               type="primary"
-              icon={<CreditCardOutlined />}
+              icon={isVehicle ? <UserOutlined /> : <CreditCardOutlined />}
               onClick={handleBuyNow}
               disabled={!inStock}
               style={{ 
-                width: 'calc(50% - 4px)',
-                minWidth: 'calc(50% - 4px)',
-                maxWidth: 'calc(50% - 4px)',
+                width: isVehicle ? '100%' : 'calc(50% - 4px)',
+                minWidth: isVehicle ? '100%' : 'calc(50% - 4px)',
+                maxWidth: isVehicle ? '100%' : 'calc(50% - 4px)',
                 flex: 'none',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: isVehicle 
+                  ? 'linear-gradient(135deg, #52c41a 0%, #389e0d 100%)' 
+                  : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 border: 'none',
                 display: 'flex',
                 alignItems: 'center',
@@ -295,7 +314,7 @@ const ProductCard = ({ product, onAddToCart, onViewDetails }) => {
                 whiteSpace: 'nowrap'
               }}
             >
-              Mua ngay
+              {isVehicle ? 'Để lại thông tin' : 'Mua ngay'}
             </Button>
           </div>
           <Button

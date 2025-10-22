@@ -27,6 +27,7 @@ const ProductFilters = ({ onFilterChange, onResetFilters }) => {
   const [selectedConditions, setSelectedConditions] = useState([]);
   const [selectedMemberships, setSelectedMemberships] = useState([]);
   const [selectedLocations, setSelectedLocations] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState([]);
   const [warranty, setWarranty] = useState("all");
   const [inStockOnly, setInStockOnly] = useState(false);
 
@@ -41,6 +42,12 @@ const ProductFilters = ({ onFilterChange, onResetFilters }) => {
     { label: "Kia", value: "kia" },
     { label: "MG", value: "mg" },
     { label: "BYD", value: "byd" },
+  ];
+
+  const categories = [
+    { label: "🔋 Pin", value: "battery", color: "purple" },
+    { label: "🏍️ Xe máy điện", value: "motorcycle", color: "orange" },
+    { label: "🚗 Ô tô điện", value: "car", color: "blue" },
   ];
 
   const conditions = [
@@ -83,6 +90,7 @@ const ProductFilters = ({ onFilterChange, onResetFilters }) => {
       conditions: selectedConditions,
       memberships: selectedMemberships,
       locations: selectedLocations,
+      categories: selectedCategories,
       warranty,
       inStockOnly,
     };
@@ -96,6 +104,7 @@ const ProductFilters = ({ onFilterChange, onResetFilters }) => {
     setSelectedConditions([]);
     setSelectedMemberships([]);
     setSelectedLocations([]);
+    setSelectedCategories([]);
     setWarranty("all");
     setInStockOnly(false);
     onResetFilters();
@@ -106,6 +115,7 @@ const ProductFilters = ({ onFilterChange, onResetFilters }) => {
     selectedConditions.length +
     selectedMemberships.length +
     selectedLocations.length +
+    selectedCategories.length +
     (warranty !== "all" ? 1 : 0) +
     (inStockOnly ? 1 : 0);
 
@@ -121,10 +131,31 @@ const ProductFilters = ({ onFilterChange, onResetFilters }) => {
       </div>
 
       <Collapse
-        defaultActiveKey={["price", "capacity", "brands", "membership", "location", "condition"]}
+        defaultActiveKey={["price", "capacity", "category", "brands", "membership", "location", "condition"]}
         ghost
         expandIconPosition="end"
       >
+        {/* Category Filter */}
+        <Panel header={<span className={styles.panelHeader}>📦 Loại sản phẩm</span>} key="category">
+          <Checkbox.Group
+            value={selectedCategories}
+            onChange={setSelectedCategories}
+            className={styles.checkboxGroup}
+          >
+            <Space direction="vertical" style={{ width: "100%" }}>
+              {categories.map((category) => (
+                <div key={category.value} className={styles.checkboxItem}>
+                  <Checkbox value={category.value}>
+                    <Tag color={category.color} style={{ fontSize: '14px' }}>
+                      {category.label}
+                    </Tag>
+                  </Checkbox>
+                </div>
+              ))}
+            </Space>
+          </Checkbox.Group>
+        </Panel>
+
         {/* Price Range */}
         <Panel header={<span className={styles.panelHeader}><DollarOutlined /> Khoảng giá</span>} key="price">
           <div className={styles.rangeFilter}>
