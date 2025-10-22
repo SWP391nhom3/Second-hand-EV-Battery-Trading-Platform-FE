@@ -17,6 +17,9 @@ import {
   List,
   Typography,
   Progress,
+  Form,
+  Input,
+  message,
 } from 'antd';
 import {
   ShoppingCartOutlined,
@@ -42,6 +45,8 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [contactForm] = Form.useForm();
 
   if (!product) return null;
 
@@ -66,7 +71,11 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
     membershipLevel,
     tag,
     inStock = true,
+    category, // Thêm category
   } = product;
+
+  // Kiểm tra xem có phải xe máy hoặc ô tô không
+  const isVehicle = category === 'motorcycle' || category === 'car';
 
   // Mock additional images
   const images = [
@@ -102,10 +111,15 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
   };
 
   const handleBuyNow = () => {
-    // Đóng modal trước
+    // Nếu là xe máy hoặc ô tô, hiển thị form liên hệ
+    if (isVehicle) {
+      setShowContactForm(true);
+      return;
+    }
+    
+    // Các sản phẩm pin bình thường vẫn thanh toán online
     onClose();
     
-    // Chuyển đến trang thanh toán
     navigate('/payment', {
       state: {
         type: 'product',
@@ -127,6 +141,13 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
         quantity: quantity,
       },
     });
+  };
+
+  const handleSubmitContactForm = (values) => {
+    message.success('Cảm ơn bạn! Chúng tôi sẽ liên hệ lại trong thời gian sớm nhất.');
+    contactForm.resetFields();
+    setShowContactForm(false);
+    onClose();
   };
 
   const handleContactSeller = () => {
@@ -336,80 +357,146 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
 
             {/* Quantity & Actions */}
             <div className={styles.actionSection}>
-              <div className={styles.quantitySection}>
-                <Text strong>Số lượng:</Text>
-                <InputNumber
-                  min={1}
-                  max={10}
-                  value={quantity}
-                  onChange={setQuantity}
-                  style={{ width: 100, margin: '0 12px' }}
-                />
-                <Text type="secondary">(Còn {Math.floor(Math.random() * 10 + 1)} sản phẩm)</Text>
-              </div>
-
-              <Space direction="vertical" size="middle" style={{ width: '100%', marginTop: 16 }}>
-                <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
-                  <Button
-                    type="default"
-                    size="large"
-                    icon={<ShoppingCartOutlined />}
-                    onClick={handleAddToCart}
-                    disabled={!inStock}
-                    style={{ 
-                      width: 'calc(50% - 6px)',
-                      minWidth: 'calc(50% - 6px)',
-                      maxWidth: 'calc(50% - 6px)',
-                      flex: 'none',
-                      height: 50, 
-                      fontSize: 16, 
-                      fontWeight: 600,
-                      borderColor: '#1890ff',
-                      color: '#1890ff',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      padding: '0 16px',
-                      whiteSpace: 'nowrap'
-                    }}
-                  >
-                    Thêm giỏ hàng
-                  </Button>
-                  <Button
-                    type="primary"
-                    size="large"
-                    icon={<CreditCardOutlined />}
-                    onClick={handleBuyNow}
-                    disabled={!inStock}
-                    style={{ 
-                      width: 'calc(50% - 6px)',
-                      minWidth: 'calc(50% - 6px)',
-                      maxWidth: 'calc(50% - 6px)',
-                      flex: 'none',
-                      height: 50, 
-                      fontSize: 16, 
-                      fontWeight: 600,
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      border: 'none',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      padding: '0 16px',
-                      whiteSpace: 'nowrap'
-                    }}
-                  >
-                    Mua ngay
-                  </Button>
+              {!isVehicle && (
+                <div className={styles.quantitySection}>
+                  <Text strong>Số lượng:</Text>
+                  <InputNumber
+                    min={1}
+                    max={10}
+                    value={quantity}
+                    onChange={setQuantity}
+                    style={{ width: 100, margin: '0 12px' }}
+                  />
+                  <Text type="secondary">(Còn {Math.floor(Math.random() * 10 + 1)} sản phẩm)</Text>
                 </div>
-                <Space style={{ width: '100%', justifyContent: 'center' }}>
-                  <Button icon={<HeartOutlined />} size="large">
-                    Yêu thích
-                  </Button>
-                  <Button icon={<ShareAltOutlined />} size="large">
-                    Chia sẻ
-                  </Button>
+              )}
+
+              {showContactForm && isVehicle ? (
+                <div style={{ marginTop: 16, padding: 16, background: '#f5f5f5', borderRadius: 8 }}>
+                  <Title level={5}>Để lại thông tin liên hệ</Title>
+                  <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
+                    Vui lòng điền thông tin để nhân viên tư vấn liên hệ lại với bạn
+                  </Text>
+                  <Form
+                    form={contactForm}
+                    layout="vertical"
+                    onFinish={handleSubmitContactForm}
+                  >
+                    <Form.Item
+                      name="fullName"
+                      label="Họ và tên"
+                      rules={[{ required: true, message: 'Vui lòng nhập họ tên' }]}
+                    >
+                      <Input placeholder="Nguyễn Văn A" size="large" />
+                    </Form.Item>
+                    <Form.Item
+                      name="phone"
+                      label="Số điện thoại"
+                      rules={[
+                        { required: true, message: 'Vui lòng nhập số điện thoại' },
+                        { pattern: /^[0-9]{10}$/, message: 'Số điện thoại không hợp lệ' }
+                      ]}
+                    >
+                      <Input placeholder="0901234567" size="large" />
+                    </Form.Item>
+                    <Form.Item
+                      name="email"
+                      label="Email"
+                      rules={[
+                        { required: true, message: 'Vui lòng nhập email' },
+                        { type: 'email', message: 'Email không hợp lệ' }
+                      ]}
+                    >
+                      <Input placeholder="example@email.com" size="large" />
+                    </Form.Item>
+                    <Form.Item
+                      name="note"
+                      label="Ghi chú (không bắt buộc)"
+                    >
+                      <Input.TextArea 
+                        placeholder="Thời gian thuận tiện để liên hệ, câu hỏi cần tư vấn..." 
+                        rows={3}
+                        size="large"
+                      />
+                    </Form.Item>
+                    <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+                      <Button onClick={() => setShowContactForm(false)} size="large">
+                        Hủy
+                      </Button>
+                      <Button type="primary" htmlType="submit" size="large">
+                        Gửi thông tin
+                      </Button>
+                    </Space>
+                  </Form>
+                </div>
+              ) : (
+                <Space direction="vertical" size="middle" style={{ width: '100%', marginTop: 16 }}>
+                  <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+                    {!isVehicle && (
+                      <Button
+                        type="default"
+                        size="large"
+                        icon={<ShoppingCartOutlined />}
+                        onClick={handleAddToCart}
+                        disabled={!inStock}
+                        style={{ 
+                          width: 'calc(50% - 6px)',
+                          minWidth: 'calc(50% - 6px)',
+                          maxWidth: 'calc(50% - 6px)',
+                          flex: 'none',
+                          height: 50, 
+                          fontSize: 16, 
+                          fontWeight: 600,
+                          borderColor: '#1890ff',
+                          color: '#1890ff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '0 16px',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        Thêm giỏ hàng
+                      </Button>
+                    )}
+                    <Button
+                      type="primary"
+                      size="large"
+                      icon={isVehicle ? <UserOutlined /> : <CreditCardOutlined />}
+                      onClick={handleBuyNow}
+                      disabled={!inStock}
+                      style={{ 
+                        width: isVehicle ? '100%' : 'calc(50% - 6px)',
+                        minWidth: isVehicle ? '100%' : 'calc(50% - 6px)',
+                        maxWidth: isVehicle ? '100%' : 'calc(50% - 6px)',
+                        flex: 'none',
+                        height: 50, 
+                        fontSize: 16, 
+                        fontWeight: 600,
+                        background: isVehicle 
+                          ? 'linear-gradient(135deg, #52c41a 0%, #389e0d 100%)' 
+                          : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        border: 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '0 16px',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      {isVehicle ? 'Để lại thông tin' : 'Mua ngay'}
+                    </Button>
+                  </div>
+                  <Space style={{ width: '100%', justifyContent: 'center' }}>
+                    <Button icon={<HeartOutlined />} size="large">
+                      Yêu thích
+                    </Button>
+                    <Button icon={<ShareAltOutlined />} size="large">
+                      Chia sẻ
+                    </Button>
+                  </Space>
                 </Space>
-              </Space>
+              )}
             </div>
 
             {/* Additional Info */}

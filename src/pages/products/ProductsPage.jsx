@@ -29,6 +29,7 @@ const Products = () => {
     conditions: [],
     memberships: [],
     locations: [],
+    categories: [],
     warranty: "all",
     inStockOnly: false,
   });
@@ -1032,6 +1033,7 @@ const Products = () => {
       id: 49,
       name: "Xe Máy Điện VinFast Klara S",
       brand: "VinFast",
+      category: "motorcycle", // Thêm category
       capacity: 2.4,
       voltage: 60,
       warranty: 2,
@@ -1056,6 +1058,7 @@ const Products = () => {
       id: 50,
       name: "Xe Máy Điện Dat Bike Weaver 200",
       brand: "Dat Bike",
+      category: "motorcycle",
       capacity: 2.5,
       voltage: 60,
       warranty: 3,
@@ -1080,6 +1083,7 @@ const Products = () => {
       id: 51,
       name: "Xe Máy Điện Yadea G5",
       brand: "Yadea",
+      category: "motorcycle",
       capacity: 1.8,
       voltage: 48,
       warranty: 2,
@@ -1104,6 +1108,7 @@ const Products = () => {
       id: 52,
       name: "Xe Máy Điện Pega eSH",
       brand: "Pega",
+      category: "motorcycle",
       capacity: 2.2,
       voltage: 60,
       warranty: 2,
@@ -1128,6 +1133,7 @@ const Products = () => {
       id: 53,
       name: "Xe Máy Điện Dibao Smart",
       brand: "Dibao",
+      category: "motorcycle",
       capacity: 1.5,
       voltage: 48,
       warranty: 1,
@@ -1152,6 +1158,7 @@ const Products = () => {
       id: 54,
       name: "Xe Máy Điện Anbico Ap1518",
       brand: "Anbico",
+      category: "motorcycle",
       capacity: 1.6,
       voltage: 48,
       warranty: 1,
@@ -1178,6 +1185,7 @@ const Products = () => {
       id: 55,
       name: "Xe Ô Tô Điện VinFast VF e34",
       brand: "VinFast",
+      category: "car",
       capacity: 42,
       voltage: 350,
       warranty: 3,
@@ -1202,6 +1210,7 @@ const Products = () => {
       id: 56,
       name: "Xe Ô Tô Điện VinFast VF 8",
       brand: "VinFast",
+      category: "car",
       capacity: 87,
       voltage: 400,
       warranty: 3,
@@ -1226,6 +1235,7 @@ const Products = () => {
       id: 57,
       name: "Xe Ô Tô Điện Hyundai Kona Electric",
       brand: "Hyundai",
+      category: "car",
       capacity: 64,
       voltage: 356,
       warranty: 2,
@@ -1250,6 +1260,7 @@ const Products = () => {
       id: 58,
       name: "Xe Ô Tô Điện Kia EV6",
       brand: "Kia",
+      category: "car",
       capacity: 77,
       voltage: 400,
       warranty: 3,
@@ -1274,6 +1285,7 @@ const Products = () => {
       id: 59,
       name: "Xe Ô Tô Điện MG ZS EV",
       brand: "MG",
+      category: "car",
       capacity: 51,
       voltage: 350,
       warranty: 2,
@@ -1298,6 +1310,7 @@ const Products = () => {
       id: 60,
       name: "Xe Ô Tô Điện BYD Atto 3",
       brand: "BYD",
+      category: "car",
       capacity: 60,
       voltage: 400,
       warranty: 3,
@@ -1340,6 +1353,7 @@ const Products = () => {
       conditions: [],
       memberships: [],
       locations: [],
+      categories: [],
       warranty: "all",
       inStockOnly: false,
     });
@@ -1452,6 +1466,14 @@ const Products = () => {
       !filters.locations.includes(product.location)
     ) {
       return false;
+    }
+
+    // Category filter
+    if (filters.categories.length > 0) {
+      const productCategory = product.category || 'battery'; // Mặc định là 'battery' nếu không có category
+      if (!filters.categories.includes(productCategory)) {
+        return false;
+      }
     }
 
     // Warranty filter
