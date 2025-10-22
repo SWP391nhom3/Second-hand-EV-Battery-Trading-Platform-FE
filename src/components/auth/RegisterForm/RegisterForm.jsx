@@ -21,7 +21,7 @@ const RegisterForm = () => {
     try {
       // Remove confirm password before sending to API
       const { confirm, ...registerData } = values;
-      // await api.post("register", registerData);
+      await api.post("api/Auth/register", registerData);
       toast.success("Tạo tài khoản thành công!");
       console.log("Successful register:", values);
       // navigate("/login");

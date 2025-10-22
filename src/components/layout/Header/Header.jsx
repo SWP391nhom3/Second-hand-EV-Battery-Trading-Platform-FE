@@ -1,18 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { Button, Badge, Avatar, Dropdown } from "antd";
+import { Button, Badge, Avatar, Dropdown, message } from "antd";
 import {
   MenuOutlined,
   CloseOutlined,
   ShoppingCartOutlined,
   UserOutlined,
+  LoginOutlined,
+  LogoutOutlined,
 } from "@ant-design/icons";
-import styles from "./Header.module.css";
+import { useNavigate } from "react-router-dom"; // ✅ thêm dòng này
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate(); //  hook điều hướng
+
+  // Sync auth state on mount and on events
 
   const navItems = [
     { id: 1, name: "Trang chủ", href: "/" },
@@ -30,126 +36,183 @@ const Header = () => {
     document.body.className = isDarkMode ? "dark" : "light";
   }, [isDarkMode]);
 
-  // Avatar dropdown menu items
-  const avatarMenuItems = [
+  // ✅ Menu khi đã đăng nhập
+  const loggedInMenuItems = [
     {
       key: "profile",
-      label: <a href="/profile">👤 Hồ sơ</a>,
+      label: <a href="/profile">👤 Hồ sơ cá nhân</a>,
     },
     {
       key: "logout",
-      label: "🚪 Đăng xuất",
-      onClick: () => alert("Đã đăng xuất!"),
+      icon: <LogoutOutlined />,
+      label: "Đăng xuất",
+      onClick: () => {
+        // remove auth and notify listeners
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("user");
+        sessionStorage.removeItem("authToken");
+        setIsLoggedIn(false);
+        message.success("Đã đăng xuất!");
+        try {
+          window.dispatchEvent(new Event("authChanged"));
+        } catch (e) {
+          /* ignore */
+        }
+        navigate("/");
+      },
+    },
+  ];
+
+  // ✅ Menu khi chưa đăng nhập
+  const guestMenuItems = [
+    {
+      key: "login",
+      icon: <LoginOutlined />,
+      label: "Đăng nhập",
+      onClick: () => {
+        message.info("Chuyển đến trang đăng nhập...");
+        navigate("/login"); // ✅ chuyển hướng sang trang login
+      },
     },
   ];
 
   return (
     <header
-      className={styles.header}
       style={{
         backgroundColor: isDarkMode ? "#141414" : "#fff",
-        color: isDarkMode ? "#fff" : "rgba(0, 0, 0, 0.88)",
+        color: isDarkMode ? "#fff" : "#000",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+        position: "sticky",
+        top: 0,
+        zIndex: 100,
       }}
     >
-      <div className={styles.headerContent}>
+      <div
+        style={{
+          maxWidth: 1200,
+          margin: "0 auto",
+          padding: "10px 20px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
         {/* Logo */}
-        <div className={styles.logoSection}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <img
-            className={styles.logoImage}
             src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Volkswagen_logo_2019.svg"
-            alt="EV Battery Hub Logo"
+            alt="Logo"
+            style={{ width: 35, height: 35 }}
           />
-          <span className={styles.logoText}>EV Battery Hub</span>
+          <span style={{ fontWeight: "bold", fontSize: 18 }}>
+            EV Battery Hub
+          </span>
         </div>
 
-        {/* Navigation links (hidden on mobile) */}
-        <nav className={styles.navLinks}>
+        {/* Navigation */}
+        <nav style={{ display: "flex", gap: 20 }}>
           {navItems.map((item) => (
-            <a key={item.id} href={item.href} className={styles.navLink}>
+            <a
+              key={item.id}
+              href={item.href}
+              style={{
+                color: isDarkMode ? "#fff" : "#000",
+                textDecoration: "none",
+              }}
+            >
               {item.name}
             </a>
           ))}
         </nav>
 
-        {/* Actions section */}
-        <div className={styles.actionsSection}>
+        {/* Actions */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           {/* Dark mode toggle */}
           <Button
             type="text"
             shape="circle"
             onClick={toggleDarkMode}
             icon={isDarkMode ? "🌞" : "🌙"}
-            aria-label="Toggle dark mode"
           />
 
-          {/* Shopping cart */}
+          {/* Giỏ hàng */}
           <div style={{ position: "relative" }}>
             <Badge count={cartCount} size="small">
               <Button
                 type="text"
                 shape="circle"
-                icon={<ShoppingCartOutlined style={{ fontSize: "20px" }} />}
+                icon={<ShoppingCartOutlined style={{ fontSize: 20 }} />}
                 onClick={toggleCart}
-                aria-label="Shopping cart"
               />
             </Badge>
-
             {isCartOpen && (
-              <div className={styles.dropdownMenu}>
-                <h3 className={styles.dropdownTitle}>Giỏ hàng</h3>
-                <p className={styles.dropdownText}>
-                  Giỏ hàng của bạn đang trống
-                </p>
+              <div
+                style={{
+                  position: "absolute",
+                  top: 40,
+                  right: 0,
+                  width: 220,
+                  background: "#fff",
+                  border: "1px solid #ddd",
+                  borderRadius: 8,
+                  padding: 10,
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                }}
+              >
+                <h4>Giỏ hàng</h4>
+                <p>Hiện chưa có sản phẩm nào.</p>
               </div>
             )}
           </div>
 
-          {/* User avatar with dropdown */}
+          {/* Avatar / Login */}
           <Dropdown
-            menu={{ items: avatarMenuItems }}
+            menu={{ items: isLoggedIn ? loggedInMenuItems : guestMenuItems }}
             trigger={["click"]}
             placement="bottomRight"
           >
             <Avatar
-              src="https://i.pravatar.cc/40"
-              alt="User avatar"
-              style={{ cursor: "pointer" }}
+              src={isLoggedIn ? "https://i.pravatar.cc/40" : null}
               icon={<UserOutlined />}
+              style={{ cursor: "pointer" }}
             />
           </Dropdown>
 
-          {/* Mobile menu toggle */}
+          {/* Mobile menu */}
           <Button
             type="text"
             shape="circle"
-            className={styles.mobileMenuToggle}
+            className="mobileMenuBtn"
             onClick={toggleMenu}
             icon={isMenuOpen ? <CloseOutlined /> : <MenuOutlined />}
-            aria-label="Toggle menu"
           />
         </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* Menu di động */}
       {isMenuOpen && (
         <div
-          className={styles.mobileMenu}
           style={{
-            backgroundColor: isDarkMode ? "#141414" : "#fff",
-            borderTopColor: isDarkMode ? "#303030" : "#f0f0f0",
+            background: isDarkMode ? "#1f1f1f" : "#fafafa",
+            borderTop: "1px solid #ddd",
+            padding: 12,
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
           }}
         >
-          <div className={styles.mobileMenuContent}>
-            {navItems.map((item) => (
-              <a
-                key={item.id}
-                href={item.href}
-                className={styles.mobileNavLink}
-              >
-                {item.name}
-              </a>
-            ))}
-          </div>
+          {navItems.map((item) => (
+            <a
+              key={item.id}
+              href={item.href}
+              style={{
+                color: isDarkMode ? "#fff" : "#000",
+                textDecoration: "none",
+              }}
+            >
+              {item.name}
+            </a>
+          ))}
         </div>
       )}
     </header>

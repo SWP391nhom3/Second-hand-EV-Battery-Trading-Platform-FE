@@ -1,7 +1,7 @@
 import React from "react";
 import { Button, Checkbox, Form, Input, Typography } from "antd";
-import { UserOutlined, LockOutlined } from "@ant-design/icons";
-import { useNavigate, Link } from "react-router-dom";
+import { MailOutlined, LockOutlined } from "@ant-design/icons";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import api from "../../../configs/axios";
 import styles from "./LoginForm.module.css";
@@ -10,14 +10,33 @@ const { Title, Text } = Typography;
 
 const LoginForm = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [form] = Form.useForm();
 
   const handleSubmit = async (values) => {
     try {
-      // const response = await api.post("login", values);
+      const response = await api.post("api/Auth/login", values);
+      const data = response.data || {};
+      // lưu token và user (tùy cấu trúc response của backend)
+      if (data.token) {
+        localStorage.setItem("authToken", data.token);
+        api.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
+      }
+      if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
       toast.success("Đăng nhập thành công!");
       console.log("Successful Login:", values);
-      navigate("/");
+      // notify other components (same-tab) that auth changed
+      try {
+        window.dispatchEvent(new Event("authChanged"));
+      } catch (e) {
+        /* ignore */
+      }
+      // Nếu có redirect trong query, quay về đó, ngược lại về trang chủ
+      const params = new URLSearchParams(location.search);
+      const redirect = params.get("redirect") || "/";
+      navigate(redirect);
     } catch (error) {
       toast.error(
         error.response?.data?.message || "Đăng nhập thất bại. Vui lòng thử lại."
@@ -53,16 +72,17 @@ const LoginForm = () => {
         size="large"
       >
         <Form.Item
-          label="Tên đăng nhập"
-          name="username"
+          label="Email"
+          name="email"
           rules={[
-            { required: true, message: "Vui lòng nhập tên đăng nhập!" },
-            { min: 3, message: "Tên đăng nhập phải có ít nhất 3 ký tự!" },
+            { required: true, message: "Vui lòng nhập email!" },
+            { type: "email", message: "Vui lòng nhập email hợp lệ!" },
           ]}
         >
           <Input
-            prefix={<UserOutlined />}
-            placeholder="Nhập tên đăng nhập của bạn"
+            prefix={<MailOutlined />}
+            placeholder="Nhập email của bạn"
+            autoComplete="email"
           />
         </Form.Item>
 

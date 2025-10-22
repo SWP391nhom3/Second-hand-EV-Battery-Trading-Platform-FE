@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Row,
   Col,
@@ -18,7 +18,7 @@ import {
   Progress,
   List,
   Breadcrumb,
-} from 'antd';
+} from "antd";
 import {
   ShoppingCartOutlined,
   HeartOutlined,
@@ -28,8 +28,8 @@ import {
   CheckCircleOutlined,
   HomeOutlined,
   UserOutlined,
-} from '@ant-design/icons';
-import styles from './ProductDetailPage.module.css';
+} from "@ant-design/icons";
+import styles from "./ProductDetailPage.module.css";
 
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
@@ -43,8 +43,8 @@ const ProductDetailPage = () => {
   // Mock data - trong thực tế sẽ fetch từ API dựa trên id
   const product = {
     id: id,
-    name: 'Pin Tesla Model S 85kWh',
-    brand: 'Tesla',
+    name: "Pin Tesla Model S 85kWh",
+    brand: "Tesla",
     price: 240000000,
     originalPrice: 360000000,
     rating: 4.8,
@@ -53,112 +53,115 @@ const ProductDetailPage = () => {
     inStock: true,
     stockQuantity: 15,
     membershipLevel: 4,
-    tag: 'Kim cương',
+    tag: "Kim cương",
     images: [
-      'https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=800',
-      'https://images.unsplash.com/photo-1617788138017-80ad40651399?w=800',
-      'https://images.unsplash.com/photo-1617788138058-1e97ae4b5aef?w=800',
-      'https://images.unsplash.com/photo-1612538498613-76d10ae0c237?w=800',
+      "https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=800",
+      "https://images.unsplash.com/photo-1617788138017-80ad40651399?w=800",
+      "https://images.unsplash.com/photo-1617788138058-1e97ae4b5aef?w=800",
+      "https://images.unsplash.com/photo-1612538498613-76d10ae0c237?w=800",
     ],
     description: `Pin Tesla Model S 85kWh là giải pháp năng lượng cao cấp, được tái chế từ xe Tesla Model S đời 2018-2020. 
     Pin đã qua kiểm tra kỹ lưỡng và vẫn giữ được 92% dung lượng ban đầu, đảm bảo hiệu suất tối ưu cho nhu cầu sử dụng của bạn.`,
-    
+
     specifications: {
-      capacity: '85 kWh',
-      voltage: '375V',
-      current: '227A',
-      cellType: 'Li-ion 18650',
-      weight: '540 kg',
-      dimensions: '2100 x 1200 x 150 mm',
-      cycleLife: '3000+ chu kỳ',
-      warranty: '24 tháng',
-      condition: 'Như mới',
-      healthStatus: '92%',
-      yearManufactured: '2019',
-      certification: 'CE, UL, UN38.3',
+      capacity: "85 kWh",
+      voltage: "375V",
+      current: "227A",
+      cellType: "Li-ion 18650",
+      weight: "540 kg",
+      dimensions: "2100 x 1200 x 150 mm",
+      cycleLife: "3000+ chu kỳ",
+      warranty: "24 tháng",
+      condition: "Như mới",
+      healthStatus: "92%",
+      yearManufactured: "2019",
+      certification: "CE, UL, UN38.3",
     },
 
     features: [
-      'Dung lượng cao 85kWh phù hợp cho nhiều ứng dụng',
-      'Độ sức khỏe pin 92% được chứng nhận',
-      'Hệ thống BMS (Battery Management System) tích hợp',
-      'Bảo hành chính hãng 24 tháng',
-      'Đã qua kiểm tra an toàn nghiêm ngặt',
-      'Hỗ trợ lắp đặt và tư vấn kỹ thuật miễn phí',
-      'Chứng nhận chất lượng quốc tế',
-      'Có thể kết nối song song để tăng dung lượng',
+      "Dung lượng cao 85kWh phù hợp cho nhiều ứng dụng",
+      "Độ sức khỏe pin 92% được chứng nhận",
+      "Hệ thống BMS (Battery Management System) tích hợp",
+      "Bảo hành chính hãng 24 tháng",
+      "Đã qua kiểm tra an toàn nghiêm ngặt",
+      "Hỗ trợ lắp đặt và tư vấn kỹ thuật miễn phí",
+      "Chứng nhận chất lượng quốc tế",
+      "Có thể kết nối song song để tăng dung lượng",
     ],
 
     applications: [
-      'Hệ thống lưu trữ năng lượng mặt trời (Solar ESS)',
-      'Trạm sạc xe điện công suất cao',
-      'Nguồn điện dự phòng cho doanh nghiệp',
-      'Hệ thống điện độc lập (Off-grid)',
-      'Xe điện và xe buýt điện',
-      'Tàu thuyền và du thuyền điện',
+      "Hệ thống lưu trữ năng lượng mặt trời (Solar ESS)",
+      "Trạm sạc xe điện công suất cao",
+      "Nguồn điện dự phòng cho doanh nghiệp",
+      "Hệ thống điện độc lập (Off-grid)",
+      "Xe điện và xe buýt điện",
+      "Tàu thuyền và du thuyền điện",
     ],
 
     seller: {
-      name: 'Green Energy Solutions',
+      name: "Green Energy Solutions",
       rating: 4.9,
-      responseRate: '98%',
-      responseTime: '2 giờ',
+      responseRate: "98%",
+      responseTime: "2 giờ",
       followers: 2453,
       products: 87,
-      joinDate: 'Tháng 3, 2023',
+      joinDate: "Tháng 3, 2023",
       verified: true,
     },
 
     warranty: {
-      period: '24 tháng',
+      period: "24 tháng",
       coverage: [
-        'Bảo hành chất lượng pin',
-        'Thay thế miễn phí nếu lỗi nhà sản xuất',
-        'Hỗ trợ kỹ thuật 24/7',
-        'Kiểm tra và bảo dưỡng định kỳ',
+        "Bảo hành chất lượng pin",
+        "Thay thế miễn phí nếu lỗi nhà sản xuất",
+        "Hỗ trợ kỹ thuật 24/7",
+        "Kiểm tra và bảo dưỡng định kỳ",
       ],
       notCovered: [
-        'Hư hỏng do sử dụng sai cách',
-        'Thiệt hại do thiên tai',
-        'Tự ý sửa chữa, thay đổi',
+        "Hư hỏng do sử dụng sai cách",
+        "Thiệt hại do thiên tai",
+        "Tự ý sửa chữa, thay đổi",
       ],
     },
 
     shipping: {
       freeShipping: true,
-      estimatedDays: '3-5 ngày',
-      shippingFrom: 'TP. Hồ Chí Minh',
+      estimatedDays: "3-5 ngày",
+      shippingFrom: "TP. Hồ Chí Minh",
       methods: [
-        'Giao hàng tiêu chuẩn (3-5 ngày)',
-        'Giao hàng nhanh (1-2 ngày) +500.000₫',
-        'Nhận tại kho (Miễn phí)',
+        "Giao hàng tiêu chuẩn (3-5 ngày)",
+        "Giao hàng nhanh (1-2 ngày) +500.000₫",
+        "Nhận tại kho (Miễn phí)",
       ],
     },
 
     reviews: [
       {
         id: 1,
-        userName: 'Nguyễn Văn A',
+        userName: "Nguyễn Văn A",
         rating: 5,
-        date: '15/10/2024',
-        content: 'Pin chất lượng tuyệt vời, đúng như mô tả. Dung lượng vẫn rất tốt, đã lắp vào hệ thống solar của nhà và hoạt động ổn định.',
-        images: ['https://via.placeholder.com/100'],
+        date: "15/10/2024",
+        content:
+          "Pin chất lượng tuyệt vời, đúng như mô tả. Dung lượng vẫn rất tốt, đã lắp vào hệ thống solar của nhà và hoạt động ổn định.",
+        images: ["https://via.placeholder.com/100"],
         helpful: 24,
       },
       {
         id: 2,
-        userName: 'Trần Thị B',
+        userName: "Trần Thị B",
         rating: 4,
-        date: '10/10/2024',
-        content: 'Sản phẩm tốt, giao hàng nhanh. Nhân viên hỗ trợ lắp đặt rất nhiệt tình.',
+        date: "10/10/2024",
+        content:
+          "Sản phẩm tốt, giao hàng nhanh. Nhân viên hỗ trợ lắp đặt rất nhiệt tình.",
         helpful: 15,
       },
       {
         id: 3,
-        userName: 'Lê Văn C',
+        userName: "Lê Văn C",
         rating: 5,
-        date: '05/10/2024',
-        content: 'Mua lần 2 rồi, chất lượng ổn định. Giá cả hợp lý so với thị trường.',
+        date: "05/10/2024",
+        content:
+          "Mua lần 2 rồi, chất lượng ổn định. Giá cả hợp lý so với thị trường.",
         helpful: 18,
       },
     ],
@@ -166,16 +169,18 @@ const ProductDetailPage = () => {
     relatedProducts: [
       {
         id: 2,
-        name: 'Pin Tesla Model 3 75kWh',
+        name: "Pin Tesla Model 3 75kWh",
         price: 216000000,
-        image: 'https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=400',
+        image:
+          "https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=400",
         rating: 4.7,
       },
       {
         id: 3,
-        name: 'Pin Nissan Leaf 40kWh',
+        name: "Pin Nissan Leaf 40kWh",
         price: 120000000,
-        image: 'https://images.unsplash.com/photo-1617788138017-80ad40651399?w=400',
+        image:
+          "https://images.unsplash.com/photo-1617788138017-80ad40651399?w=400",
         rating: 4.5,
       },
     ],
@@ -184,48 +189,72 @@ const ProductDetailPage = () => {
   const getMembershipInfo = (level) => {
     switch (level) {
       case 4:
-        return { color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', icon: '💎', label: 'Kim cương' };
+        return {
+          color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          icon: "💎",
+          label: "Kim cương",
+        };
       case 3:
-        return { color: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', icon: '🥇', label: 'Vàng' };
+        return {
+          color: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+          icon: "🥇",
+          label: "Vàng",
+        };
       case 2:
-        return { color: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', icon: '🥈', label: 'Bạc' };
+        return {
+          color: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+          icon: "🥈",
+          label: "Bạc",
+        };
       case 1:
-        return { color: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', icon: '🥉', label: 'Đồng' };
+        return {
+          color: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+          icon: "🥉",
+          label: "Đồng",
+        };
       default:
-        return { color: '#f0f0f0', icon: '', label: '' };
+        return { color: "#f0f0f0", icon: "", label: "" };
     }
   };
 
   const membershipInfo = getMembershipInfo(product.membershipLevel);
-  const discount = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
+  const discount = Math.round(
+    ((product.originalPrice - product.price) / product.originalPrice) * 100
+  );
 
   const handleAddToCart = () => {
-    console.log('Thêm vào giỏ hàng:', { productId: id, quantity });
+    console.log("Thêm vào giỏ hàng:", { productId: id, quantity });
   };
 
   const handleBuyNow = () => {
-    console.log('Mua ngay:', { productId: id, quantity });
+    console.log("Mua ngay:", { productId: id, quantity });
   };
 
   const specColumns = [
     {
-      title: 'Thông số',
-      dataIndex: 'label',
-      key: 'label',
-      width: '40%',
+      title: "Thông số",
+      dataIndex: "label",
+      key: "label",
+      width: "40%",
     },
     {
-      title: 'Giá trị',
-      dataIndex: 'value',
-      key: 'value',
+      title: "Giá trị",
+      dataIndex: "value",
+      key: "value",
     },
   ];
 
-  const specData = Object.entries(product.specifications).map(([key, value], index) => ({
-    key: index,
-    label: key.replace(/([A-Z])/g, ' $1').charAt(0).toUpperCase() + key.replace(/([A-Z])/g, ' $1').slice(1),
-    value: value,
-  }));
+  const specData = Object.entries(product.specifications).map(
+    ([key, value], index) => ({
+      key: index,
+      label:
+        key
+          .replace(/([A-Z])/g, " $1")
+          .charAt(0)
+          .toUpperCase() + key.replace(/([A-Z])/g, " $1").slice(1),
+      value: value,
+    })
+  );
 
   const ratingDistribution = [
     { stars: 5, count: 98, percentage: 63 },
@@ -240,9 +269,15 @@ const ProductDetailPage = () => {
       {/* Breadcrumb */}
       <Breadcrumb className={styles.breadcrumb}>
         <Breadcrumb.Item>
-          <HomeOutlined onClick={() => navigate('/')} style={{ cursor: 'pointer' }} />
+          <HomeOutlined
+            onClick={() => navigate("/")}
+            style={{ cursor: "pointer" }}
+          />
         </Breadcrumb.Item>
-        <Breadcrumb.Item onClick={() => navigate('/products')} style={{ cursor: 'pointer' }}>
+        <Breadcrumb.Item
+          onClick={() => navigate("/products")}
+          style={{ cursor: "pointer" }}
+        >
           Sản phẩm
         </Breadcrumb.Item>
         <Breadcrumb.Item>{product.brand}</Breadcrumb.Item>
@@ -266,7 +301,7 @@ const ProductDetailPage = () => {
                 {discount > 0 && (
                   <div className={styles.discountBadge}>-{discount}%</div>
                 )}
-                <div 
+                <div
                   className={styles.membershipBadge}
                   style={{ background: membershipInfo.color }}
                 >
@@ -277,7 +312,9 @@ const ProductDetailPage = () => {
                 {product.images.map((img, index) => (
                   <div
                     key={index}
-                    className={`${styles.thumbnail} ${selectedImage === index ? styles.activeThumbnail : ''}`}
+                    className={`${styles.thumbnail} ${
+                      selectedImage === index ? styles.activeThumbnail : ""
+                    }`}
                     onClick={() => setSelectedImage(index)}
                   >
                     <img src={img} alt={`${product.name} ${index + 1}`} />
@@ -314,11 +351,11 @@ const ProductDetailPage = () => {
 
               <div className={styles.priceSection}>
                 <div className={styles.currentPrice}>
-                  {product.price.toLocaleString('vi-VN')}₫
+                  {product.price.toLocaleString("vi-VN")}₫
                 </div>
                 {product.originalPrice > product.price && (
                   <div className={styles.originalPrice}>
-                    {product.originalPrice.toLocaleString('vi-VN')}₫
+                    {product.originalPrice.toLocaleString("vi-VN")}₫
                   </div>
                 )}
               </div>
@@ -333,7 +370,9 @@ const ProductDetailPage = () => {
                       <ThunderboltOutlined className={styles.specIcon} />
                       <div>
                         <Text type="secondary">Dung lượng</Text>
-                        <div className={styles.specValue}>{product.specifications.capacity}</div>
+                        <div className={styles.specValue}>
+                          {product.specifications.capacity}
+                        </div>
                       </div>
                     </div>
                   </Col>
@@ -342,7 +381,9 @@ const ProductDetailPage = () => {
                       <SafetyOutlined className={styles.specIcon} />
                       <div>
                         <Text type="secondary">Độ khỏe pin</Text>
-                        <div className={styles.specValue}>{product.specifications.healthStatus}</div>
+                        <div className={styles.specValue}>
+                          {product.specifications.healthStatus}
+                        </div>
                       </div>
                     </div>
                   </Col>
@@ -351,7 +392,9 @@ const ProductDetailPage = () => {
                       <CheckCircleOutlined className={styles.specIcon} />
                       <div>
                         <Text type="secondary">Tình trạng</Text>
-                        <div className={styles.specValue}>{product.specifications.condition}</div>
+                        <div className={styles.specValue}>
+                          {product.specifications.condition}
+                        </div>
                       </div>
                     </div>
                   </Col>
@@ -360,7 +403,9 @@ const ProductDetailPage = () => {
                       <SafetyOutlined className={styles.specIcon} />
                       <div>
                         <Text type="secondary">Bảo hành</Text>
-                        <div className={styles.specValue}>{product.specifications.warranty}</div>
+                        <div className={styles.specValue}>
+                          {product.specifications.warranty}
+                        </div>
                       </div>
                     </div>
                   </Col>
@@ -385,7 +430,11 @@ const ProductDetailPage = () => {
                   </Text>
                 </div>
 
-                <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                <Space
+                  direction="vertical"
+                  size="middle"
+                  style={{ width: "100%" }}
+                >
                   <Button
                     type="primary"
                     size="large"
@@ -404,7 +453,10 @@ const ProductDetailPage = () => {
                   >
                     Mua ngay
                   </Button>
-                  <Space size="middle" style={{ width: '100%', justifyContent: 'center' }}>
+                  <Space
+                    size="middle"
+                    style={{ width: "100%", justifyContent: "center" }}
+                  >
                     <Button icon={<HeartOutlined />}>Yêu thích</Button>
                     <Button icon={<ShareAltOutlined />}>Chia sẻ</Button>
                   </Space>
@@ -417,7 +469,9 @@ const ProductDetailPage = () => {
                 <Space direction="vertical" size="small">
                   {product.shipping.freeShipping && (
                     <Text>
-                      <CheckCircleOutlined style={{ color: '#52c41a', marginRight: 8 }} />
+                      <CheckCircleOutlined
+                        style={{ color: "#52c41a", marginRight: 8 }}
+                      />
                       Miễn phí vận chuyển
                     </Text>
                   )}
@@ -445,15 +499,24 @@ const ProductDetailPage = () => {
               <Title level={4} style={{ margin: 0 }}>
                 {product.seller.name}
                 {product.seller.verified && (
-                  <CheckCircleOutlined style={{ color: '#52c41a', marginLeft: 8 }} />
+                  <CheckCircleOutlined
+                    style={{ color: "#52c41a", marginLeft: 8 }}
+                  />
                 )}
               </Title>
               <Space size="large">
                 <Text type="secondary">
-                  <Rate disabled defaultValue={product.seller.rating} style={{ fontSize: 14 }} /> {product.seller.rating}
+                  <Rate
+                    disabled
+                    defaultValue={product.seller.rating}
+                    style={{ fontSize: 14 }}
+                  />{" "}
+                  {product.seller.rating}
                 </Text>
                 <Text type="secondary">{product.seller.products} sản phẩm</Text>
-                <Text type="secondary">{product.seller.followers} người theo dõi</Text>
+                <Text type="secondary">
+                  {product.seller.followers} người theo dõi
+                </Text>
               </Space>
             </div>
           </Col>
@@ -481,7 +544,9 @@ const ProductDetailPage = () => {
                 dataSource={product.features}
                 renderItem={(item) => (
                   <List.Item>
-                    <CheckCircleOutlined style={{ color: '#52c41a', marginRight: 8 }} />
+                    <CheckCircleOutlined
+                      style={{ color: "#52c41a", marginRight: 8 }}
+                    />
                     {item}
                   </List.Item>
                 )}
@@ -496,7 +561,9 @@ const ProductDetailPage = () => {
                 renderItem={(item) => (
                   <List.Item>
                     <Card size="small">
-                      <CheckCircleOutlined style={{ color: '#1890ff', marginRight: 8 }} />
+                      <CheckCircleOutlined
+                        style={{ color: "#1890ff", marginRight: 8 }}
+                      />
                       {item}
                     </Card>
                   </List.Item>
@@ -532,7 +599,9 @@ const ProductDetailPage = () => {
                 dataSource={product.warranty.coverage}
                 renderItem={(item) => (
                   <List.Item>
-                    <CheckCircleOutlined style={{ color: '#52c41a', marginRight: 8 }} />
+                    <CheckCircleOutlined
+                      style={{ color: "#52c41a", marginRight: 8 }}
+                    />
                     {item}
                   </List.Item>
                 )}
@@ -556,7 +625,9 @@ const ProductDetailPage = () => {
                 dataSource={product.shipping.methods}
                 renderItem={(item) => (
                   <List.Item>
-                    <CheckCircleOutlined style={{ color: '#1890ff', marginRight: 8 }} />
+                    <CheckCircleOutlined
+                      style={{ color: "#1890ff", marginRight: 8 }}
+                    />
                     {item}
                   </List.Item>
                 )}
@@ -573,7 +644,9 @@ const ProductDetailPage = () => {
                     <div className={styles.ratingScore}>
                       <div className={styles.scoreNumber}>{product.rating}</div>
                       <Rate disabled defaultValue={product.rating} allowHalf />
-                      <Text type="secondary">{product.reviews.length} đánh giá</Text>
+                      <Text type="secondary">
+                        {product.reviews.length} đánh giá
+                      </Text>
                     </div>
                     <Divider />
                     {ratingDistribution.map((item) => (
@@ -596,7 +669,9 @@ const ProductDetailPage = () => {
                     renderItem={(review) => (
                       <List.Item
                         actions={[
-                          <Text key="helpful">👍 Hữu ích ({review.helpful})</Text>,
+                          <Text key="helpful">
+                            👍 Hữu ích ({review.helpful})
+                          </Text>,
                         ]}
                       >
                         <List.Item.Meta
@@ -604,10 +679,16 @@ const ProductDetailPage = () => {
                           title={
                             <Space>
                               <Text strong>{review.userName}</Text>
-                              <Rate disabled defaultValue={review.rating} style={{ fontSize: 14 }} />
+                              <Rate
+                                disabled
+                                defaultValue={review.rating}
+                                style={{ fontSize: 14 }}
+                              />
                             </Space>
                           }
-                          description={<Text type="secondary">{review.date}</Text>}
+                          description={
+                            <Text type="secondary">{review.date}</Text>
+                          }
                         />
                         <Paragraph>{review.content}</Paragraph>
                         {review.images && (
@@ -642,9 +723,13 @@ const ProductDetailPage = () => {
                   description={
                     <>
                       <div className={styles.relatedPrice}>
-                        {item.price.toLocaleString('vi-VN')}₫
+                        {item.price.toLocaleString("vi-VN")}₫
                       </div>
-                      <Rate disabled defaultValue={item.rating} style={{ fontSize: 12 }} />
+                      <Rate
+                        disabled
+                        defaultValue={item.rating}
+                        style={{ fontSize: 12 }}
+                      />
                     </>
                   }
                 />

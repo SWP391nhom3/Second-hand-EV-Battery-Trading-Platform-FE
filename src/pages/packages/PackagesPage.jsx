@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Row,
   Col,
@@ -37,6 +37,7 @@ const { TabPane } = Tabs;
 
 const PackagesPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
@@ -57,8 +58,16 @@ const PackagesPage = () => {
         { text: "3 tin đăng/tháng", icon: <CheckCircleOutlined /> },
         { text: "Hiển thị 7 ngày", icon: <CheckCircleOutlined /> },
         { text: "Hỗ trợ cơ bản", icon: <CheckCircleOutlined /> },
-        { text: "Không ưu tiên hiển thị", icon: <CheckCircleOutlined />, disabled: true },
-        { text: "Không huy hiệu", icon: <CheckCircleOutlined />, disabled: true },
+        {
+          text: "Không ưu tiên hiển thị",
+          icon: <CheckCircleOutlined />,
+          disabled: true,
+        },
+        {
+          text: "Không huy hiệu",
+          icon: <CheckCircleOutlined />,
+          disabled: true,
+        },
       ],
       limits: {
         posts: 3,
@@ -171,10 +180,20 @@ const PackagesPage = () => {
   ];
 
   const handleSelectPackage = (pkg) => {
-    console.log("Navigating to payment with package:", pkg);
-    
-    // Chuyển trực tiếp đến trang thanh toán
-    // Loại bỏ icon (JSX element) vì không thể serialize
+    // Kiểm tra đăng nhập trước khi chuyển tới trang thanh toán
+    const isAuth = !!(
+      localStorage.getItem("authToken") || sessionStorage.getItem("authToken")
+    );
+    if (!isAuth) {
+      message.info("Vui lòng đăng nhập để đăng ký gói");
+      navigate(
+        `/login?redirect=${encodeURIComponent(
+          location.pathname + location.search
+        )}`
+      );
+      return;
+    }
+    // Chuyển trực tiếp đến trang thanh toán (loại bỏ JSX element)
     const packageData = {
       id: pkg.id,
       name: pkg.name,
@@ -183,11 +202,10 @@ const PackagesPage = () => {
       duration: pkg.duration,
       color: pkg.color,
       gradient: pkg.gradient,
-      features: pkg.features.map(f => f.text),
+      features: pkg.features.map((f) => f.text),
       limits: pkg.limits,
       benefits: pkg.benefits,
     };
-    
     navigate("/payment", {
       state: {
         type: "package",
@@ -203,7 +221,7 @@ const PackagesPage = () => {
         type: "package",
         package: {
           ...selectedPackage,
-          features: selectedPackage.features.map(f => f.text),
+          features: selectedPackage.features.map((f) => f.text),
         },
         userData: values,
       },
@@ -230,7 +248,8 @@ const PackagesPage = () => {
             <RocketOutlined /> Nâng Cao Hiệu Quả Đăng Tin
           </h1>
           <p className={styles.heroSubtitle}>
-            Chọn gói đăng tin phù hợp để tiếp cận hàng triệu khách hàng tiềm năng
+            Chọn gói đăng tin phù hợp để tiếp cận hàng triệu khách hàng tiềm
+            năng
           </p>
           <div className={styles.heroStats}>
             <Statistic
@@ -328,7 +347,11 @@ const PackagesPage = () => {
 
                   {/* Package Features */}
                   <div className={styles.packageFeatures}>
-                    <Space direction="vertical" size="small" style={{ width: "100%" }}>
+                    <Space
+                      direction="vertical"
+                      size="small"
+                      style={{ width: "100%" }}
+                    >
                       {pkg.features.map((feature, index) => (
                         <div
                           key={index}
@@ -590,11 +613,15 @@ const PackagesPage = () => {
                   ]}
                 >
                   <Select size="large" placeholder="Chọn phương thức">
-                    <Select.Option value="bank">Chuyển khoản ngân hàng</Select.Option>
+                    <Select.Option value="bank">
+                      Chuyển khoản ngân hàng
+                    </Select.Option>
                     <Select.Option value="momo">Ví MoMo</Select.Option>
                     <Select.Option value="zalopay">ZaloPay</Select.Option>
                     <Select.Option value="vnpay">VNPay</Select.Option>
-                    <Select.Option value="card">Thẻ tín dụng/ghi nợ</Select.Option>
+                    <Select.Option value="card">
+                      Thẻ tín dụng/ghi nợ
+                    </Select.Option>
                   </Select>
                 </Form.Item>
               )}
