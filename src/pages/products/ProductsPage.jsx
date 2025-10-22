@@ -8,6 +8,7 @@ import {
   FAQSection,
 } from "../../components/products";
 import ProductDetailModal from "../../components/products/ProductDetailModal/ProductDetailModal";
+import ContactVehicleModal from "../../components/products/ContactVehicleModal";
 import {
   getRandomSeller,
   getRandomLocation,
@@ -38,9 +39,73 @@ const Products = () => {
   const [pageSize, setPageSize] = useState(12);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [contactModalVisible, setContactModalVisible] = useState(false);
+  const [contactProduct, setContactProduct] = useState(null);
 
   // Mock products data - replace with API call
   const mockProducts = [
+    // Xe ô tô điện - Test (đặt đầu tiên để dễ test)
+    {
+      id: 2001,
+      name: "VinFast VF8 Plus - 2023, full options",
+      brand: "VinFast",
+      capacity: 87.7,
+      voltage: 400,
+      warranty: 24,
+      condition: "Rất tốt",
+      price: 980000000,
+      originalPrice: 1100000000,
+      rating: 4.9,
+      reviews: 28,
+      image: "https://images.unsplash.com/photo-1617886322873-64f7d9b3fe79?w=400&h=300&fit=crop",
+      tag: "Xe ô tô điện",
+      membershipLevel: 4,
+      inStock: true,
+      discount: 11,
+      category: "car",
+      description: "VinFast VF8 Plus, năm 2023, đi 15000km, full options",
+      seller: {
+        name: "Lê Văn Cường",
+        avatar: null,
+        rating: 5.0,
+        totalSales: 8,
+      },
+      batteryHealth: 98,
+      usageYears: 1,
+      location: "TP. Hồ Chí Minh",
+      postedDate: "3 giờ trước",
+    },
+    // Xe máy điện - Test
+    {
+      id: 1001,
+      name: "VinFast Klara S - 2024, mới 95%",
+      brand: "VinFast",
+      capacity: 2.4,
+      voltage: 60,
+      warranty: 12,
+      condition: "Như mới",
+      price: 28000000,
+      originalPrice: 32000000,
+      rating: 4.7,
+      reviews: 45,
+      image: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=400&h=300&fit=crop",
+      tag: "Xe máy điện",
+      membershipLevel: 3,
+      inStock: true,
+      discount: 13,
+      category: "motorcycle",
+      description: "Xe máy điện VinFast Klara S, năm 2024, đi 3000km",
+      seller: {
+        name: "Trần Thị Bình",
+        avatar: null,
+        rating: 4.8,
+        totalSales: 12,
+      },
+      batteryHealth: 95,
+      usageYears: 0.5,
+      location: "Hà Nội",
+      postedDate: "1 ngày trước",
+    },
     // Tesla Batteries - Kim cương
     {
       id: 1,
@@ -59,6 +124,7 @@ const Products = () => {
       membershipLevel: 4,
       inStock: true,
       discount: 19,
+      category: "battery",
       description: "Pin chính hãng Tesla Model 3, đã qua kiểm tra kỹ lưỡng",
       seller: {
         name: "Nguyễn Văn An",
@@ -88,6 +154,7 @@ const Products = () => {
       membershipLevel: 4,
       inStock: true,
       discount: 14,
+      category: "battery",
       description: "Pin Tesla Model S hiệu suất cao, dung lượng lớn",
       seller: getRandomSeller(1),
       batteryHealth: 95,
@@ -112,6 +179,7 @@ const Products = () => {
       membershipLevel: 3,
       inStock: true,
       discount: 18,
+      category: "battery",
       description: "Pin Tesla Model Y, phù hợp xe dẫn động 4 bánh",
       seller: getRandomSeller(2),
       batteryHealth: 88,
@@ -136,6 +204,7 @@ const Products = () => {
       membershipLevel: 2,
       inStock: true,
       discount: null,
+      category: "battery",
       description: "Pin Tesla Model X, dung lượng 95kWh",
       seller: getRandomSeller(3),
       batteryHealth: 90,
@@ -1378,8 +1447,23 @@ const Products = () => {
   };
 
   const handleAddToCart = (product) => {
+    // Ngăn không cho xe máy/ô tô được thêm vào giỏ
+    if (product.category === 'motorcycle' || product.category === 'car') {
+      console.warn("Không thể thêm xe vào giỏ hàng:", product);
+      return;
+    }
     console.log("Thêm vào giỏ hàng:", product);
     // Implement your cart logic here
+  };
+
+  const handleContactVehicle = (product) => {
+    setContactProduct(product);
+    setContactModalVisible(true);
+  };
+
+  const handleCloseContactModal = () => {
+    setContactModalVisible(false);
+    setContactProduct(null);
   };
 
   // Enrich products with seller info if not present
@@ -1567,6 +1651,7 @@ const Products = () => {
                 onViewModeChange={handleViewModeChange}
                 onViewDetails={handleViewDetails}
                 onAddToCart={handleAddToCart}
+                onContactVehicle={handleContactVehicle}
               />
             </Col>
           </Row>
@@ -1583,6 +1668,13 @@ const Products = () => {
         product={selectedProduct}
         onClose={handleCloseModal}
         onAddToCart={handleAddToCart}
+      />
+
+      {/* Contact Vehicle Modal */}
+      <ContactVehicleModal
+        visible={contactModalVisible}
+        product={contactProduct}
+        onClose={handleCloseContactModal}
       />
     </>
   );

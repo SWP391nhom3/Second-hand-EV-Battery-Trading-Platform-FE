@@ -173,31 +173,120 @@
 
 /* Package Price */
 .packagePrice {
-  padding: 32px 24px;
+  padding: 24px 24px 16px;
   text-align: center;
   background: #fafafa;
-  border-bottom: 2px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.priceInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.originalPrice {
+  font-size: 16px;
+  color: #999;
+  text-decoration: line-through;
+  display: none; /* Hidden by default, only show when needed */
 }
 
 .priceAmount {
-  font-size: 42px;
+  font-size: 38px;
   font-weight: 800;
   color: #1890ff;
   line-height: 1;
 }
 
-.priceDuration {
-  font-size: 16px;
+.priceUnit {
+  font-size: 14px;
   color: #8c8c8c;
-  margin-left: 4px;
+}
+
+.discountTag {
+  margin-top: 0;
+  font-weight: 600;
+  display: none; /* Hidden by default, only show when there's a discount */
+}
+
+.freePrice {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .freePrice .priceAmount {
-  font-size: 36px;
+  font-size: 32px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.postLimit {
+  font-size: 14px;
+  color: #8c8c8c;
+}
+
+/* Quantity Selector */
+.quantitySelector {
+  padding: 20px 24px;
+  background: #f9f9f9;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.quantityLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: #595959;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.quantityControls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.quantityControls button {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quantityInput {
+  width: 80px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.quantityInput :global(.ant-input-number-input) {
+  text-align: center;
+  font-weight: 600;
+}
+
+.totalPrice {
+  text-align: center;
+  font-size: 15px;
+  color: #262626;
+  padding: 8px;
+  background: white;
+  border-radius: 6px;
+}
+
+.totalPrice strong {
+  color: #1890ff;
+  font-size: 18px;
 }
 
 /* Package Features */

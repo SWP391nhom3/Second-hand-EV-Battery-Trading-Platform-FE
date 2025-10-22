@@ -17,7 +17,7 @@ import {
 } from "@ant-design/icons";
 import styles from "./ProductCard.module.css";
 
-const ProductCard = ({ product, onAddToCart, onViewDetails }) => {
+const ProductCard = ({ product, onAddToCart, onViewDetails, onContactVehicle }) => {
   const navigate = useNavigate();
   const {
     id,
@@ -41,7 +41,11 @@ const ProductCard = ({ product, onAddToCart, onViewDetails }) => {
     usageYears,
     location,
     postedDate,
+    category, // 'battery', 'motorcycle', 'car'
   } = product;
+
+  // Kiểm tra xem sản phẩm có phải xe máy hoặc ô tô không
+  const isVehicle = category === 'motorcycle' || category === 'car';
 
   // Định nghĩa màu sắc cho từng gói membership
   const getMembershipColor = (level) => {
@@ -93,27 +97,28 @@ const ProductCard = ({ product, onAddToCart, onViewDetails }) => {
 
   const handleBuyNow = (e) => {
     e.stopPropagation();
-    navigate('/payment', {
-      state: {
-        type: 'product',
-        product: {
-          id,
-          name,
-          brand,
-          capacity,
-          voltage,
-          condition,
-          price,
-          image,
-          warranty,
-          seller,
-          location,
-          batteryHealth,
-          usageYears,
-        },
-        quantity: 1,
-      },
-    });
+    
+    // Nếu là xe máy hoặc ô tô, hiển thị modal liên hệ
+    if (isVehicle) {
+      if (onContactVehicle) {
+        onContactVehicle(product);
+      }
+    } else {
+      // Nếu là pin, chuyển đến trang thanh toán
+      navigate('/payment', {
+        state: {
+          type: 'product',
+          product: {
+            id,
+            name,
+            price,
+            image,
+            capacity,
+            warranty,
+          }
+        }
+      });
+    }
   };
 
   return (
@@ -254,39 +259,47 @@ const ProductCard = ({ product, onAddToCart, onViewDetails }) => {
         {/* Actions */}
         <div className={styles.actions}>
           <div style={{ display: 'flex', gap: '8px', width: '100%', marginBottom: 8 }}>
-            <Button
-              type="default"
-              icon={<ShoppingCartOutlined />}
-              onClick={(e) => {
-                e.stopPropagation();
-                onAddToCart(product);
-              }}
-              disabled={!inStock}
-              style={{ 
-                width: 'calc(50% - 4px)',
-                minWidth: 'calc(50% - 4px)',
-                maxWidth: 'calc(50% - 4px)',
-                flex: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '4px 8px',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              Thêm giỏ
-            </Button>
+            {!isVehicle && (
+              <Button
+                type="default"
+                icon={<ShoppingCartOutlined />}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  // Double check: không cho xe vào giỏ hàng
+                  if (category === 'motorcycle' || category === 'car') {
+                    return;
+                  }
+                  onAddToCart(product);
+                }}
+                disabled={!inStock}
+                style={{ 
+                  width: 'calc(50% - 4px)',
+                  minWidth: 'calc(50% - 4px)',
+                  maxWidth: 'calc(50% - 4px)',
+                  flex: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '4px 8px',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                Thêm giỏ
+              </Button>
+            )}
             <Button
               type="primary"
-              icon={<CreditCardOutlined />}
+              icon={isVehicle ? <UserOutlined /> : <CreditCardOutlined />}
               onClick={handleBuyNow}
               disabled={!inStock}
               style={{ 
-                width: 'calc(50% - 4px)',
-                minWidth: 'calc(50% - 4px)',
-                maxWidth: 'calc(50% - 4px)',
+                width: isVehicle ? '100%' : 'calc(50% - 4px)',
+                minWidth: isVehicle ? '100%' : 'calc(50% - 4px)',
+                maxWidth: isVehicle ? '100%' : 'calc(50% - 4px)',
                 flex: 'none',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: isVehicle 
+                  ? 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
+                  : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 border: 'none',
                 display: 'flex',
                 alignItems: 'center',
@@ -295,7 +308,7 @@ const ProductCard = ({ product, onAddToCart, onViewDetails }) => {
                 whiteSpace: 'nowrap'
               }}
             >
-              Mua ngay
+              {isVehicle ? "Để lại thông tin" : "Mua ngay"}
             </Button>
           </div>
           <Button

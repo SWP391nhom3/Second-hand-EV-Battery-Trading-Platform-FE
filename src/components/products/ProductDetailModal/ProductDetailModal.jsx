@@ -66,7 +66,11 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
     membershipLevel,
     tag,
     inStock = true,
+    category, // 'battery', 'motorcycle', 'car'
   } = product;
+
+  // Kiểm tra xem sản phẩm có phải xe máy hoặc ô tô không
+  const isVehicle = category === 'motorcycle' || category === 'car';
 
   // Mock additional images
   const images = [
@@ -94,6 +98,15 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
   const membershipInfo = getMembershipColor(membershipLevel);
 
   const handleAddToCart = () => {
+    // Ngăn không cho xe máy/ô tô được thêm vào giỏ
+    if (isVehicle) {
+      Modal.warning({
+        title: 'Không thể thêm vào giỏ hàng',
+        content: 'Sản phẩm xe máy và ô tô điện cần liên hệ trực tiếp. Vui lòng nhấn "Để lại thông tin" để chúng tôi hỗ trợ bạn.',
+      });
+      return;
+    }
+    
     onAddToCart({ ...product, quantity });
     Modal.success({
       title: 'Thành công!',
@@ -105,28 +118,44 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
     // Đóng modal trước
     onClose();
     
-    // Chuyển đến trang thanh toán
-    navigate('/payment', {
-      state: {
-        type: 'product',
-        product: {
-          id,
-          name,
-          brand,
-          capacity,
-          voltage,
-          condition,
-          price,
-          image,
-          warranty,
-          seller,
-          location,
-          batteryHealth,
-          usageYears,
+    // Nếu là xe máy hoặc ô tô, chuyển đến trang để lại thông tin
+    if (isVehicle) {
+      navigate(`/contact-vehicle/${id}`, {
+        state: {
+          product: {
+            id,
+            name,
+            price,
+            image,
+            brand,
+            category,
+          }
+        }
+      });
+    } else {
+      // Nếu là pin, chuyển đến trang thanh toán
+      navigate('/payment', {
+        state: {
+          type: 'product',
+          product: {
+            id,
+            name,
+            brand,
+            capacity,
+            voltage,
+            condition,
+            price,
+            image,
+            warranty,
+            seller,
+            location,
+            batteryHealth,
+            usageYears,
+          },
+          quantity: quantity,
         },
-        quantity: quantity,
-      },
-    });
+      });
+    }
   };
 
   const handleContactSeller = () => {
@@ -350,46 +379,50 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
 
               <Space direction="vertical" size="middle" style={{ width: '100%', marginTop: 16 }}>
                 <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
-                  <Button
-                    type="default"
-                    size="large"
-                    icon={<ShoppingCartOutlined />}
-                    onClick={handleAddToCart}
-                    disabled={!inStock}
-                    style={{ 
-                      width: 'calc(50% - 6px)',
-                      minWidth: 'calc(50% - 6px)',
-                      maxWidth: 'calc(50% - 6px)',
-                      flex: 'none',
-                      height: 50, 
-                      fontSize: 16, 
-                      fontWeight: 600,
-                      borderColor: '#1890ff',
-                      color: '#1890ff',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      padding: '0 16px',
-                      whiteSpace: 'nowrap'
-                    }}
-                  >
-                    Thêm giỏ hàng
-                  </Button>
+                  {!isVehicle && (
+                    <Button
+                      type="default"
+                      size="large"
+                      icon={<ShoppingCartOutlined />}
+                      onClick={handleAddToCart}
+                      disabled={!inStock}
+                      style={{ 
+                        width: 'calc(50% - 6px)',
+                        minWidth: 'calc(50% - 6px)',
+                        maxWidth: 'calc(50% - 6px)',
+                        flex: 'none',
+                        height: 50, 
+                        fontSize: 16, 
+                        fontWeight: 600,
+                        borderColor: '#1890ff',
+                        color: '#1890ff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '0 16px',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      Thêm giỏ hàng
+                    </Button>
+                  )}
                   <Button
                     type="primary"
                     size="large"
-                    icon={<CreditCardOutlined />}
+                    icon={isVehicle ? <UserOutlined /> : <CreditCardOutlined />}
                     onClick={handleBuyNow}
                     disabled={!inStock}
                     style={{ 
-                      width: 'calc(50% - 6px)',
-                      minWidth: 'calc(50% - 6px)',
-                      maxWidth: 'calc(50% - 6px)',
+                      width: isVehicle ? '100%' : 'calc(50% - 6px)',
+                      minWidth: isVehicle ? '100%' : 'calc(50% - 6px)',
+                      maxWidth: isVehicle ? '100%' : 'calc(50% - 6px)',
                       flex: 'none',
                       height: 50, 
                       fontSize: 16, 
                       fontWeight: 600,
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      background: isVehicle 
+                        ? 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
+                        : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                       border: 'none',
                       display: 'flex',
                       alignItems: 'center',
@@ -398,7 +431,7 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
                       whiteSpace: 'nowrap'
                     }}
                   >
-                    Mua ngay
+                    {isVehicle ? "Để lại thông tin" : "Mua ngay"}
                   </Button>
                 </div>
                 <Space style={{ width: '100%', justifyContent: 'center' }}>

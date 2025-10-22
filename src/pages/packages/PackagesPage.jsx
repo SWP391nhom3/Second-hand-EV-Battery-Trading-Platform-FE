@@ -42,21 +42,23 @@ const PackagesPage = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
 
-  // Dữ liệu các gói đăng tin
+  // Dữ liệu các gói đăng tin theo bài
   const packages = [
     {
       id: 1,
-      name: "Gói Đồng",
-      tier: "bronze",
+      name: "Gói Cơ Bản",
+      tier: "basic",
       icon: <TrophyOutlined />,
-      price: 0,
-      duration: "Miễn phí",
+      pricePerPost: 0,
+      originalPrice: 0,
+      minPosts: 1,
+      maxPosts: 3,
       color: "#CD7F32",
       gradient: "linear-gradient(135deg, #D4AF37 0%, #CD7F32 100%)",
       popular: false,
       features: [
-        { text: "3 tin đăng/tháng", icon: <CheckCircleOutlined /> },
-        { text: "Hiển thị 7 ngày", icon: <CheckCircleOutlined /> },
+        { text: "Miễn phí 3 bài đăng", icon: <CheckCircleOutlined /> },
+        { text: "Hiển thị 3 ngày/bài", icon: <CheckCircleOutlined /> },
         { text: "Hỗ trợ cơ bản", icon: <CheckCircleOutlined /> },
         {
           text: "Không ưu tiên hiển thị",
@@ -69,112 +71,109 @@ const PackagesPage = () => {
           disabled: true,
         },
       ],
-      limits: {
-        posts: 3,
-        days: 7,
-        priority: "Thấp",
-        support: "Email",
-      },
+      displayDays: 7,
+      priority: "Thấp",
+      support: "Email",
+      badge: null,
       benefits: [
-        "Đăng tin cơ bản",
-        "Phù hợp người mới bắt đầu",
-        "Không mất phí",
+        "Dùng thử miễn phí",
+        "Phù hợp người mới",
+        "Không cần thanh toán",
       ],
     },
     {
       id: 2,
-      name: "Gói Bạc",
+      name: "Gói Tiết Kiệm",
       tier: "silver",
       icon: <StarOutlined />,
-      price: 199000,
-      duration: "1 tháng",
+      pricePerPost: 50000,
+      originalPrice: 0,
+      minPosts: 1,
+      maxPosts: 50,
       color: "#C0C0C0",
       gradient: "linear-gradient(135deg, #E8E8E8 0%, #A8A8A8 100%)",
       popular: false,
       features: [
-        { text: "10 tin đăng/tháng", icon: <CheckCircleOutlined /> },
-        { text: "Hiển thị 14 ngày", icon: <CheckCircleOutlined /> },
+        { text: "50.000₫/bài đăng", icon: <CheckCircleOutlined /> },
+        { text: "Hiển thị 7 ngày/bài", icon: <CheckCircleOutlined /> },
         { text: "Huy hiệu Bạc", icon: <CheckCircleOutlined /> },
-        { text: "Ưu tiên hiển thị thấp", icon: <CheckCircleOutlined /> },
-        { text: "Hỗ trợ email ưu tiên", icon: <CheckCircleOutlined /> },
+        { text: "Ưu tiên hiển thị trung bình", icon: <CheckCircleOutlined /> },
+        { text: "Hỗ trợ email & chat", icon: <CheckCircleOutlined /> },
       ],
-      limits: {
-        posts: 10,
-        days: 14,
-        priority: "Trung bình",
-        support: "Email + Chat",
-      },
+      displayDays: 14,
+      priority: "Trung bình",
+      support: "Email + Chat",
+      badge: "Bạc",
       benefits: [
+        "Giá cố định, rõ ràng",
         "Tăng khả năng tiếp cận",
         "Huy hiệu tin cậy",
-        "Thống kê cơ bản",
       ],
     },
     {
       id: 3,
-      name: "Gói Vàng",
+      name: "Gói Phổ Biến",
       tier: "gold",
       icon: <FireOutlined />,
-      price: 499000,
-      duration: "1 tháng",
+      pricePerPost: 100000,
+      originalPrice: 0,
+      minPosts: 1,
+      maxPosts: 100,
       color: "#FFD700",
       gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
       popular: true,
       features: [
-        { text: "30 tin đăng/tháng", icon: <CheckCircleOutlined /> },
-        { text: "Hiển thị 30 ngày", icon: <CheckCircleOutlined /> },
+        { text: "100.000₫/bài đăng", icon: <CheckCircleOutlined /> },
+        { text: "Hiển thị 14 ngày/bài", icon: <CheckCircleOutlined /> },
         { text: "Huy hiệu Vàng", icon: <CheckCircleOutlined /> },
         { text: "Ưu tiên hiển thị cao", icon: <CheckCircleOutlined /> },
         { text: "Hỗ trợ 24/7", icon: <CheckCircleOutlined /> },
         { text: "Đẩy tin tự động", icon: <CheckCircleOutlined /> },
         { text: "Thống kê chi tiết", icon: <CheckCircleOutlined /> },
       ],
-      limits: {
-        posts: 30,
-        days: 30,
-        priority: "Cao",
-        support: "24/7 VIP",
-      },
+      displayDays: 30,
+      priority: "Cao",
+      support: "24/7",
+      badge: "Vàng",
       benefits: [
+        "Giá tốt nhất",
         "Tối ưu doanh số",
         "Tiếp cận tối đa",
-        "Công cụ marketing",
         "Dashboard chuyên nghiệp",
       ],
     },
     {
       id: 4,
-      name: "Gói Kim Cương",
+      name: "Gói Cao Cấp",
       tier: "diamond",
       icon: <CrownOutlined />,
-      price: 999000,
-      duration: "1 tháng",
+      pricePerPost: 150000,
+      originalPrice: 0,
+      minPosts: 1,
+      maxPosts: 500,
       color: "#B9F2FF",
       gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
       popular: false,
       features: [
-        { text: "Không giới hạn tin đăng", icon: <CheckCircleOutlined /> },
-        { text: "Hiển thị vĩnh viễn", icon: <CheckCircleOutlined /> },
+        { text: "150.000₫/bài đăng", icon: <CheckCircleOutlined /> },
+        { text: "Hiển thị 30 ngày/bài", icon: <CheckCircleOutlined /> },
         { text: "Huy hiệu Kim Cương", icon: <CheckCircleOutlined /> },
         { text: "Ưu tiên tối đa", icon: <CheckCircleOutlined /> },
         { text: "Hỗ trợ VIP 24/7", icon: <CheckCircleOutlined /> },
-        { text: "Đẩy tin tự động cao cấp", icon: <CheckCircleOutlined /> },
-        { text: "Thống kê & phân tích AI", icon: <CheckCircleOutlined /> },
+        { text: "Đẩy tin cao cấp", icon: <CheckCircleOutlined /> },
+        { text: "Thống kê AI", icon: <CheckCircleOutlined /> },
         { text: "Quản lý tài khoản riêng", icon: <CheckCircleOutlined /> },
-        { text: "Đề xuất khách hàng tiềm năng", icon: <CheckCircleOutlined /> },
+        { text: "Tư vấn chiến lược", icon: <CheckCircleOutlined /> },
       ],
-      limits: {
-        posts: "Không giới hạn",
-        days: "Vĩnh viễn",
-        priority: "Tối đa",
-        support: "VIP 24/7 + Manager",
-      },
+      displayDays: 60,
+      priority: "Tối đa",
+      support: "VIP 24/7",
+      badge: "Kim Cương",
       benefits: [
+        "Dịch vụ cao cấp nhất",
         "Dành cho doanh nghiệp",
         "Tối ưu doanh thu tối đa",
         "AI hỗ trợ bán hàng",
-        "Báo cáo chi tiết",
-        "Tư vấn chiến lược",
       ],
     },
   ];
@@ -185,7 +184,7 @@ const PackagesPage = () => {
       localStorage.getItem("authToken") || sessionStorage.getItem("authToken")
     );
     if (!isAuth) {
-      message.info("Vui lòng đăng nhập để đăng ký gói");
+      message.info("Vui lòng đăng nhập để mua bài đăng");
       navigate(
         `/login?redirect=${encodeURIComponent(
           location.pathname + location.search
@@ -193,17 +192,23 @@ const PackagesPage = () => {
       );
       return;
     }
-    // Chuyển trực tiếp đến trang thanh toán (loại bỏ JSX element)
+    
+    // Chuyển trực tiếp đến trang thanh toán
     const packageData = {
       id: pkg.id,
       name: pkg.name,
       tier: pkg.tier,
-      price: pkg.price,
-      duration: pkg.duration,
+      pricePerPost: pkg.pricePerPost,
+      originalPrice: pkg.originalPrice,
+      quantity: 1,
+      totalPrice: pkg.pricePerPost,
       color: pkg.color,
       gradient: pkg.gradient,
+      displayDays: pkg.displayDays,
+      priority: pkg.priority,
+      support: pkg.support,
+      badge: pkg.badge,
       features: pkg.features.map((f) => f.text),
-      limits: pkg.limits,
       benefits: pkg.benefits,
     };
     navigate("/payment", {
@@ -245,11 +250,10 @@ const PackagesPage = () => {
       <div className={styles.heroSection}>
         <div className={styles.heroContent}>
           <h1 className={styles.heroTitle}>
-            <RocketOutlined /> Nâng Cao Hiệu Quả Đăng Tin
+            <RocketOutlined /> Đăng Tin Linh Hoạt - Thanh Toán Theo Bài
           </h1>
           <p className={styles.heroSubtitle}>
-            Chọn gói đăng tin phù hợp để tiếp cận hàng triệu khách hàng tiềm
-            năng
+            Chọn số lượng bài đăng phù hợp - Chỉ trả tiền cho những gì bạn cần
           </p>
           <div className={styles.heroStats}>
             <Statistic
@@ -329,18 +333,29 @@ const PackagesPage = () => {
 
                   {/* Package Price */}
                   <div className={styles.packagePrice}>
-                    {pkg.price === 0 ? (
+                    {pkg.pricePerPost === 0 ? (
                       <div className={styles.freePrice}>
                         <span className={styles.priceAmount}>Miễn phí</span>
+                        <span className={styles.postLimit}>Tối đa {pkg.maxPosts} bài</span>
                       </div>
                     ) : (
                       <>
-                        <span className={styles.priceAmount}>
-                          {pkg.price.toLocaleString("vi-VN")}₫
-                        </span>
-                        <span className={styles.priceDuration}>
-                          /{pkg.duration}
-                        </span>
+                        <div className={styles.priceInfo}>
+                          {pkg.originalPrice > pkg.pricePerPost && (
+                            <span className={styles.originalPrice}>
+                              {pkg.originalPrice.toLocaleString("vi-VN")}₫
+                            </span>
+                          )}
+                          <span className={styles.priceAmount}>
+                            {pkg.pricePerPost.toLocaleString("vi-VN")}₫
+                          </span>
+                          <span className={styles.priceUnit}>/bài đăng</span>
+                        </div>
+                        {pkg.originalPrice > pkg.pricePerPost && (
+                          <Tag color="red" className={styles.discountTag}>
+                            Giảm {Math.round((1 - pkg.pricePerPost / pkg.originalPrice) * 100)}%
+                          </Tag>
+                        )}
                       </>
                     )}
                   </div>
@@ -391,7 +406,7 @@ const PackagesPage = () => {
                     onClick={() => handleSelectPackage(pkg)}
                     className={styles.selectButton}
                   >
-                    {pkg.price === 0 ? "Sử dụng ngay" : "Đăng ký ngay"}
+                    {pkg.pricePerPost === 0 ? "Nhận miễn phí" : "Mua ngay"}
                   </Button>
 
                   <div className={styles.packageInfo}>
@@ -416,43 +431,50 @@ const PackagesPage = () => {
                   <th>
                     <div className={styles.tableHeader}>
                       <TrophyOutlined />
-                      <span>Đồng</span>
+                      <span>Cơ Bản</span>
                     </div>
                   </th>
                   <th>
                     <div className={styles.tableHeader}>
                       <StarOutlined />
-                      <span>Bạc</span>
+                      <span>Tiết Kiệm</span>
                     </div>
                   </th>
                   <th>
                     <div className={styles.tableHeader}>
                       <FireOutlined />
-                      <span>Vàng</span>
+                      <span>Phổ Biến</span>
                     </div>
                   </th>
                   <th>
                     <div className={styles.tableHeader}>
                       <CrownOutlined />
-                      <span>Kim Cương</span>
+                      <span>Cao Cấp</span>
                     </div>
                   </th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td>Số tin đăng/tháng</td>
-                  <td>3</td>
-                  <td>10</td>
-                  <td>30</td>
-                  <td>Không giới hạn</td>
+                  <td>Giá/bài đăng</td>
+                  <td>Miễn phí</td>
+                  <td>50.000₫</td>
+                  <td>100.000₫</td>
+                  <td>150.000₫</td>
+                </tr>
+                <tr>
+                  <td>Số lượng tối đa</td>
+                  <td>3 bài</td>
+                  <td>50 bài</td>
+                  <td>100 bài</td>
+                  <td>500 bài</td>
                 </tr>
                 <tr>
                   <td>Thời gian hiển thị</td>
+                  <td>3 ngày</td>
                   <td>7 ngày</td>
                   <td>14 ngày</td>
                   <td>30 ngày</td>
-                  <td>Vĩnh viễn</td>
                 </tr>
                 <tr>
                   <td>Mức độ ưu tiên</td>
@@ -469,6 +491,13 @@ const PackagesPage = () => {
                   <td>VIP 24/7</td>
                 </tr>
                 <tr>
+                  <td>Huy hiệu</td>
+                  <td>Không</td>
+                  <td>Bạc</td>
+                  <td>Vàng</td>
+                  <td>Kim Cương</td>
+                </tr>
+                <tr>
                   <td>Thống kê & phân tích</td>
                   <td>❌</td>
                   <td>Cơ bản</td>
@@ -483,7 +512,7 @@ const PackagesPage = () => {
                   <td>✅ Cao cấp</td>
                 </tr>
                 <tr>
-                  <td>Quản lý tài khoản riêng</td>
+                  <td>Tư vấn chiến lược</td>
                   <td>❌</td>
                   <td>❌</td>
                   <td>❌</td>
@@ -500,11 +529,31 @@ const PackagesPage = () => {
           <Row gutter={[24, 24]}>
             <Col xs={24} md={12}>
               <Card className={styles.faqCard}>
-                <h4>Làm thế nào để nâng cấp gói?</h4>
+                <h4>Bài đăng có thời hạn bao lâu?</h4>
                 <p>
-                  Bạn có thể nâng cấp gói bất kỳ lúc nào từ trang quản lý tài
-                  khoản. Phần chênh lệch sẽ được tính theo tỷ lệ thời gian còn
-                  lại.
+                  Thời hạn hiển thị tùy thuộc vào gói bạn chọn: Cơ Bản (3 ngày),
+                  Tiết Kiệm (7 ngày), Phổ Biến (14 ngày), Cao Cấp (30 ngày).
+                  Sau thời hạn, bài đăng sẽ tự động ẩn khỏi trang chủ.
+                </p>
+              </Card>
+            </Col>
+            <Col xs={24} md={12}>
+              <Card className={styles.faqCard}>
+                <h4>Mỗi lần mua được bao nhiêu bài đăng?</h4>
+                <p>
+                  Mỗi lần mua bạn sẽ nhận được 1 bài đăng. Bạn có thể mua nhiều
+                  lần và số bài đăng sẽ được cộng dồn vào tài khoản để sử dụng
+                  linh hoạt khi cần.
+                </p>
+              </Card>
+            </Col>
+            <Col xs={24} md={12}>
+              <Card className={styles.faqCard}>
+                <h4>Tại sao các gói có giá khác nhau?</h4>
+                <p>
+                  Giá phụ thuộc vào thời gian hiển thị và tính năng: Gói Tiết Kiệm
+                  (50.000₫), Gói Phổ Biến (100.000₫), Gói Cao Cấp (150.000₫). 
+                  Gói cao hơn có thời gian hiển thị dài hơn và nhiều tính năng hơn.
                 </p>
               </Card>
             </Col>
@@ -512,26 +561,9 @@ const PackagesPage = () => {
               <Card className={styles.faqCard}>
                 <h4>Có được hoàn tiền không?</h4>
                 <p>
-                  Chúng tôi có chính sách hoàn tiền trong vòng 7 ngày nếu bạn
-                  chưa sử dụng bất kỳ tính năng nào của gói đã mua.
-                </p>
-              </Card>
-            </Col>
-            <Col xs={24} md={12}>
-              <Card className={styles.faqCard}>
-                <h4>Tôi có thể hủy gói không?</h4>
-                <p>
-                  Có, bạn có thể hủy gói bất kỳ lúc nào. Gói sẽ vẫn hoạt động
-                  đến hết chu kỳ thanh toán hiện tại.
-                </p>
-              </Card>
-            </Col>
-            <Col xs={24} md={12}>
-              <Card className={styles.faqCard}>
-                <h4>Thanh toán như thế nào?</h4>
-                <p>
-                  Chúng tôi hỗ trợ thanh toán qua thẻ tín dụng, chuyển khoản
-                  ngân hàng, ví điện tử (Momo, ZaloPay, VNPay).
+                  Chúng tôi có chính sách hoàn tiền trong vòng 24 giờ nếu bạn
+                  chưa sử dụng bài đăng. Sau khi đã đăng tin, bạn sẽ không được
+                  hoàn tiền.
                 </p>
               </Card>
             </Col>

@@ -54,6 +54,7 @@ const ProductDetailPage = () => {
     stockQuantity: 15,
     membershipLevel: 4,
     tag: "Kim cương",
+    category: "battery", // 'battery', 'motorcycle', 'car'
     images: [
       "https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=800",
       "https://images.unsplash.com/photo-1617788138017-80ad40651399?w=800",
@@ -135,7 +136,7 @@ const ProductDetailPage = () => {
       ],
     },
 
-    reviews: [
+    reviewsList: [
       {
         id: 1,
         userName: "Nguyễn Văn A",
@@ -221,13 +222,50 @@ const ProductDetailPage = () => {
   const discount = Math.round(
     ((product.originalPrice - product.price) / product.originalPrice) * 100
   );
+  
+  // Kiểm tra xem sản phẩm có phải xe máy hoặc ô tô không
+  const isVehicle = product.category === 'motorcycle' || product.category === 'car';
 
   const handleAddToCart = () => {
+    // Ngăn không cho xe máy/ô tô được thêm vào giỏ
+    if (isVehicle) {
+      alert('Sản phẩm xe máy và ô tô điện không thể thêm vào giỏ hàng. Vui lòng sử dụng tính năng "Để lại thông tin".');
+      return;
+    }
     console.log("Thêm vào giỏ hàng:", { productId: id, quantity });
   };
 
   const handleBuyNow = () => {
-    console.log("Mua ngay:", { productId: id, quantity });
+    // Nếu là xe máy hoặc ô tô, chuyển đến trang để lại thông tin
+    if (isVehicle) {
+      navigate(`/contact-vehicle/${id}`, {
+        state: {
+          product: {
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            image: product.images[0],
+            brand: product.brand,
+            category: product.category,
+          }
+        }
+      });
+    } else {
+      // Nếu là pin, chuyển đến trang thanh toán
+      console.log("Mua ngay:", { productId: id, quantity });
+      navigate('/payment', {
+        state: {
+          type: 'product',
+          product: {
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            image: product.images[0],
+          },
+          quantity: quantity,
+        }
+      });
+    }
   };
 
   const specColumns = [
@@ -416,42 +454,53 @@ const ProductDetailPage = () => {
 
               {/* Quantity & Actions */}
               <div className={styles.actionSection}>
-                <div className={styles.quantitySection}>
-                  <Text className={styles.quantityLabel}>Số lượng:</Text>
-                  <InputNumber
-                    min={1}
-                    max={product.stockQuantity}
-                    value={quantity}
-                    onChange={setQuantity}
-                    className={styles.quantityInput}
-                  />
-                  <Text type="secondary">
-                    {product.stockQuantity} sản phẩm có sẵn
-                  </Text>
-                </div>
+                {!isVehicle && (
+                  <div className={styles.quantitySection}>
+                    <Text className={styles.quantityLabel}>Số lượng:</Text>
+                    <InputNumber
+                      min={1}
+                      max={product.stockQuantity}
+                      value={quantity}
+                      onChange={setQuantity}
+                      className={styles.quantityInput}
+                    />
+                    <Text type="secondary">
+                      {product.stockQuantity} sản phẩm có sẵn
+                    </Text>
+                  </div>
+                )}
 
                 <Space
                   direction="vertical"
                   size="middle"
                   style={{ width: "100%" }}
                 >
-                  <Button
-                    type="primary"
-                    size="large"
-                    icon={<ShoppingCartOutlined />}
-                    onClick={handleAddToCart}
-                    block
-                    className={styles.addToCartBtn}
-                  >
-                    Thêm vào giỏ hàng
-                  </Button>
+                  {!isVehicle && (
+                    <Button
+                      type="primary"
+                      size="large"
+                      icon={<ShoppingCartOutlined />}
+                      onClick={handleAddToCart}
+                      block
+                      className={styles.addToCartBtn}
+                    >
+                      Thêm vào giỏ hàng
+                    </Button>
+                  )}
                   <Button
                     size="large"
                     onClick={handleBuyNow}
                     block
                     className={styles.buyNowBtn}
+                    icon={isVehicle ? <UserOutlined /> : undefined}
+                    style={isVehicle ? {
+                      background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+                      border: 'none',
+                      color: '#fff',
+                      fontWeight: 600,
+                    } : {}}
                   >
-                    Mua ngay
+                    {isVehicle ? "Để lại thông tin" : "Mua ngay"}
                   </Button>
                   <Space
                     size="middle"
@@ -665,7 +714,7 @@ const ProductDetailPage = () => {
                 <Col xs={24} md={16}>
                   <List
                     itemLayout="vertical"
-                    dataSource={product.reviews}
+                    dataSource={product.reviewsList}
                     renderItem={(review) => (
                       <List.Item
                         actions={[

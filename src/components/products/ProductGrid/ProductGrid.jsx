@@ -20,6 +20,7 @@ const ProductGrid = ({
   onViewModeChange,
   onViewDetails,
   onAddToCart,
+  onContactVehicle,
 }) => {
   const sortOptions = [
     { label: "Nổi bật", value: "featured" },
@@ -122,6 +123,7 @@ const ProductGrid = ({
               viewMode={viewMode}
               onViewDetails={onViewDetails}
               onAddToCart={onAddToCart}
+              onContactVehicle={onContactVehicle}
             />
           </Col>
         ))}

@@ -49,6 +49,17 @@ const PaymentPage = () => {
   const isPackage = paymentData.type === "package";
   const isProduct = paymentData.type === "product";
 
+  // VALIDATION: Ngăn xe máy/ô tô vào trang thanh toán
+  useEffect(() => {
+    if (isProduct && paymentData.product) {
+      const category = paymentData.product.category;
+      if (category === 'motorcycle' || category === 'car') {
+        message.error('Sản phẩm xe máy và ô tô điện không thể thanh toán online. Vui lòng sử dụng tính năng "Để lại thông tin".');
+        navigate('/products');
+      }
+    }
+  }, [isProduct, paymentData, navigate]);
+
   // Xử lý dữ liệu cho gói đăng tin
   const packageData = isPackage
     ? paymentData.package
@@ -62,16 +73,21 @@ const PaymentPage = () => {
   // Dữ liệu mặc định nếu không có gì được truyền
   const defaultData = {
     id: 0,
-    name: "Gói Vàng",
-    price: 499000,
-    duration: "1 tháng",
-    features: ["30 tin đăng/tháng", "Hiển thị 30 ngày", "Huy hiệu Vàng"],
+    name: "Gói Phổ Biến",
+    pricePerPost: 12000,
+    quantity: 1,
+    totalPrice: 12000,
+    displayDays: 30,
+    features: ["Hiển thị 30 ngày/bài", "Huy hiệu Vàng", "Ưu tiên cao"],
   };
 
   // Lấy dữ liệu hiển thị
   const displayData = packageData || productData || defaultData;
   const itemType = isPackage ? "gói đăng tin" : isProduct ? "sản phẩm" : "đơn hàng";
-  const quantity = productData?.quantity || 1;
+  const quantity = isPackage ? (packageData?.quantity || 1) : (productData?.quantity || 1);
+  const totalPrice = isPackage 
+    ? (packageData?.totalPrice || packageData?.pricePerPost * quantity || 0)
+    : (productData?.price * quantity || 0);
 
   const paymentMethods = [
     {
@@ -390,7 +406,7 @@ const PaymentPage = () => {
                         <div className={styles.bankInfoItem}>
                           <Text strong>Số tiền:</Text>
                           <Text className={styles.amount}>
-                            {(displayData.price * quantity).toLocaleString("vi-VN")}₫
+                            {totalPrice.toLocaleString("vi-VN")}₫
                           </Text>
                         </div>
                       </div>
@@ -441,8 +457,8 @@ const PaymentPage = () => {
                   <Paragraph className={styles.successText}>
                     {isPackage && (
                       <>
-                        Cảm ơn bạn đã đăng ký gói <strong>{displayData.name}</strong>.
-                        Chúng tôi đã gửi email xác nhận đến địa chỉ của bạn.
+                        Cảm ơn bạn đã mua <strong>{quantity} bài đăng</strong> từ gói{" "}
+                        <strong>{displayData.name}</strong>. Bạn có thể bắt đầu đăng tin ngay!
                       </>
                     )}
                     {isProduct && (
@@ -460,11 +476,13 @@ const PaymentPage = () => {
                         {isPackage && (
                           <>
                             <p>
-                              <ClockCircleOutlined /> Gói của bạn sẽ được kích hoạt trong vòng{" "}
-                              <strong>5-10 phút</strong> sau khi chúng tôi xác nhận thanh toán.
+                              <ClockCircleOutlined /> <strong>{quantity} bài đăng</strong> đã được thêm vào tài khoản của bạn.
                             </p>
                             <p>
-                              Bạn có thể kiểm tra trạng thái gói trong trang{" "}
+                              Mỗi bài đăng sẽ hiển thị trong <strong>{displayData.displayDays} ngày</strong> kể từ khi bạn đăng.
+                            </p>
+                            <p>
+                              Bạn có thể quản lý bài đăng trong{" "}
                               <a href="/dashboard">Dashboard</a>.
                             </p>
                           </>
@@ -522,7 +540,7 @@ const PaymentPage = () => {
               <div className={styles.packageInfo}>
                 <div className={styles.packageHeader}>
                   <Title level={5}>{displayData.name}</Title>
-                  {isPackage && <Tag color="blue">{displayData.duration}</Tag>}
+                  {isPackage && <Tag color="blue">{quantity} bài đăng</Tag>}
                   {isProduct && <Tag color="green">Sản phẩm</Tag>}
                 </div>
 
@@ -548,8 +566,35 @@ const PaymentPage = () => {
                 )}
 
                 {isPackage && (
+                  <div className={styles.productDetails}>
+                    <div className={styles.detailRow}>
+                      <Text>Số lượng bài:</Text>
+                      <Text strong>{quantity} bài</Text>
+                    </div>
+                    <div className={styles.detailRow}>
+                      <Text>Hiển thị:</Text>
+                      <Text strong>{displayData.displayDays} ngày/bài</Text>
+                    </div>
+                    <div className={styles.detailRow}>
+                      <Text>Ưu tiên:</Text>
+                      <Text strong>{displayData.priority}</Text>
+                    </div>
+                    <div className={styles.detailRow}>
+                      <Text>Hỗ trợ:</Text>
+                      <Text strong>{displayData.support}</Text>
+                    </div>
+                    {displayData.badge && (
+                      <div className={styles.detailRow}>
+                        <Text>Huy hiệu:</Text>
+                        <Text strong>{displayData.badge}</Text>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {isPackage && displayData.features && (
                   <div className={styles.featuresList}>
-                    {displayData.features?.map((feature, index) => (
+                    {displayData.features.slice(0, 5).map((feature, index) => (
                       <div key={index} className={styles.featureItem}>
                         <CheckCircleOutlined className={styles.checkIcon} />
                         <Text>{feature}</Text>
@@ -563,17 +608,26 @@ const PaymentPage = () => {
 
               <div className={styles.priceBreakdown}>
                 <div className={styles.priceRow}>
-                  <Text>{isPackage ? "Giá gói:" : "Giá sản phẩm:"}</Text>
+                  <Text>{isPackage ? "Giá/bài:" : "Giá sản phẩm:"}</Text>
                   <Text strong>
-                    {displayData.price.toLocaleString("vi-VN")}₫
+                    {isPackage 
+                      ? `${(packageData?.pricePerPost || 0).toLocaleString("vi-VN")}₫`
+                      : `${(displayData.price || 0).toLocaleString("vi-VN")}₫`
+                    }
                   </Text>
                 </div>
-                {isProduct && quantity > 1 && (
+                {quantity > 1 && (
                   <div className={styles.priceRow}>
                     <Text>Số lượng:</Text>
                     <Text>x{quantity}</Text>
                   </div>
                 )}
+                <div className={styles.priceRow}>
+                  <Text>Tạm tính:</Text>
+                  <Text strong>
+                    {totalPrice.toLocaleString("vi-VN")}₫
+                  </Text>
+                </div>
                 <div className={styles.priceRow}>
                   <Text>Giảm giá:</Text>
                   <Text>0₫</Text>
@@ -581,14 +635,14 @@ const PaymentPage = () => {
                 <div className={styles.priceRow}>
                   <Text>VAT (10%):</Text>
                   <Text>
-                    {((displayData.price * quantity) * 0.1).toLocaleString("vi-VN")}₫
+                    {(totalPrice * 0.1).toLocaleString("vi-VN")}₫
                   </Text>
                 </div>
                 <Divider />
                 <div className={styles.totalRow}>
                   <Title level={5}>Tổng cộng:</Title>
                   <Title level={4} className={styles.totalPrice}>
-                    {((displayData.price * quantity) * 1.1).toLocaleString("vi-VN")}₫
+                    {(totalPrice * 1.1).toLocaleString("vi-VN")}₫
                   </Title>
                 </div>
               </div>
