@@ -47,21 +47,21 @@ const Footer = () => {
 
   return (
     <footer className={styles.footer}>
-      <div className={styles.footerContainer}>
+      <div className="footerContainer">
         <Row gutter={[32, 32]}>
           {/* Company Info */}
           <Col xs={24} sm={24} md={6}>
-            <div className={styles.footerLogo}>⚡ Sàn Giao Dịch Pin EV</div>
-            <p className={styles.footerDescription}>
+            <div className="footerLogo">⚡ Sàn Giao Dịch Pin EV</div>
+            <p className="footerDescription">
               Sàn giao dịch đáng tin cậy cho pin xe điện đã qua sử dụng chất lượng cao.
               Chúng tôi đảm bảo mọi viên pin đáp ứng tiêu chuẩn chất lượng nghiêm ngặt.
             </p>
-            <div className={styles.footerSocial}>
+            <div className="footerSocial">
               {socialLinks.map((social, index) => (
                 <a
                   key={index}
                   href={social.href}
-                  className={styles.socialIcon}
+                  className="socialIcon"
                   aria-label={social.label}
                 >
                   {social.icon}
@@ -72,9 +72,9 @@ const Footer = () => {
 
           {/* Quick Links */}
           <Col xs={12} sm={12} md={6}>
-            <h3 className={styles.footerSectionTitle}>Liên kết nhanh</h3>
+            <h3 className="footerSectionTitle">Liên kết nhanh</h3>
             {footerLinks.quickLinks.map((link, index) => (
-              <a key={index} href={link.href} className={styles.footerLink}>
+              <a key={index} href={link.href} className="footerLink">
                 {link.label}
               </a>
             ))}
@@ -82,9 +82,9 @@ const Footer = () => {
 
           {/* Customer Service */}
           <Col xs={12} sm={12} md={6}>
-            <h3 className={styles.footerSectionTitle}>Dịch vụ khách hàng</h3>
+            <h3 className="footerSectionTitle">Dịch vụ khách hàng</h3>
             {footerLinks.customerService.map((link, index) => (
-              <a key={index} href={link.href} className={styles.footerLink}>
+              <a key={index} href={link.href} className="footerLink">
                 {link.label}
               </a>
             ))}
@@ -92,17 +92,17 @@ const Footer = () => {
 
           {/* Contact Info */}
           <Col xs={24} sm={24} md={6}>
-            <h3 className={styles.footerSectionTitle}>Liên hệ</h3>
+            <h3 className="footerSectionTitle">Liên hệ</h3>
             <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-              <div className={styles.contactItem}>
+              <div className="contactItem">
                 <EnvironmentOutlined />
                 <span>123 Đường Pin EV, Thành phố Công nghệ, TC 12345</span>
               </div>
-              <div className={styles.contactItem}>
+              <div className="contactItem">
                 <PhoneOutlined />
                 <a href="tel:+84123456789">+84 (123) 456-789</a>
               </div>
-              <div className={styles.contactItem}>
+              <div className="contactItem">
                 <MailOutlined />
                 <a href="mailto:lienhe@pinev.com">lienhe@pinev.com</a>
               </div>
@@ -110,21 +110,21 @@ const Footer = () => {
           </Col>
         </Row>
 
-        <div className={styles.footerDivider} />
+        <div className="footerDivider" />
 
-        <div className={styles.footerBottom}>
+        <div className="footerBottom">
           <p>© {currentYear} Sàn Giao Dịch Pin EV. Bảo lưu mọi quyền.</p>
-          <div className={styles.footerPayment}>
+          <div className="footerPayment">
             {paymentMethods.map((method, index) => (
-              <div key={index} className={styles.paymentIcon}>
+              <div key={index} className="paymentIcon">
                 💳 {method}
               </div>
             ))}
           </div>
-          <p className={styles.policyLinks}>
+          <p className="policyLinks">
             {footerLinks.policies.map((link, index) => (
               <React.Fragment key={index}>
-                <a href={link.href} className={styles.policyLink}>
+                <a href={link.href} className="policyLink">
                   {link.label}
                 </a>
                 {index < footerLinks.policies.length - 1 && ' | '}

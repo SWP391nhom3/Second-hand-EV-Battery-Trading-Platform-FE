@@ -1,3 +1,9 @@
+/* Add :export if you want to use CSS modules */
+:export {
+  footer: footer;
+  /* Add other class names you want to export */
+}
+
 /* Footer Component Styles */
 .footer {
   background: #001529;

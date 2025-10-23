@@ -6,6 +6,7 @@ import ProductDetailPage from "./pages/product-detail/ProductDetailPage";
 import PackagesPage from "./pages/packages/PackagesPage";
 import PaymentPage from "./pages/payment/PaymentPage";
 import CustomerPage from "./pages/customer/CustomerPage";
+import HomeStaff from "./pages/Staff/HomeStaff";
 
 function App() {
   const router = createBrowserRouter([
@@ -13,6 +14,7 @@ function App() {
     {
       path: "/",
       element: <HomePage />,
+      errorElement: <div>Something went wrong!</div>, // Thêm error handling
     },
     {
       path: "/login",
@@ -45,6 +47,14 @@ function App() {
     {
       path: "/customer",
       element: <CustomerPage />,
+    },
+    {
+      path: "/staff",
+      element: <HomeStaff />,
+    },
+    {
+      path: "*",
+      element: <div>404 - Page Not Found</div>,
     },
   ]);
   return <RouterProvider router={router} />;
