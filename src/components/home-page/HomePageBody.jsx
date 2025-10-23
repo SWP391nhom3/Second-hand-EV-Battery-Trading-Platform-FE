@@ -190,7 +190,7 @@ const HomePageBody = () => {
       {/* Hero */}
       <section
         style={{
-          background: "linear-gradient(135deg,#eef2ff 0%, #f7f9ff 100%)",
+          background: "linear-gradient(135deg,#eef2ff 0%, #1e49c9ff 100%)",
           padding: "64px 16px",
           textAlign: "center",
           borderRadius: 8,

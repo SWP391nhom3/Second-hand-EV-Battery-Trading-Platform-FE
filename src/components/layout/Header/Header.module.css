@@ -62,7 +62,7 @@
 }
 
 .navLink::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 0;
@@ -148,28 +148,28 @@
   .navLinks {
     display: none !important;
   }
-  
+
   .mobileMenuToggle {
     display: inline-flex !important;
   }
-  
+
   .mobileMenu {
     display: block;
   }
-  
+
   .headerContent {
     padding: 0 16px;
   }
-  
+
   .logoText {
     font-size: 16px;
   }
-  
+
   .logoImage {
     height: 32px;
     width: 32px;
   }
-  
+
   .actionsSection {
     gap: 8px;
   }
@@ -179,7 +179,7 @@
   .mobileMenuToggle {
     display: none !important;
   }
-  
+
   .mobileMenu {
     display: none !important;
   }

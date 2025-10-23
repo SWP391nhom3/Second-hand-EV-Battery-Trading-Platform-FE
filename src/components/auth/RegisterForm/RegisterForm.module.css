@@ -1,13 +1,17 @@
 /* Register Form Styles */
 .registerFormContainer {
   width: 100%;
-  max-width: 450px;
-  padding: 0 20px;
+  max-width: 480px;
+  margin: 24px auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(16, 24, 40, 0.06);
 }
 
 .formHeader {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 18px;
 }
 
 .formTitle {
@@ -23,10 +27,15 @@
 }
 
 .submitButton {
-  height: 45px;
-  font-size: 16px;
+  height: 46px;
+  font-size: 15px;
   font-weight: 600;
   margin-top: 8px;
+  background: linear-gradient(90deg, #1890ff 0%, #36cfc9 100%);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(24, 144, 255, 0.12);
 }
 
 .formFooter {
@@ -39,13 +48,20 @@
   color: #1890ff;
   font-weight: 600;
   text-decoration: none;
-  margin-left: 4px;
-  transition: color 0.3s ease;
 }
 
-.loginLink:hover {
-  color: #40a9ff;
-  text-decoration: underline;
+/* Rounded inputs */
+:global(.ant-input),
+:global(.ant-input-affix-wrapper) {
+  border-radius: 8px;
+}
+
+/* Password strength / small helper (if needed) */
+.pwdStrength {
+  height: 14px;
+  margin-bottom: 8px;
+  color: #6b7280;
+  font-size: 12px;
 }
 
 /* Responsive */

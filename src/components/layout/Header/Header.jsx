@@ -9,6 +9,7 @@ import {
   LogoutOutlined,
   PlusOutlined, // added
 } from "@ant-design/icons";
+
 import { useNavigate } from "react-router-dom"; // ✅ thêm dòng này
 
 const Header = () => {
@@ -30,7 +31,8 @@ const Header = () => {
   useEffect(() => {
     const checkAuth = () => {
       const token =
-        localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+        localStorage.getItem("authToken") ||
+        sessionStorage.getItem("authToken");
       setIsLoggedIn(!!token);
     };
     checkAuth();
@@ -129,7 +131,7 @@ const Header = () => {
         {/* Logo */}
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <img
-            src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Volkswagen_logo_2019.svg"
+            src="/assets/Logo-Page.png"
             alt="Logo"
             style={{ width: 35, height: 35 }}
           />
@@ -220,44 +222,8 @@ const Header = () => {
               Đăng bài
             </Button>
           </a>
-
-          {/* Mobile menu */}
-          <Button
-            type="text"
-            shape="circle"
-            className="mobileMenuBtn"
-            onClick={toggleMenu}
-            icon={isMenuOpen ? <CloseOutlined /> : <MenuOutlined />}
-          />
         </div>
       </div>
-
-      {/* Menu di động */}
-      {isMenuOpen && (
-        <div
-          style={{
-            background: isDarkMode ? "#1f1f1f" : "#fafafa",
-            borderTop: "1px solid #ddd",
-            padding: 12,
-            display: "flex",
-            flexDirection: "column",
-            gap: 10,
-          }}
-        >
-          {navItems.map((item) => (
-            <a
-              key={item.id}
-              href={item.href}
-              style={{
-                color: isDarkMode ? "#fff" : "#000",
-                textDecoration: "none",
-              }}
-            >
-              {item.name}
-            </a>
-          ))}
-        </div>
-      )}
     </header>
   );
 };
