@@ -1,11 +1,6 @@
 import React from "react";
 import { Button, Checkbox, Form, Input, Typography } from "antd";
-import {
-  UserOutlined,
-  LockOutlined,
-  MailOutlined,
-  IdcardOutlined,
-} from "@ant-design/icons";
+import { LockOutlined, MailOutlined, IdcardOutlined } from "@ant-design/icons";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import api from "../../../configs/axios";
@@ -24,7 +19,7 @@ const RegisterForm = () => {
       await api.post("api/Auth/register", registerData);
       toast.success("Tạo tài khoản thành công!");
       console.log("Successful register:", values);
-      // navigate("/login");
+      navigate("/login");
     } catch (error) {
       toast.error(
         error.response?.data?.message || "Đăng ký thất bại. Vui lòng thử lại."
@@ -71,25 +66,6 @@ const RegisterForm = () => {
           <Input
             prefix={<IdcardOutlined />}
             placeholder="Nhập họ và tên của bạn"
-          />
-        </Form.Item>
-
-        <Form.Item
-          label="Tên đăng nhập"
-          name="username"
-          rules={[
-            { required: true, message: "Vui lòng nhập tên đăng nhập!" },
-            { min: 3, message: "Tên đăng nhập phải có ít nhất 3 ký tự!" },
-            {
-              pattern: /^[a-zA-Z0-9_]+$/,
-              message:
-                "Tên đăng nhập chỉ có thể chứa chữ cái, số và dấu gạch dưới!",
-            },
-          ]}
-        >
-          <Input
-            prefix={<UserOutlined />}
-            placeholder="Chọn một tên đăng nhập"
           />
         </Form.Item>
 

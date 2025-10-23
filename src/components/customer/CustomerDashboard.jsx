@@ -205,7 +205,7 @@ const CustomerDashboard = () => {
           <Col xs={24} md={14}>
             <Space direction="vertical" size={4}>
               <Title level={3} style={{ margin: 0 }}>
-                Xin chào, {customerData.profile.name}! 👋
+                Xin chào, {customerData.profile.email}! 👋
               </Title>
               <Text type="secondary">
                 Thành viên từ {new Date(customerData.profile.memberSince).toLocaleDateString('vi-VN')}

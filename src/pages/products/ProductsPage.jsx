@@ -30,6 +30,7 @@ const Products = () => {
     conditions: [],
     memberships: [],
     locations: [],
+    categories: [],
     warranty: "all",
     inStockOnly: false,
   });
@@ -119,7 +120,8 @@ const Products = () => {
       originalPrice: 252000000, // 10,500 USD
       rating: 4.8,
       reviews: 156,
-      image: "https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=400&h=300&fit=crop",
       tag: "Kim cương",
       membershipLevel: 4,
       inStock: true,
@@ -149,7 +151,8 @@ const Products = () => {
       originalPrice: 336000000,
       rating: 4.9,
       reviews: 203,
-      image: "https://images.unsplash.com/photo-1617788138017-80ad40651399?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1617788138017-80ad40651399?w=400&h=300&fit=crop",
       tag: "Kim cương",
       membershipLevel: 4,
       inStock: true,
@@ -174,7 +177,8 @@ const Products = () => {
       originalPrice: 264000000,
       rating: 4.7,
       reviews: 142,
-      image: "https://images.unsplash.com/photo-1612538498613-4e16a2ad2e89?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1612538498613-4e16a2ad2e89?w=400&h=300&fit=crop",
       tag: "Vàng",
       membershipLevel: 3,
       inStock: true,
@@ -199,7 +203,8 @@ const Products = () => {
       originalPrice: null,
       rating: 4.6,
       reviews: 98,
-      image: "https://images.unsplash.com/photo-1620891549027-942fdc95d3f5?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1620891549027-942fdc95d3f5?w=400&h=300&fit=crop",
       tag: "Bạc",
       membershipLevel: 2,
       inStock: true,
@@ -226,7 +231,8 @@ const Products = () => {
       originalPrice: 120000000,
       rating: 4.4,
       reviews: 187,
-      image: "https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=400&h=300&fit=crop",
       tag: "Vàng",
       membershipLevel: 3,
       inStock: true,
@@ -250,7 +256,8 @@ const Products = () => {
       originalPrice: 180000000,
       rating: 4.6,
       reviews: 134,
-      image: "https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=400&h=300&fit=crop",
       tag: "Kim cương",
       membershipLevel: 4,
       inStock: true,
@@ -269,7 +276,8 @@ const Products = () => {
       originalPrice: 228000000, // 9,500 USD
       rating: 4.7,
       reviews: 89,
-      image: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=400&h=300&fit=crop",
       tag: "Kim cương",
       membershipLevel: 4,
       inStock: true,
@@ -288,7 +296,8 @@ const Products = () => {
       originalPrice: 96000000, // 4,000 USD
       rating: 4.2,
       reviews: 156,
-      image: "https://images.unsplash.com/photo-1610647752706-3bb12232b3ab?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1610647752706-3bb12232b3ab?w=400&h=300&fit=crop",
       tag: "Đồng",
       membershipLevel: 1,
       inStock: true,
@@ -309,7 +318,8 @@ const Products = () => {
       originalPrice: 144000000, // 6,000 USD
       rating: 4.5,
       reviews: 112,
-      image: "https://images.unsplash.com/photo-1617886322168-72b886573c35?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1617886322168-72b886573c35?w=400&h=300&fit=crop",
       tag: "Vàng",
       membershipLevel: 3,
       inStock: true,
@@ -328,7 +338,8 @@ const Products = () => {
       originalPrice: 252000000, // 10,500 USD
       rating: 4.8,
       reviews: 87,
-      image: "https://images.unsplash.com/photo-1607853202273-797f1c22a38e?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1607853202273-797f1c22a38e?w=400&h=300&fit=crop",
       tag: "Kim cương",
       membershipLevel: 4,
       inStock: true,
@@ -347,7 +358,8 @@ const Products = () => {
       originalPrice: 264000000, // 11,000 USD
       rating: 4.7,
       reviews: 94,
-      image: "https://images.unsplash.com/photo-1619405399517-d7fce0f13302?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1619405399517-d7fce0f13302?w=400&h=300&fit=crop",
       tag: "Vàng",
       membershipLevel: 3,
       inStock: true,
@@ -366,7 +378,8 @@ const Products = () => {
       originalPrice: 360000000, // 15,000 USD
       rating: 4.9,
       reviews: 76,
-      image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400&h=300&fit=crop",
       tag: "Kim cương",
       membershipLevel: 4,
       inStock: false,
@@ -387,7 +400,8 @@ const Products = () => {
       originalPrice: 168000000, // 7,000 USD
       rating: 4.3,
       reviews: 145,
-      image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&h=300&fit=crop",
       tag: "Bạc",
       membershipLevel: 2,
       inStock: true,
@@ -406,7 +420,8 @@ const Products = () => {
       originalPrice: 180000000, // 7,500 USD
       rating: 4.5,
       reviews: 118,
-      image: "https://images.unsplash.com/photo-1583267746897-f815a5135c93?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1583267746897-f815a5135c93?w=400&h=300&fit=crop",
       tag: "Vàng",
       membershipLevel: 3,
       inStock: true,
@@ -425,7 +440,8 @@ const Products = () => {
       originalPrice: 240000000, // 10,000 USD
       rating: 4.6,
       reviews: 67,
-      image: "https://images.unsplash.com/photo-1619976215249-10f97b5bfd25?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1619976215249-10f97b5bfd25?w=400&h=300&fit=crop",
       tag: "Bạc",
       membershipLevel: 2,
       inStock: true,
@@ -446,7 +462,8 @@ const Products = () => {
       originalPrice: 180000000, // 7,500 USD
       rating: 4.5,
       reviews: 178,
-      image: "https://images.unsplash.com/photo-1614455427737-89610fc1b6b7?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1614455427737-89610fc1b6b7?w=400&h=300&fit=crop",
       tag: "Vàng",
       membershipLevel: 3,
       inStock: true,
@@ -465,7 +482,8 @@ const Products = () => {
       originalPrice: 204000000, // 8,500 USD
       rating: 4.7,
       reviews: 142,
-      image: "https://images.unsplash.com/photo-1617469767053-d3b523a0b982?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1617469767053-d3b523a0b982?w=400&h=300&fit=crop",
       tag: "Kim cương",
       membershipLevel: 4,
       inStock: true,
@@ -484,7 +502,8 @@ const Products = () => {
       originalPrice: 228000000, // 9,500 USD
       rating: 4.8,
       reviews: 156,
-      image: "https://images.unsplash.com/photo-1617469767319-c3eabadd2d59?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1617469767319-c3eabadd2d59?w=400&h=300&fit=crop",
       tag: "Kim cương",
       membershipLevel: 4,
       inStock: true,
@@ -503,7 +522,8 @@ const Products = () => {
       originalPrice: 240000000, // 10,000 USD
       rating: 4.8,
       reviews: 89,
-      image: "https://images.unsplash.com/photo-1619976347725-791b22dfac34?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1619976347725-791b22dfac34?w=400&h=300&fit=crop",
       tag: "Vàng",
       membershipLevel: 3,
       inStock: true,
@@ -524,7 +544,8 @@ const Products = () => {
       originalPrice: 216000000, // 9,000 USD
       rating: 4.6,
       reviews: 134,
-      image: "https://images.unsplash.com/photo-1614455427737-89610fc1b6b7?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1614455427737-89610fc1b6b7?w=400&h=300&fit=crop",
       tag: "Vàng",
       membershipLevel: 3,
       inStock: true,
@@ -543,7 +564,8 @@ const Products = () => {
       originalPrice: 168000000, // 7,000 USD
       rating: 4.4,
       reviews: 167,
-      image: "https://images.unsplash.com/photo-1617469767319-c3eabadd2d59?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1617469767319-c3eabadd2d59?w=400&h=300&fit=crop",
       tag: "Đồng",
       membershipLevel: 1,
       inStock: true,
@@ -562,7 +584,8 @@ const Products = () => {
       originalPrice: 204000000, // 8,500 USD
       rating: 4.7,
       reviews: 123,
-      image: "https://images.unsplash.com/photo-1617469767319-c3eabadd2d59?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1617469767319-c3eabadd2d59?w=400&h=300&fit=crop",
       tag: "Bạc",
       membershipLevel: 2,
       inStock: true,
@@ -581,7 +604,8 @@ const Products = () => {
       originalPrice: 252000000, // 10,500 USD
       rating: 4.8,
       reviews: 78,
-      image: "https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=400&h=300&fit=crop",
       tag: "Bạc",
       membershipLevel: 2,
       inStock: true,
@@ -602,7 +626,8 @@ const Products = () => {
       originalPrice: 204000000, // 8,500 USD
       rating: 4.5,
       reviews: 189,
-      image: "https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=400&h=300&fit=crop",
       tag: "Đồng",
       membershipLevel: 1,
       inStock: true,
@@ -623,7 +648,8 @@ const Products = () => {
       originalPrice: 108000000, // 4,500 USD
       rating: 4.1,
       reviews: 94,
-      image: "https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=400&h=300&fit=crop",
       tag: "Đồng",
       membershipLevel: 1,
       inStock: true,
@@ -644,7 +670,8 @@ const Products = () => {
       originalPrice: 120000000, // 5,000 USD
       rating: 4.3,
       reviews: 167,
-      image: "https://images.unsplash.com/photo-1617886322168-72b886573c35?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1617886322168-72b886573c35?w=400&h=300&fit=crop",
       tag: "Đồng",
       membershipLevel: 1,
       inStock: true,
@@ -665,7 +692,8 @@ const Products = () => {
       originalPrice: null,
       rating: 4.9,
       reviews: 45,
-      image: "https://images.unsplash.com/photo-1619976215249-10f97b5bfd25?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1619976215249-10f97b5bfd25?w=400&h=300&fit=crop",
       tag: "Kim cương",
       membershipLevel: 4,
       inStock: false,
@@ -686,7 +714,8 @@ const Products = () => {
       originalPrice: 132000000, // 5,500 USD
       rating: 4.3,
       reviews: 203,
-      image: "https://images.unsplash.com/photo-1614455427737-89610fc1b6b7?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1614455427737-89610fc1b6b7?w=400&h=300&fit=crop",
       tag: "Đồng",
       membershipLevel: 1,
       inStock: true,
@@ -705,7 +734,8 @@ const Products = () => {
       originalPrice: 120000000, // 5,000 USD
       rating: 4.2,
       reviews: 178,
-      image: "https://images.unsplash.com/photo-1617469767053-d3b523a0b982?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1617469767053-d3b523a0b982?w=400&h=300&fit=crop",
       tag: "Đồng",
       membershipLevel: 1,
       inStock: true,
@@ -726,7 +756,8 @@ const Products = () => {
       originalPrice: 108000000, // 4,500 USD
       rating: 4.0,
       reviews: 156,
-      image: "https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=400&h=300&fit=crop",
       tag: "Đồng",
       membershipLevel: 1,
       inStock: true,
@@ -747,7 +778,8 @@ const Products = () => {
       originalPrice: 300000000, // 12,500 USD
       rating: 4.8,
       reviews: 112,
-      image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400&h=300&fit=crop",
       tag: "Kim cương",
       membershipLevel: 4,
       inStock: true,
@@ -766,7 +798,8 @@ const Products = () => {
       originalPrice: 240000000, // 10,000 USD
       rating: 4.7,
       reviews: 98,
-      image: "https://images.unsplash.com/photo-1614455427737-89610fc1b6b7?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1614455427737-89610fc1b6b7?w=400&h=300&fit=crop",
       tag: "Vàng",
       membershipLevel: 3,
       inStock: true,
@@ -787,7 +820,8 @@ const Products = () => {
       originalPrice: 252000000, // 10,500 USD
       rating: 4.7,
       reviews: 145,
-      image: "https://images.unsplash.com/photo-1619976347725-791b22dfac34?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1619976347725-791b22dfac34?w=400&h=300&fit=crop",
       tag: "Vàng",
       membershipLevel: 3,
       inStock: true,
@@ -806,7 +840,8 @@ const Products = () => {
       originalPrice: 336000000, // 14,000 USD
       rating: 4.8,
       reviews: 87,
-      image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&h=300&fit=crop",
       tag: "Kim cương",
       membershipLevel: 4,
       inStock: true,
@@ -827,7 +862,8 @@ const Products = () => {
       originalPrice: 228000000, // 9,500 USD
       rating: 4.8,
       reviews: 167,
-      image: "https://images.unsplash.com/photo-1617469767319-c3eabadd2d59?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1617469767319-c3eabadd2d59?w=400&h=300&fit=crop",
       tag: "Kim cương",
       membershipLevel: 4,
       inStock: true,
@@ -846,7 +882,8 @@ const Products = () => {
       originalPrice: 180000000, // 7,500 USD
       rating: 4.5,
       reviews: 189,
-      image: "https://images.unsplash.com/photo-1614455427737-89610fc1b6b7?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1614455427737-89610fc1b6b7?w=400&h=300&fit=crop",
       tag: "Bạc",
       membershipLevel: 2,
       inStock: true,
@@ -867,7 +904,8 @@ const Products = () => {
       originalPrice: 360000000, // 15,000 USD
       rating: 4.9,
       reviews: 76,
-      image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400&h=300&fit=crop",
       tag: "Kim cương",
       membershipLevel: 4,
       inStock: false,
@@ -886,7 +924,8 @@ const Products = () => {
       originalPrice: 240000000, // 10,000 USD
       rating: 4.6,
       reviews: 94,
-      image: "https://images.unsplash.com/photo-1607853202273-797f1c22a38e?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1607853202273-797f1c22a38e?w=400&h=300&fit=crop",
       tag: "Vàng",
       membershipLevel: 3,
       inStock: true,
@@ -907,7 +946,8 @@ const Products = () => {
       originalPrice: 336000000, // 14,000 USD
       rating: 4.9,
       reviews: 89,
-      image: "https://images.unsplash.com/photo-1619976347725-791b22dfac34?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1619976347725-791b22dfac34?w=400&h=300&fit=crop",
       tag: "Kim cương",
       membershipLevel: 4,
       inStock: true,
@@ -928,7 +968,8 @@ const Products = () => {
       originalPrice: 228000000, // 9,500 USD
       rating: 4.7,
       reviews: 112,
-      image: "https://images.unsplash.com/photo-1617469767319-c3eabadd2d59?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1617469767319-c3eabadd2d59?w=400&h=300&fit=crop",
       tag: "Bạc",
       membershipLevel: 2,
       inStock: true,
@@ -949,7 +990,8 @@ const Products = () => {
       originalPrice: 348000000, // 14,500 USD
       rating: 4.8,
       reviews: 67,
-      image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&h=300&fit=crop",
       tag: "Kim cương",
       membershipLevel: 4,
       inStock: false,
@@ -968,7 +1010,8 @@ const Products = () => {
       originalPrice: null,
       rating: 4.8,
       reviews: 54,
-      image: "https://images.unsplash.com/photo-1619976347725-791b22dfac34?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1619976347725-791b22dfac34?w=400&h=300&fit=crop",
       tag: "Vàng",
       membershipLevel: 3,
       inStock: true,
@@ -989,7 +1032,8 @@ const Products = () => {
       originalPrice: 360000000, // 15,000 USD
       rating: 4.9,
       reviews: 43,
-      image: "https://images.unsplash.com/photo-1617469767053-d3b523a0b982?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1617469767053-d3b523a0b982?w=400&h=300&fit=crop",
       tag: "Kim cương",
       membershipLevel: 4,
       inStock: false,
@@ -1010,7 +1054,8 @@ const Products = () => {
       originalPrice: 168000000, // 7,000 USD
       rating: 4.4,
       reviews: 145,
-      image: "https://images.unsplash.com/photo-1614455427737-89610fc1b6b7?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1614455427737-89610fc1b6b7?w=400&h=300&fit=crop",
       tag: "Bạc",
       membershipLevel: 2,
       inStock: true,
@@ -1029,7 +1074,8 @@ const Products = () => {
       originalPrice: 180000000, // 7,500 USD
       rating: 4.6,
       reviews: 98,
-      image: "https://images.unsplash.com/photo-1617469767319-c3eabadd2d59?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1617469767319-c3eabadd2d59?w=400&h=300&fit=crop",
       tag: "Bạc",
       membershipLevel: 2,
       inStock: true,
@@ -1050,7 +1096,8 @@ const Products = () => {
       originalPrice: 180000000, // 7,500 USD
       rating: 4.5,
       reviews: 134,
-      image: "https://images.unsplash.com/photo-1614455427737-89610fc1b6b7?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1614455427737-89610fc1b6b7?w=400&h=300&fit=crop",
       tag: "Vàng",
       membershipLevel: 3,
       inStock: true,
@@ -1069,7 +1116,8 @@ const Products = () => {
       originalPrice: 228000000, // 9,500 USD
       rating: 4.7,
       reviews: 87,
-      image: "https://images.unsplash.com/photo-1617469767053-d3b523a0b982?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1617469767053-d3b523a0b982?w=400&h=300&fit=crop",
       tag: "Vàng",
       membershipLevel: 3,
       inStock: true,
@@ -1088,7 +1136,8 @@ const Products = () => {
       originalPrice: 240000000, // 10,000 USD
       rating: 4.7,
       reviews: 76,
-      image: "https://images.unsplash.com/photo-1619976347725-791b22dfac34?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1619976347725-791b22dfac34?w=400&h=300&fit=crop",
       tag: "Bạc",
       membershipLevel: 2,
       inStock: true,
@@ -1101,6 +1150,7 @@ const Products = () => {
       id: 49,
       name: "Xe Máy Điện VinFast Klara S",
       brand: "VinFast",
+      category: "motorcycle", // Thêm category
       capacity: 2.4,
       voltage: 60,
       warranty: 2,
@@ -1109,7 +1159,8 @@ const Products = () => {
       originalPrice: 22000000,
       rating: 4.6,
       reviews: 89,
-      image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
       tag: "Kim cương",
       membershipLevel: 4,
       inStock: true,
@@ -1125,6 +1176,7 @@ const Products = () => {
       id: 50,
       name: "Xe Máy Điện Dat Bike Weaver 200",
       brand: "Dat Bike",
+      category: "motorcycle",
       capacity: 2.5,
       voltage: 60,
       warranty: 3,
@@ -1133,12 +1185,14 @@ const Products = () => {
       originalPrice: 20000000,
       rating: 4.8,
       reviews: 124,
-      image: "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=400&h=300&fit=crop",
       tag: "Kim cương",
       membershipLevel: 4,
       inStock: true,
       discount: 17,
-      description: "Dat Bike Weaver 200, xe máy điện thông minh Made in Vietnam",
+      description:
+        "Dat Bike Weaver 200, xe máy điện thông minh Made in Vietnam",
       seller: getRandomSeller(49),
       batteryHealth: 96,
       usageYears: 1,
@@ -1149,6 +1203,7 @@ const Products = () => {
       id: 51,
       name: "Xe Máy Điện Yadea G5",
       brand: "Yadea",
+      category: "motorcycle",
       capacity: 1.8,
       voltage: 48,
       warranty: 2,
@@ -1157,7 +1212,8 @@ const Products = () => {
       originalPrice: 15000000,
       rating: 4.4,
       reviews: 67,
-      image: "https://images.unsplash.com/photo-1609630875171-b1321377ee65?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1609630875171-b1321377ee65?w=400&h=300&fit=crop",
       tag: "Vàng",
       membershipLevel: 3,
       inStock: true,
@@ -1173,6 +1229,7 @@ const Products = () => {
       id: 52,
       name: "Xe Máy Điện Pega eSH",
       brand: "Pega",
+      category: "motorcycle",
       capacity: 2.2,
       voltage: 60,
       warranty: 2,
@@ -1181,7 +1238,8 @@ const Products = () => {
       originalPrice: 18000000,
       rating: 4.5,
       reviews: 78,
-      image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
       tag: "Vàng",
       membershipLevel: 3,
       inStock: true,
@@ -1197,6 +1255,7 @@ const Products = () => {
       id: 53,
       name: "Xe Máy Điện Dibao Smart",
       brand: "Dibao",
+      category: "motorcycle",
       capacity: 1.5,
       voltage: 48,
       warranty: 1,
@@ -1205,7 +1264,8 @@ const Products = () => {
       originalPrice: 12000000,
       rating: 4.2,
       reviews: 45,
-      image: "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=400&h=300&fit=crop",
       tag: "Bạc",
       membershipLevel: 2,
       inStock: true,
@@ -1221,6 +1281,7 @@ const Products = () => {
       id: 54,
       name: "Xe Máy Điện Anbico Ap1518",
       brand: "Anbico",
+      category: "motorcycle",
       capacity: 1.6,
       voltage: 48,
       warranty: 1,
@@ -1229,7 +1290,8 @@ const Products = () => {
       originalPrice: 11000000,
       rating: 4.1,
       reviews: 38,
-      image: "https://images.unsplash.com/photo-1609630875171-b1321377ee65?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1609630875171-b1321377ee65?w=400&h=300&fit=crop",
       tag: "Đồng",
       membershipLevel: 1,
       inStock: true,
@@ -1247,6 +1309,7 @@ const Products = () => {
       id: 55,
       name: "Xe Ô Tô Điện VinFast VF e34",
       brand: "VinFast",
+      category: "car",
       capacity: 42,
       voltage: 350,
       warranty: 3,
@@ -1255,7 +1318,8 @@ const Products = () => {
       originalPrice: 590000000,
       rating: 4.7,
       reviews: 145,
-      image: "https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=400&h=300&fit=crop",
       tag: "Kim cương",
       membershipLevel: 4,
       inStock: true,
@@ -1271,6 +1335,7 @@ const Products = () => {
       id: 56,
       name: "Xe Ô Tô Điện VinFast VF 8",
       brand: "VinFast",
+      category: "car",
       capacity: 87,
       voltage: 400,
       warranty: 3,
@@ -1279,7 +1344,8 @@ const Products = () => {
       originalPrice: 1200000000,
       rating: 4.8,
       reviews: 198,
-      image: "https://images.unsplash.com/photo-1617788138017-80ad40651399?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1617788138017-80ad40651399?w=400&h=300&fit=crop",
       tag: "Kim cương",
       membershipLevel: 4,
       inStock: true,
@@ -1295,6 +1361,7 @@ const Products = () => {
       id: 57,
       name: "Xe Ô Tô Điện Hyundai Kona Electric",
       brand: "Hyundai",
+      category: "car",
       capacity: 64,
       voltage: 356,
       warranty: 2,
@@ -1303,7 +1370,8 @@ const Products = () => {
       originalPrice: 850000000,
       rating: 4.6,
       reviews: 112,
-      image: "https://images.unsplash.com/photo-1619976347725-791b22dfac34?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1619976347725-791b22dfac34?w=400&h=300&fit=crop",
       tag: "Vàng",
       membershipLevel: 3,
       inStock: true,
@@ -1319,6 +1387,7 @@ const Products = () => {
       id: 58,
       name: "Xe Ô Tô Điện Kia EV6",
       brand: "Kia",
+      category: "car",
       capacity: 77,
       voltage: 400,
       warranty: 3,
@@ -1327,7 +1396,8 @@ const Products = () => {
       originalPrice: 1150000000,
       rating: 4.9,
       reviews: 156,
-      image: "https://images.unsplash.com/photo-1612538498613-4e16a2ad2e89?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1612538498613-4e16a2ad2e89?w=400&h=300&fit=crop",
       tag: "Kim cương",
       membershipLevel: 4,
       inStock: true,
@@ -1343,6 +1413,7 @@ const Products = () => {
       id: 59,
       name: "Xe Ô Tô Điện MG ZS EV",
       brand: "MG",
+      category: "car",
       capacity: 51,
       voltage: 350,
       warranty: 2,
@@ -1351,7 +1422,8 @@ const Products = () => {
       originalPrice: 680000000,
       rating: 4.4,
       reviews: 87,
-      image: "https://images.unsplash.com/photo-1617469767053-d3b523a0b982?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1617469767053-d3b523a0b982?w=400&h=300&fit=crop",
       tag: "Vàng",
       membershipLevel: 3,
       inStock: true,
@@ -1367,6 +1439,7 @@ const Products = () => {
       id: 60,
       name: "Xe Ô Tô Điện BYD Atto 3",
       brand: "BYD",
+      category: "car",
       capacity: 60,
       voltage: 400,
       warranty: 3,
@@ -1375,7 +1448,8 @@ const Products = () => {
       originalPrice: 900000000,
       rating: 4.7,
       reviews: 134,
-      image: "https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=400&h=300&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=400&h=300&fit=crop",
       tag: "Vàng",
       membershipLevel: 3,
       inStock: true,
@@ -1409,6 +1483,7 @@ const Products = () => {
       conditions: [],
       memberships: [],
       locations: [],
+      categories: [],
       warranty: "all",
       inStockOnly: false,
     });
@@ -1538,6 +1613,14 @@ const Products = () => {
       return false;
     }
 
+    // Category filter
+    if (filters.categories.length > 0) {
+      const productCategory = product.category || "battery"; // Mặc định là 'battery' nếu không có category
+      if (!filters.categories.includes(productCategory)) {
+        return false;
+      }
+    }
+
     // Warranty filter
     if (filters.warranty !== "all") {
       const minWarranty = parseInt(filters.warranty);
@@ -1560,7 +1643,7 @@ const Products = () => {
     if (a.membershipLevel !== b.membershipLevel) {
       return b.membershipLevel - a.membershipLevel;
     }
-    
+
     // Sau đó mới sort theo tiêu chí được chọn
     switch (sortBy) {
       case "price-asc":

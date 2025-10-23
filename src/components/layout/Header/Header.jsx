@@ -7,18 +7,36 @@ import {
   UserOutlined,
   LoginOutlined,
   LogoutOutlined,
+  PlusOutlined, // added
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom"; // ✅ thêm dòng này
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  // khởi tạo từ localStorage để giữ chế độ người dùng đã chọn
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    try {
+      return localStorage.getItem("isDarkMode") === "true";
+    } catch (e) {
+      return false;
+    }
+  });
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate(); //  hook điều hướng
 
   // Sync auth state on mount and on events
+  useEffect(() => {
+    const checkAuth = () => {
+      const token =
+        localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+      setIsLoggedIn(!!token);
+    };
+    checkAuth();
+    window.addEventListener("authChanged", checkAuth);
+    return () => window.removeEventListener("authChanged", checkAuth);
+  }, []);
 
   const navItems = [
     { id: 1, name: "Trang chủ", href: "/" },
@@ -30,10 +48,21 @@ const Header = () => {
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const toggleCart = () => setIsCartOpen(!isCartOpen);
-  const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
+  const toggleDarkMode = () => {
+    const next = !isDarkMode;
+    setIsDarkMode(next);
+    try {
+      localStorage.setItem("isDarkMode", next ? "true" : "false");
+    } catch (e) {
+      /* ignore */
+    }
+  };
 
   useEffect(() => {
+    // set cả className và style trực tiếp để tránh CSS global làm nền tối không mong muốn
     document.body.className = isDarkMode ? "dark" : "light";
+    document.body.style.background = isDarkMode ? "#141414" : "#ffffff";
+    document.body.style.color = isDarkMode ? "#ffffff" : "#000000";
   }, [isDarkMode]);
 
   // ✅ Menu khi đã đăng nhập
@@ -177,6 +206,20 @@ const Header = () => {
               style={{ cursor: "pointer" }}
             />
           </Dropdown>
+
+          {/* Quick "Đăng bài" button */}
+          <a href="/customer" style={{ textDecoration: "none" }}>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              style={{
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                border: "none",
+              }}
+            >
+              Đăng bài
+            </Button>
+          </a>
 
           {/* Mobile menu */}
           <Button
