@@ -28,8 +28,9 @@
 
 .createPostModal :global(.ant-modal-body) {
   padding: 24px;
-  max-height: 70vh;
+  max-height: 75vh;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Steps */
@@ -55,6 +56,7 @@
   background: #fafafa;
   border-radius: 12px;
   margin-bottom: 24px;
+  overflow: visible;
 }
 
 .stepTitle {
@@ -136,6 +138,331 @@
   margin-bottom: 8px;
   line-height: 1.6;
 }
+
+/* Package Cards */
+.packagesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 24px;
+  padding-top: 8px;
+}
+
+.packageRow {
+  background: white;
+  border: 2px solid #e8e8e8;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: visible;
+}
+
+.packageRow:hover {
+  border-color: #1890ff;
+  box-shadow: 0 8px 24px rgba(24, 144, 255, 0.12);
+  transform: translateY(-2px);
+}
+
+.packageRowSelected {
+  border-color: #1890ff;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 100%);
+  box-shadow: 0 4px 20px rgba(24, 144, 255, 0.15);
+}
+
+.packageRowPopular {
+  border-color: #faad14;
+  position: relative;
+}
+
+.packageRowPopular::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #faad14 0%, #ffd666 50%, #faad14 100%);
+  background-size: 200% 100%;
+  animation: shimmer 3s linear infinite;
+  border-radius: 16px 16px 0 0;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.popularBadge {
+  position: absolute;
+  top: -12px;
+  right: 20px;
+  background: linear-gradient(135deg, #faad14 0%, #ffd666 100%);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(250, 173, 20, 0.3);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.packageInfo {
+  display: flex;
+  align-items: center;
+  padding: 24px;
+  gap: 24px;
+}
+
+.packageLeft {
+  min-width: 200px;
+  max-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.packageName {
+  font-size: 20px;
+  font-weight: 700;
+  color: #262626;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.packagePriceBox {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.freePrice {
+  font-size: 32px;
+  font-weight: 800;
+  color: #52c41a;
+  line-height: 1;
+}
+
+.priceWrapper {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  line-height: 1;
+}
+
+.priceAmount {
+  font-size: 32px;
+  font-weight: 800;
+  color: #262626;
+  letter-spacing: -1px;
+}
+
+.priceCurrency {
+  font-size: 18px;
+  font-weight: 600;
+  color: #8c8c8c;
+}
+
+.packageDuration {
+  font-size: 14px;
+  color: #8c8c8c;
+  font-weight: 500;
+  padding: 4px 12px;
+  background: #f5f5f5;
+  border-radius: 12px;
+  display: inline-block;
+  width: fit-content;
+}
+
+.packageMiddle {
+  flex: 1;
+  padding: 0 20px;
+  border-left: 2px solid #f0f0f0;
+  border-right: 2px solid #f0f0f0;
+  min-width: 0;
+}
+
+.featuresGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.featureItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #595959;
+  font-weight: 500;
+}
+
+.featureIcon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.packageRight {
+  min-width: 130px;
+  max-width: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.selectedBadge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  color: white;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+  width: 100%;
+  white-space: nowrap;
+}
+
+.selectedBadge span {
+  font-size: 13px;
+}
+
+.selectButton {
+  padding: 12px 16px;
+  background: white;
+  border: 2px solid #e8e8e8;
+  color: #595959;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  width: 100%;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.packageRow:hover .selectButton {
+  background: #1890ff;
+  color: white;
+  border-color: #1890ff;
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+}
+
+.packageNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 20px;
+  background: linear-gradient(135deg, #fff7e6 0%, #fffbe6 100%);
+  border-radius: 12px;
+  border: 1px solid #ffe7ba;
+}
+
+.noteIcon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.noteContent {
+  flex: 1;
+  color: #595959;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.noteContent strong {
+  color: #262626;
+  font-weight: 600;
+}
+
+/* Responsive for Package Rows */
+@media (max-width: 1024px) {
+  .packageInfo {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 20px;
+  }
+
+  .packageLeft {
+    min-width: auto;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #f0f0f0;
+  }
+
+  .packageMiddle {
+    padding: 16px 0;
+    border-left: none;
+    border-right: none;
+    border-top: 2px solid #f0f0f0;
+    border-bottom: 2px solid #f0f0f0;
+  }
+
+  .featuresGrid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  .packageRight {
+    min-width: auto;
+    padding-top: 16px;
+  }
+
+  .selectedBadge,
+  .selectButton {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .packageInfo {
+    padding: 20px;
+  }
+
+  .packageLeft {
+    text-align: center;
+    align-items: center;
+  }
+
+  .packageName {
+    font-size: 18px;
+  }
+
+  .priceAmount {
+    font-size: 28px;
+  }
+
+  .featuresGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .popularBadge {
+    top: 12px;
+    right: 12px;
+    padding: 4px 12px;
+    font-size: 12px;
+  }
+}
+
+.selectedPackageInfo {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Remove old package card styles */
 
 /* Upload Area */
 .uploader {
