@@ -7,6 +7,7 @@ import PackagesPage from "./pages/packages/PackagesPage";
 import PaymentPage from "./pages/payment/PaymentPage";
 import CustomerPage from "./pages/customer/CustomerPage";
 import HomeStaff from "./pages/Staff/HomeStaff";
+import AdminPage from "./pages/admin/AdminPage";
 
 function App() {
   const router = createBrowserRouter([
@@ -41,8 +42,8 @@ function App() {
       element: <PaymentPage />,
     },
     {
-      path: "/dashboard",
-      element: <Dashboard />,
+      path: "/admin",
+      element: <AdminPage />,
     },
     {
       path: "/customer",

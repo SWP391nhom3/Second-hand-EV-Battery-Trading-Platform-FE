@@ -39,6 +39,7 @@ const CreatePostModal = ({ visible, onCancel, onSuccess }) => {
   const [fileList, setFileList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [postType, setPostType] = useState("sell");
+  const [selectedPackage, setSelectedPackage] = useState(null);
 
   // Danh sách thương hiệu pin phổ biến
   const batteryBrands = [
@@ -109,14 +110,81 @@ const CreatePostModal = ({ visible, onCancel, onSuccess }) => {
     },
   };
 
+  // Packages data
+  const packages = [
+    {
+      id: "free",
+      name: "Gói Miễn phí",
+      price: 0,
+      duration: 7,
+      features: [
+        "Đăng tin 7 ngày",
+        "Hiển thị thông thường",
+        "Không ưu tiên",
+        "Hỗ trợ cơ bản"
+      ],
+      color: "#95a5a6",
+      popular: false
+    },
+    {
+      id: "basic",
+      name: "Gói Cơ bản",
+      price: 50000,
+      duration: 15,
+      features: [
+        "Đăng tin 15 ngày",
+        "Hiển thị nổi bật",
+        "Ưu tiên thấp",
+        "Hỗ trợ ưu tiên"
+      ],
+      color: "#3498db",
+      popular: false
+    },
+    {
+      id: "standard",
+      name: "Gói Tiêu chuẩn",
+      price: 100000,
+      duration: 30,
+      features: [
+        "Đăng tin 30 ngày",
+        "Hiển thị nổi bật",
+        "Ưu tiên cao",
+        "Hỗ trợ 24/7",
+        "Đẩy tin 2 lần/tuần"
+      ],
+      color: "#f39c12",
+      popular: true
+    },
+    {
+      id: "premium",
+      name: "Gói Cao cấp",
+      price: 150000,
+      duration: 60,
+      features: [
+        "Đăng tin 60 ngày",
+        "Hiển thị VIP",
+        "Ưu tiên cao nhất",
+        "Hỗ trợ 24/7",
+        "Đẩy tin mỗi ngày",
+        "Badge VIP"
+      ],
+      color: "#e74c3c",
+      popular: false
+    }
+  ];
+
   const steps = [
     {
       title: "Loại tin",
       icon: <FileTextOutlined />,
     },
     {
-      title: "Thông tin",
+      title: "Chọn gói",
       icon: <DollarOutlined />,
+    },
+    {
+      title: "Thông tin",
+      icon: <FileTextOutlined />,
     },
     {
       title: "Hình ảnh",
@@ -134,6 +202,12 @@ const CreatePostModal = ({ visible, onCancel, onSuccess }) => {
       if (currentStep === 0) {
         await form.validateFields(["postType", "title"]);
       } else if (currentStep === 1) {
+        // Validate package selection
+        if (!selectedPackage) {
+          message.warning("Vui lòng chọn gói đăng tin!");
+          return;
+        }
+      } else if (currentStep === 2) {
         await form.validateFields([
           "brand",
           "capacity",
@@ -142,7 +216,7 @@ const CreatePostModal = ({ visible, onCancel, onSuccess }) => {
           "city",
           "description",
         ]);
-      } else if (currentStep === 2) {
+      } else if (currentStep === 3) {
         if (fileList.length === 0) {
           message.warning("Vui lòng upload ít nhất 1 ảnh!");
           return;
@@ -185,11 +259,97 @@ const CreatePostModal = ({ visible, onCancel, onSuccess }) => {
     setFileList([]);
     setCurrentStep(0);
     setPostType("sell");
+    setSelectedPackage(null);
     
     // Gọi callback để đóng modal
     if (onCancel) {
       onCancel();
     }
+  };
+
+  const renderPackageStep = () => {
+    return (
+      <div className={styles.stepContent}>
+        <h3 className={styles.stepTitle}>Chọn gói đăng tin</h3>
+        <p className={styles.stepDescription}>
+          Chọn gói phù hợp để tin đăng của bạn được nhiều người xem hơn
+        </p>
+
+        <div className={styles.packagesContainer}>
+          {packages.map((pkg) => (
+            <div
+              key={pkg.id}
+              className={`${styles.packageRow} ${
+                selectedPackage === pkg.id ? styles.packageRowSelected : ""
+              } ${pkg.popular ? styles.packageRowPopular : ""}`}
+              onClick={() => setSelectedPackage(pkg.id)}
+            >
+              {pkg.popular && (
+                <div className={styles.popularBadge}>
+                  <span>⭐ Phổ biến nhất</span>
+                </div>
+              )}
+
+              <div className={styles.packageInfo}>
+                <div className={styles.packageLeft}>
+                  <h4 className={styles.packageName}>{pkg.name}</h4>
+                  <div className={styles.packagePriceBox}>
+                    {pkg.price === 0 ? (
+                      <div className={styles.freePrice}>Miễn phí</div>
+                    ) : (
+                      <div className={styles.priceWrapper}>
+                        <span className={styles.priceAmount}>
+                          {pkg.price.toLocaleString("vi-VN")}
+                        </span>
+                        <span className={styles.priceCurrency}>đ</span>
+                      </div>
+                    )}
+                    <div className={styles.packageDuration}>
+                      Đăng tin {pkg.duration} ngày
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles.packageMiddle}>
+                  <div className={styles.featuresGrid}>
+                    {pkg.features.map((feature, index) => (
+                      <div key={index} className={styles.featureItem}>
+                        <CheckCircleOutlined 
+                          className={styles.featureIcon}
+                          style={{ color: pkg.color }} 
+                        />
+                        <span>{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className={styles.packageRight}>
+                  {selectedPackage === pkg.id ? (
+                    <div className={styles.selectedBadge}>
+                      <CheckCircleOutlined />
+                      <span>Đã chọn</span>
+                    </div>
+                  ) : (
+                    <div className={styles.selectButton}>
+                      <span>Chọn gói</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className={styles.packageNote}>
+          <div className={styles.noteIcon}>💡</div>
+          <div className={styles.noteContent}>
+            <strong>Lưu ý:</strong> Sau khi đăng tin, bạn có thể nâng cấp gói
+            bất kỳ lúc nào để tin đăng được nhiều người xem hơn.
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const renderStepContent = () => {
@@ -278,6 +438,9 @@ const CreatePostModal = ({ visible, onCancel, onSuccess }) => {
         );
 
       case 1:
+        return renderPackageStep();
+
+      case 2:
         return (
           <div className={styles.stepContent}>
             <h3 className={styles.stepTitle}>Thông tin chi tiết</h3>
@@ -404,7 +567,7 @@ const CreatePostModal = ({ visible, onCancel, onSuccess }) => {
                   label="Mô tả chi tiết"
                   rules={[
                     { required: true, message: "Vui lòng nhập mô tả!" },
-                    { min: 50, message: "Mô tả phải có ít nhất 50 ký tự!" },
+                    { min: 15, message: "Mô tả phải có ít nhất 15 ký tự!" },
                   ]}
                 >
                   <TextArea
@@ -422,7 +585,7 @@ const CreatePostModal = ({ visible, onCancel, onSuccess }) => {
                   label="Ưu điểm"
                   rules={[
                     { required: true, message: "Vui lòng nhập ưu điểm!" },
-                    { min: 20, message: "Ưu điểm phải có ít nhất 20 ký tự!" },
+                    { min: 15, message: "Ưu điểm phải có ít nhất 15 ký tự!" },
                   ]}
                 >
                   <TextArea
@@ -440,7 +603,7 @@ const CreatePostModal = ({ visible, onCancel, onSuccess }) => {
                   label="Thông tin chi tiết"
                   rules={[
                     { required: true, message: "Vui lòng nhập thông tin chi tiết!" },
-                    { min: 30, message: "Thông tin chi tiết phải có ít nhất 30 ký tự!" },
+                    { min: 15, message: "Thông tin chi tiết phải có ít nhất 15 ký tự!" },
                   ]}
                 >
                   <TextArea
@@ -458,7 +621,7 @@ const CreatePostModal = ({ visible, onCancel, onSuccess }) => {
                   label="Chính sách"
                   rules={[
                     { required: true, message: "Vui lòng nhập chính sách!" },
-                    { min: 20, message: "Chính sách phải có ít nhất 20 ký tự!" },
+                    { min: 15, message: "Chính sách phải có ít nhất 15 ký tự!" },
                   ]}
                 >
                   <TextArea
@@ -473,7 +636,7 @@ const CreatePostModal = ({ visible, onCancel, onSuccess }) => {
           </div>
         );
 
-      case 2:
+      case 3:
         return (
           <div className={styles.stepContent}>
             <h3 className={styles.stepTitle}>Upload hình ảnh</h3>
@@ -517,7 +680,8 @@ const CreatePostModal = ({ visible, onCancel, onSuccess }) => {
           </div>
         );
 
-      case 3:
+      case 4:
+        const selectedPkg = packages.find(pkg => pkg.id === selectedPackage);
         return (
           <div className={styles.stepContent}>
             <h3 className={styles.stepTitle}>Xác nhận thông tin</h3>
@@ -536,7 +700,24 @@ const CreatePostModal = ({ visible, onCancel, onSuccess }) => {
 
               <div className={styles.confirmSection}>
                 <h4>
-                  <DollarOutlined /> Tiêu đề
+                  <DollarOutlined /> Gói đã chọn
+                </h4>
+                {selectedPkg && (
+                  <div className={styles.selectedPackageInfo}>
+                    <Tag color={selectedPkg.color} style={{ fontSize: 14, padding: "4px 12px" }}>
+                      {selectedPkg.name}
+                    </Tag>
+                    <span style={{ marginLeft: 8 }}>
+                      {selectedPkg.price === 0 ? "Miễn phí" : `${selectedPkg.price.toLocaleString("vi-VN")} đ`} 
+                      {" "}• {selectedPkg.duration} ngày
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className={styles.confirmSection}>
+                <h4>
+                  <FileTextOutlined /> Tiêu đề
                 </h4>
                 <p>{form.getFieldValue("title")}</p>
               </div>

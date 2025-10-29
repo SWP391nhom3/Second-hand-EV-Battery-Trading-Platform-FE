@@ -27,6 +27,7 @@ const ProductFilters = ({ onFilterChange, onResetFilters }) => {
   const [selectedConditions, setSelectedConditions] = useState([]);
   const [selectedMemberships, setSelectedMemberships] = useState([]);
   const [selectedLocations, setSelectedLocations] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState([]);
   const [warranty, setWarranty] = useState("all");
   const [inStockOnly, setInStockOnly] = useState(false);
 
@@ -68,6 +69,30 @@ const ProductFilters = ({ onFilterChange, onResetFilters }) => {
     { label: "Huế", value: "Huế" },
   ];
 
+  const productCategories = [
+    { 
+      label: "Pin EV", 
+      value: "battery",
+      icon: "🔋",
+      color: "#52c41a",
+      description: "Pin xe điện"
+    },
+    { 
+      label: "Xe máy điện", 
+      value: "motorcycle",
+      icon: "🛵",
+      color: "#1890ff",
+      description: "Xe máy điện"
+    },
+    { 
+      label: "Xe ô tô điện", 
+      value: "car",
+      icon: "🚗",
+      color: "#722ed1",
+      description: "Ô tô điện"
+    },
+  ];
+
   const warrantyOptions = [
     { label: "Tất cả", value: "all" },
     { label: "1+ Năm", value: "1" },
@@ -83,6 +108,7 @@ const ProductFilters = ({ onFilterChange, onResetFilters }) => {
       conditions: selectedConditions,
       memberships: selectedMemberships,
       locations: selectedLocations,
+      categories: selectedCategories,
       warranty,
       inStockOnly,
     };
@@ -96,6 +122,7 @@ const ProductFilters = ({ onFilterChange, onResetFilters }) => {
     setSelectedConditions([]);
     setSelectedMemberships([]);
     setSelectedLocations([]);
+    setSelectedCategories([]);
     setWarranty("all");
     setInStockOnly(false);
     onResetFilters();
@@ -106,6 +133,7 @@ const ProductFilters = ({ onFilterChange, onResetFilters }) => {
     selectedConditions.length +
     selectedMemberships.length +
     selectedLocations.length +
+    selectedCategories.length +
     (warranty !== "all" ? 1 : 0) +
     (inStockOnly ? 1 : 0);
 
@@ -121,10 +149,37 @@ const ProductFilters = ({ onFilterChange, onResetFilters }) => {
       </div>
 
       <Collapse
-        defaultActiveKey={["price", "capacity", "brands", "membership", "location", "condition"]}
+        defaultActiveKey={["category", "price", "capacity", "brands", "membership", "location", "condition"]}
         ghost
         expandIconPosition="end"
       >
+        {/* Product Categories */}
+        <Panel header={<span className={styles.panelHeader}>📦 Loại sản phẩm</span>} key="category">
+          <Checkbox.Group
+            value={selectedCategories}
+            onChange={setSelectedCategories}
+            className={styles.checkboxGroup}
+          >
+            <Space direction="vertical" style={{ width: "100%" }}>
+              {productCategories.map((category) => (
+                <div key={category.value} className={styles.categoryItem}>
+                  <Checkbox value={category.value}>
+                    <div className={styles.categoryContent}>
+                      <span className={styles.categoryIcon}>{category.icon}</span>
+                      <div className={styles.categoryInfo}>
+                        <span className={styles.categoryLabel} style={{ color: category.color }}>
+                          {category.label}
+                        </span>
+                        <span className={styles.categoryDesc}>{category.description}</span>
+                      </div>
+                    </div>
+                  </Checkbox>
+                </div>
+              ))}
+            </Space>
+          </Checkbox.Group>
+        </Panel>
+
         {/* Price Range */}
         <Panel header={<span className={styles.panelHeader}><DollarOutlined /> Khoảng giá</span>} key="price">
           <div className={styles.rangeFilter}>
