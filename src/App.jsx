@@ -6,7 +6,7 @@ import ProductDetailPage from "./pages/product-detail/ProductDetailPage";
 import PackagesPage from "./pages/packages/PackagesPage";
 import PaymentPage from "./pages/payment/PaymentPage";
 import CustomerPage from "./pages/customer/CustomerPage";
-import HomeStaff from "./pages/Staff/HomeStaff";
+import StaffPage from "./pages/staff/StaffPage";
 import AdminPage from "./pages/admin/AdminPage";
 
 function App() {
@@ -51,7 +51,7 @@ function App() {
     },
     {
       path: "/staff",
-      element: <HomeStaff />,
+      element: <StaffPage />,
     },
     {
       path: "*",

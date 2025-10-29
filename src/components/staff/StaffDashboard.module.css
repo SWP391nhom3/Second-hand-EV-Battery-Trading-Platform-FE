@@ -1,0 +1,740 @@
+.staffDashboardContainer {
+  min-height: 100vh;
+  background-color: #f9fafb;
+}
+
+.header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.headerContent {
+  max-width: 80rem; /* equivalent to max-w-7xl */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem; /* equivalent to px-6 */
+  padding-right: 1.5rem; /* equivalent to px-6 */
+  padding-top: 1rem; /* equivalent to py-4 */
+  padding-bottom: 1rem; /* equivalent to py-4 */
+}
+
+.headerFlex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.headerTitleContainer {
+  /* No direct styles needed here, children handle it */
+}
+
+.headerTitle {
+  font-size: 1.5rem; /* equivalent to text-2xl */
+  font-weight: 700; /* equivalent to font-bold */
+  color: #111827; /* equivalent to text-gray-900 */
+}
+
+.headerSubtitle {
+  font-size: 0.875rem; /* equivalent to text-sm */
+  color: #6b7280; /* equivalent to text-gray-600 */
+  margin-top: 0.25rem; /* equivalent to mt-1 */
+}
+
+.staffDashboardBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* equivalent to gap-2 */
+  background-color: #eff6ff; /* equivalent to bg-blue-50 */
+  color: #1d4ed8; /* equivalent to text-blue-700 */
+  padding-left: 1rem; /* equivalent to px-4 */
+  padding-right: 1rem;
+  padding-top: 0.5rem; /* equivalent to py-2 */
+  padding-bottom: 0.5rem;
+  border-radius: 0.5rem; /* equivalent to rounded-lg */
+  border: 1px solid #bfdbfe; /* equivalent to border border-blue-200 */
+}
+
+.mainContent {
+  max-width: 80rem; /* equivalent to max-w-7xl */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem; /* equivalent to px-6 */
+  padding-right: 1.5rem;
+  padding-top: 1.5rem; /* equivalent to py-6 */
+  padding-bottom: 1.5rem;
+}
+
+.statisticsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)); /* equivalent to grid-cols-4 */
+  gap: 1rem; /* equivalent to gap-4 */
+  margin-bottom: 1.5rem; /* equivalent to mb-6 */
+}
+
+.statisticCard {
+  background-color: #ffffff;
+  border-radius: 0.5rem; /* equivalent to rounded-lg */
+  border: 1px solid #e5e7eb; /* equivalent to border border-gray-200 */
+  padding: 1rem; /* equivalent to p-4 */
+}
+
+.statisticCardContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.statisticLabel {
+  font-size: 0.875rem; /* equivalent to text-sm */
+  color: #6b7280; /* equivalent to text-gray-600 */
+}
+
+.statisticValue {
+  font-size: 1.5rem; /* equivalent to text-2xl */
+  font-weight: 700; /* equivalent to font-bold */
+  color: #111827; /* equivalent to text-gray-900 */
+  margin-top: 0.25rem; /* equivalent to mt-1 */
+}
+
+.statisticValueOrange {
+  color: #ea580c; /* equivalent to text-orange-600 */
+}
+
+.statisticValueGreen {
+  color: #22c55e; /* equivalent to text-green-600 */
+}
+
+.statisticValuePurple {
+  color: #a855f7; /* equivalent to text-purple-600 */
+}
+
+.statisticIconContainer {
+  padding: 0.75rem; /* equivalent to p-3 */
+  border-radius: 0.5rem; /* equivalent to rounded-lg */
+}
+
+.iconBlue {
+  background-color: #eff6ff; /* equivalent to bg-blue-50 */
+}
+
+.iconOrange {
+  background-color: #fff7ed; /* equivalent to bg-orange-50 */
+}
+
+.iconGreen {
+  background-color: #f0fdf4; /* equivalent to bg-green-50 */
+}
+
+.iconPurple {
+  background-color: #faf5ff; /* equivalent to bg-purple-50 */
+}
+
+.iconBlue svg {
+  color: #2563eb; /* equivalent to text-blue-600 */
+}
+
+.iconOrange svg {
+  color: #ea580c; /* equivalent to text-orange-600 */
+}
+
+.iconGreen svg {
+  color: #22c55e; /* equivalent to text-green-600 */
+}
+
+.iconPurple svg {
+  color: #a855f7; /* equivalent to text-purple-600 */
+}
+
+.contractListAndDetailsGrid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr)); /* equivalent to grid-cols-12 */
+  gap: 1.5rem; /* equivalent to gap-6 */
+}
+
+.contractListColumn {
+  grid-column: span 4 / span 4; /* equivalent to col-span-4 */
+}
+
+.contractListBox {
+  background-color: #ffffff;
+  border-radius: 0.5rem; /* equivalent to rounded-lg */
+  border: 1px solid #e5e7eb; /* equivalent to border border-gray-200 */
+}
+
+.contractListHeader {
+  padding: 1rem; /* equivalent to p-4 */
+  border-bottom: 1px solid #e5e7eb; /* equivalent to border-b border-gray-200 */
+}
+
+.contractListTitle {
+  font-weight: 600; /* equivalent to font-semibold */
+  color: #111827; /* equivalent to text-gray-900 */
+  margin-bottom: 0.75rem; /* equivalent to mb-3 */
+}
+
+.searchContainer {
+  position: relative;
+  margin-bottom: 0.75rem; /* equivalent to mb-3 */
+}
+
+.searchIcon {
+  width: 1rem; /* equivalent to w-4 */
+  height: 1rem; /* equivalent to h-4 */
+  position: absolute;
+  left: 0.75rem; /* equivalent to left-3 */
+  top: 0.75rem; /* equivalent to top-3 */
+  color: #9ca3af; /* equivalent to text-gray-400 */
+}
+
+.searchInput {
+  width: 100%; /* equivalent to w-full */
+  padding-left: 2.5rem; /* equivalent to pl-10 */
+  padding-right: 1rem; /* equivalent to pr-4 */
+  padding-top: 0.5rem; /* equivalent to py-2 */
+  padding-bottom: 0.5rem;
+  border: 1px solid #d1d5db; /* equivalent to border border-gray-300 */
+  border-radius: 0.5rem; /* equivalent to rounded-lg */
+  font-size: 0.875rem; /* equivalent to text-sm */
+  outline: none; /* equivalent to focus:outline-none */
+}
+
+.searchInput:focus {
+  outline: 2px solid #3b82f6; /* equivalent to focus:ring-2 focus:ring-blue-500 */
+  outline-offset: 2px;
+  border-color: #3b82f6; /* Ensure border also changes on focus */
+}
+
+.statusFilterContainer {
+  display: flex;
+  gap: 0.5rem; /* equivalent to gap-2 */
+}
+
+.statusButton {
+  flex: 1; /* equivalent to flex-1 */
+  padding: 0.375rem 0.75rem; /* equivalent to px-3 py-1.5 */
+  font-size: 0.75rem; /* equivalent to text-xs */
+  font-weight: 500; /* equivalent to font-medium */
+  border-radius: 0.25rem; /* equivalent to rounded */
+}
+
+.statusButtonAllActive {
+  background-color: #2563eb; /* equivalent to bg-blue-600 */
+  color: #ffffff; /* equivalent to text-white */
+}
+
+.statusButtonInactive {
+  background-color: #f3f4f6; /* equivalent to bg-gray-100 */
+  color: #4b5563; /* equivalent to text-gray-600 */
+}
+
+.statusButtonInactive:hover {
+  background-color: #e5e7eb; /* equivalent to hover:bg-gray-200 */
+}
+
+.statusButtonPendingActive {
+  background-color: #ea580c; /* equivalent to bg-orange-600 */
+  color: #ffffff; /* equivalent to text-white */
+}
+
+.statusButtonCompletedActive {
+  background-color: #22c55e; /* equivalent to bg-green-600 */
+  color: #ffffff; /* equivalent to text-white */
+}
+
+.contractListItems {
+  border-bottom: 1px solid #e5e7eb; /* equivalent to divide-y divide-gray-200 */
+  max-height: 37.5rem; /* equivalent to max-h-[600px] */
+  overflow-y: auto;
+}
+
+.contractListItem {
+  padding: 1rem; /* equivalent to p-4 */
+  cursor: pointer;
+}
+
+.contractListItem:hover {
+  background-color: #f9fafb; /* equivalent to hover:bg-gray-50 */
+}
+
+.contractListItemActive {
+  background-color: #eff6ff; /* equivalent to bg-blue-50 */
+  border-left: 4px solid #2563eb; /* equivalent to border-l-4 border-blue-600 */
+}
+
+.contractListItemHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.5rem; /* equivalent to mb-2 */
+}
+
+.contractId {
+  font-weight: 600; /* equivalent to font-semibold */
+  color: #111827; /* equivalent to text-gray-900 */
+}
+
+.vehicleName {
+  font-size: 0.875rem; /* equivalent to text-sm */
+  color: #6b7280; /* equivalent to text-gray-600 */
+  margin-top: 0.25rem; /* equivalent to mt-1 */
+}
+
+.licensePlate {
+  font-size: 0.75rem; /* equivalent to text-xs */
+  color: #6b7280; /* equivalent to text-gray-500 */
+}
+
+.chevronIcon {
+  width: 1.25rem; /* equivalent to w-5 */
+  height: 1.25rem; /* equivalent to h-5 */
+  color: #9ca3af; /* equivalent to text-gray-400 */
+}
+
+.contractListItemFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.5rem; /* equivalent to mt-2 */
+}
+
+.statusBadge {
+  font-size: 0.75rem; /* equivalent to text-xs */
+  padding: 0.25rem 0.5rem; /* equivalent to px-2 py-1 */
+  border-radius: 0.25rem; /* equivalent to rounded */
+}
+
+.statusBadgePending {
+  background-color: #fff7ed; /* equivalent to bg-orange-100 */
+  color: #c2410c; /* equivalent to text-orange-700 */
+}
+
+.statusBadgeCompleted {
+  background-color: #f0fdf4; /* equivalent to bg-green-100 */
+  color: #15803d; /* equivalent to text-green-700 */
+}
+
+.createdAt {
+  font-size: 0.75rem; /* equivalent to text-xs */
+  color: #6b7280; /* equivalent to text-gray-500 */
+}
+
+.contractDetailsColumn {
+  grid-column: span 8 / span 8; /* equivalent to col-span-8 */
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* equivalent to space-y-6 */
+}
+
+.contractInfoBox {
+  background-color: #ffffff;
+  border-radius: 0.5rem; /* equivalent to rounded-lg */
+  border: 1px solid #e5e7eb; /* equivalent to border border-gray-200 */
+  padding: 1.5rem; /* equivalent to p-6 */
+}
+
+.contractInfoHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem; /* equivalent to mb-4 */
+}
+
+.contractInfoTitle {
+  font-weight: 600; /* equivalent to font-semibold */
+  color: #111827; /* equivalent to text-gray-900 */
+}
+
+.viewDetailsButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* equivalent to gap-2 */
+  padding-left: 1rem; /* equivalent to px-4 */
+  padding-right: 1rem;
+  padding-top: 0.5rem; /* equivalent to py-2 */
+  padding-bottom: 0.5rem;
+  background-color: #2563eb; /* equivalent to bg-blue-600 */
+  color: #ffffff; /* equivalent to text-white */
+  border-radius: 0.5rem; /* equivalent to rounded-lg */
+  font-size: 0.875rem; /* equivalent to text-sm */
+  font-weight: 500; /* equivalent to font-medium */
+}
+
+.viewDetailsButton:hover {
+  background-color: #1d4ed8; /* equivalent to hover:bg-blue-700 */
+}
+
+.vehicleInfoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)); /* equivalent to grid-cols-3 */
+  gap: 1rem; /* equivalent to gap-4 */
+}
+
+.infoCard {
+  border: 1px solid #e5e7eb; /* equivalent to border border-gray-200 */
+  border-radius: 0.5rem; /* equivalent to rounded-lg */
+  padding: 1rem; /* equivalent to p-4 */
+}
+
+.infoCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* equivalent to gap-2 */
+  margin-bottom: 0.75rem; /* equivalent to mb-3 */
+}
+
+.infoCardIconBlue svg {
+  width: 1.25rem; /* equivalent to w-5 */
+  height: 1.25rem; /* equivalent to h-5 */
+  color: #2563eb; /* equivalent to text-blue-600 */
+}
+
+.infoCardTitle {
+  font-size: 0.875rem; /* equivalent to text-sm */
+  font-weight: 500; /* equivalent to font-medium */
+  color: #4b5563; /* equivalent to text-gray-700 */
+}
+
+.infoCardTextBold {
+  font-weight: 700; /* equivalent to font-bold */
+  color: #111827; /* equivalent to text-gray-900 */
+}
+
+.infoCardTextSmall {
+  font-size: 0.875rem; /* equivalent to text-sm */
+  color: #6b7280; /* equivalent to text-gray-600 */
+  margin-top: 0.25rem; /* equivalent to mt-1 */
+}
+
+.infoCardPrice {
+  font-size: 1.125rem; /* equivalent to text-lg */
+  font-weight: 700; /* equivalent to font-bold */
+  color: #2563eb; /* equivalent to text-blue-600 */
+  margin-top: 0.5rem; /* equivalent to mt-2 */
+}
+
+.buyerSellerGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)); /* equivalent to grid-cols-2 */
+  gap: 1rem; /* equivalent to gap-4 */
+}
+
+.buyerSellerCard {
+  border: 1px solid #e5e7eb; /* equivalent to border border-gray-200 */
+  border-radius: 0.5rem; /* equivalent to rounded-lg */
+  padding: 1rem; /* equivalent to p-4 */
+}
+
+.buyerSellerCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem; /* equivalent to mb-3 */
+}
+
+.buyerSellerCardTitleContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* equivalent to gap-2 */
+}
+
+.buyerIcon svg {
+  width: 1.25rem; /* equivalent to w-5 */
+  height: 1.25rem; /* equivalent to h-5 */
+  color: #22c55e; /* equivalent to text-green-600 */
+}
+
+.sellerIcon svg {
+  width: 1.25rem; /* equivalent to w-5 */
+  height: 1.25rem; /* equivalent to h-5 */
+  color: #a855f7; /* equivalent to text-purple-600 */
+}
+
+.buyerSellerCardTitle {
+  font-size: 0.875rem; /* equivalent to text-sm */
+  font-weight: 500; /* equivalent to font-medium */
+  color: #4b5563; /* equivalent to text-gray-700 */
+}
+
+.actionButtons {
+  display: flex;
+  gap: 0.25rem; /* equivalent to gap-1 */
+}
+
+.actionButton {
+  padding: 0.25rem; /* equivalent to p-1 */
+}
+
+.actionButtonEditBuyer {
+  color: #22c55e; /* equivalent to text-green-600 */
+}
+
+.actionButtonEditBuyer:hover {
+  color: #15803d; /* equivalent to hover:text-green-700 */
+}
+
+.actionButtonEditSeller {
+  color: #a855f7; /* equivalent to text-purple-600 */
+}
+
+.actionButtonEditSeller:hover {
+  color: #9333ea; /* equivalent to hover:text-purple-700 */
+}
+
+.actionButtonSend {
+  color: #2563eb; /* equivalent to text-blue-600 */
+}
+
+.actionButtonSend:hover {
+  color: #1d4ed8; /* equivalent to hover:text-blue-700 */
+}
+
+.feeDistributionTableContainer {
+  background-color: #ffffff;
+  border-radius: 0.5rem; /* equivalent to rounded-lg */
+  border: 1px solid #e5e7eb; /* equivalent to border border-gray-200 */
+}
+
+.feeDistributionTableHeader {
+  padding: 1rem; /* equivalent to p-4 */
+  border-bottom: 1px solid #e5e7eb; /* equivalent to border-b border-gray-200 */
+}
+
+.feeDistributionTableTitle {
+  font-weight: 600; /* equivalent to font-semibold */
+  color: #111827; /* equivalent to text-gray-900 */
+}
+
+.overflowXAuto {
+  overflow-x: auto;
+}
+
+.feeTable {
+  width: 100%; /* equivalent to w-full */
+}
+
+.feeTableHeader {
+  background-color: #f9fafb; /* equivalent to bg-gray-50 */
+  border-bottom: 1px solid #e5e7eb; /* equivalent to border-b border-gray-200 */
+}
+
+.feeTableHeaderTh {
+  text-align: left;
+  padding-top: 0.75rem; /* equivalent to py-3 */
+  padding-bottom: 0.75rem;
+  padding-left: 1rem; /* equivalent to px-4 */
+  padding-right: 1rem;
+  font-size: 0.875rem; /* equivalent to text-sm */
+  font-weight: 600; /* equivalent to font-semibold */
+  color: #374151; /* equivalent to text-gray-700 */
+}
+
+.feeTableHeaderThRight {
+  text-align: right;
+}
+
+.feeTableHeaderThCenter {
+  text-align: center;
+  width: 6rem; /* equivalent to w-24 */
+}
+
+.feeTableBody {
+  border-bottom: 1px solid #e5e7eb; /* equivalent to divide-y divide-gray-200 */
+}
+
+.feeTableRow:hover {
+  background-color: #f9fafb; /* equivalent to hover:bg-gray-50 */
+}
+
+.feeTableCell {
+  padding-top: 0.75rem; /* equivalent to py-3 */
+  padding-bottom: 0.75rem;
+  padding-left: 1rem; /* equivalent to px-4 */
+  padding-right: 1rem;
+}
+
+.feeNameContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem; /* equivalent to gap-3 */
+}
+
+.feeIconWrapper {
+  background-color: #f3f4f6; /* equivalent to bg-gray-100 */
+  padding: 0.5rem; /* equivalent to p-2 */
+  border-radius: 0.25rem; /* equivalent to rounded */
+}
+
+.feeIconWrapper svg {
+  width: 1rem; /* equivalent to w-4 */
+  height: 1rem; /* equivalent to h-4 */
+  color: #4b5563; /* equivalent to text-gray-600 */
+}
+
+.feeName {
+  font-weight: 500; /* equivalent to font-medium */
+  color: #111827; /* equivalent to text-gray-900 */
+  font-size: 0.875rem; /* equivalent to text-sm */
+}
+
+.feeDescription {
+  font-size: 0.75rem; /* equivalent to text-xs */
+  color: #6b7280; /* equivalent to text-gray-500 */
+}
+
+.feeAmount {
+  font-weight: 600; /* equivalent to font-semibold */
+  color: #111827; /* equivalent to text-gray-900 */
+  font-size: 0.875rem; /* equivalent to text-sm */
+}
+
+.feePercentage {
+  font-size: 0.75rem; /* equivalent to text-xs */
+  color: #6b7280; /* equivalent to text-gray-500 */
+}
+
+.checkIconContainer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem; /* equivalent to w-7 */
+  height: 1.75rem; /* equivalent to h-7 */
+  background-color: #dcfce7; /* equivalent to bg-green-100 */
+  border-radius: 0.25rem; /* equivalent to rounded */
+}
+
+.checkIcon svg {
+  width: 1rem; /* equivalent to w-4 */
+  height: 1rem; /* equivalent to h-4 */
+  color: #22c55e; /* equivalent to text-green-600 */
+}
+
+.xIconContainer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem; /* equivalent to w-7 */
+  height: 1.75rem; /* equivalent to h-7 */
+  background-color: #f3f4f6; /* equivalent to bg-gray-100 */
+  border-radius: 0.25rem; /* equivalent to rounded */
+}
+
+.xIcon svg {
+  width: 1rem; /* equivalent to w-4 */
+  height: 1rem; /* equivalent to h-4 */
+  color: #9ca3af; /* equivalent to text-gray-400 */
+}
+
+.feeTableFooter {
+  background-color: #f9fafb; /* equivalent to bg-gray-50 */
+  border-top: 2px solid #d1d5db; /* equivalent to border-t-2 border-gray-300 */
+}
+
+.feeTableFooterCell {
+  padding-top: 0.75rem; /* equivalent to py-3 */
+  padding-bottom: 0.75rem;
+  padding-left: 1rem; /* equivalent to px-4 */
+  padding-right: 1rem;
+  font-weight: 700; /* equivalent to font-bold */
+  color: #111827; /* equivalent to text-gray-900 */
+}
+
+.feeTableFooterCellRight {
+  text-align: right;
+}
+
+.feeTableFooterCellCenterGreen {
+  text-align: center;
+  font-weight: 700; /* equivalent to font-bold */
+  color: #22c55e; /* equivalent to text-green-600 */
+}
+
+.feeTableFooterCellCenterPurple {
+  text-align: center;
+  font-weight: 700; /* equivalent to font-bold */
+  color: #a855f7; /* equivalent to text-purple-600 */
+}
+
+.paymentSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)); /* equivalent to grid-cols-2 */
+  gap: 1rem; /* equivalent to gap-4 */
+}
+
+.paymentSummaryCardGreen {
+  background-image: linear-gradient(to bottom right, #22c55e, #16a34a); /* equivalent to bg-gradient-to-br from-green-500 to-green-600 */
+  border-radius: 0.5rem; /* equivalent to rounded-lg */
+  padding: 1.5rem; /* equivalent to p-6 */
+  color: #ffffff; /* equivalent to text-white */
+}
+
+.paymentSummaryCardPurple {
+  background-image: linear-gradient(to bottom right, #a855f7, #9333ea); /* equivalent to bg-gradient-to-br from-purple-500 to-purple-600 */
+  border-radius: 0.5rem; /* equivalent to rounded-lg */
+  padding: 1.5rem; /* equivalent to p-6 */
+  color: #ffffff; /* equivalent to text-white */
+}
+
+.paymentSummaryHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem; /* equivalent to mb-2 */
+}
+
+.paymentSummaryTitle {
+  font-weight: 600; /* equivalent to font-semibold */
+}
+
+.paymentSummaryIcon {
+  width: 1.5rem; /* equivalent to w-6 */
+  height: 1.5rem; /* equivalent to h-6 */
+  opacity: 0.75; /* equivalent to opacity-75 */
+}
+
+.paymentSummaryAmount {
+  font-size: 1.875rem; /* equivalent to text-3xl */
+  font-weight: 700; /* equivalent to font-bold */
+  margin-bottom: 0.25rem; /* equivalent to mb-1 */
+}
+
+.paymentSummaryFeeCountGreen {
+  color: #dcfce7; /* equivalent to text-green-100 */
+  font-size: 0.875rem; /* equivalent to text-sm */
+}
+
+.paymentSummaryFeeCountPurple {
+  color: #f3e8ff; /* equivalent to text-purple-100 */
+  font-size: 0.875rem; /* equivalent to text-sm */
+}
+
+.confirmButton {
+  width: 100%; /* equivalent to w-full */
+  padding-top: 0.75rem; /* equivalent to py-3 */
+  padding-bottom: 0.75rem;
+  border-radius: 0.5rem; /* equivalent to rounded-lg */
+  font-weight: 600; /* equivalent to font-semibold */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem; /* equivalent to gap-2 */
+}
+
+.confirmButtonCompleted {
+  background-color: #d1d5db; /* equivalent to bg-gray-300 */
+  color: #6b7280; /* equivalent to text-gray-500 */
+  cursor: not-allowed;
+}
+
+.confirmButtonActive {
+  background-color: #2563eb; /* equivalent to bg-blue-600 */
+  color: #ffffff; /* equivalent to text-white */
+}
+
+.confirmButtonActive:hover {
+  background-color: #1d4ed8; /* equivalent to hover:bg-blue-700 */
+}
+
+.confirmButtonIcon {
+  width: 1.25rem; /* equivalent to w-5 */
+  height: 1.25rem; /* equivalent to h-5 */
+}

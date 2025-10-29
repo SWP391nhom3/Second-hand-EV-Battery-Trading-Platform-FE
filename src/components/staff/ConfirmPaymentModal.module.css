@@ -1,0 +1,125 @@
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 1rem;
+}
+
+.modalContent {
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  max-width: 28rem; /* max-w-md */
+  width: 100%;
+}
+
+.mainContent {
+  padding: 1.5rem;
+}
+
+.headerFlex {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.iconContainer {
+  background-color: #fefce8;
+  padding: 0.75rem;
+  border-radius: 9999px;
+}
+
+.iconContainer svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #eab308;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.bodyText {
+  color: #374151;
+  margin-bottom: 1.5rem;
+}
+
+.summaryCard {
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.summaryItem {
+  display: flex;
+  justify-content: space-between;
+}
+
+.summaryLabel {
+  color: #4b5563;
+}
+
+.summaryValue {
+  font-weight: 600;
+}
+
+.summaryValueGreen {
+  color: #22c55e;
+}
+
+.summaryValuePurple {
+  color: #a855f7;
+}
+
+.warningCard {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+}
+
+.warningText {
+  font-size: 0.875rem;
+  color: #b91c1c;
+}
+
+.footerButtons {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.cancelButton {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.cancelButton:hover {
+  background-color: #f9fafb;
+}
+
+.confirmButton {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background-color: #2563eb;
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 0.5rem;
+}
+
+.confirmButton:hover {
+  background-color: #1d4ed8;
+}
