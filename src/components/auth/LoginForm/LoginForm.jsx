@@ -1,7 +1,7 @@
 import React from "react";
 import { Button, Checkbox, Form, Input, Typography } from "antd";
 import { MailOutlined, LockOutlined } from "@ant-design/icons";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import api from "../../../configs/axios";
 import styles from "./LoginForm.module.css";
@@ -10,38 +10,46 @@ const { Title, Text } = Typography;
 
 const LoginForm = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [form] = Form.useForm();
 
   const handleSubmit = async (values) => {
     try {
-      const response = await api.post("api/Auth/login", values);
+      // 🔹 Gọi đúng API backend
+      const response = await api.post("/api/Account/login", {
+        email: values.email,
+        password: values.password,
+      });
+
       const data = response.data || {};
-      // lưu token và user (tùy cấu trúc response của backend)
-      if (data.token) {
-        localStorage.setItem("authToken", data.token);
-        api.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
+
+      if (!data.token || !data.user) {
+        toast.error("Phản hồi không hợp lệ từ server!");
+        return;
       }
-      if (data.user) {
-        localStorage.setItem("user", JSON.stringify(data.user));
-      }
+
+      // 🔹 Lưu token và user
+      localStorage.setItem("authToken", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      api.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
+
       toast.success("Đăng nhập thành công!");
-      console.log("Successful Login:", values);
-      // notify other components (same-tab) that auth changed
-      try {
-        window.dispatchEvent(new Event("authChanged"));
-      } catch (e) {
-        /* ignore */
+
+      // 🧭 Điều hướng theo role
+      const role = data.user.role?.toLowerCase();
+      console.log("User role:", role);
+
+      if (role === "admin") {
+        navigate("/admin/dashboard");
+      } else if (role === "staff") {
+        navigate("/staff"); // ✅ chỉ vào /staff thay vì /staff/dashboard
+      } else {
+        navigate("/");
       }
-      // Nếu có redirect trong query, quay về đó, ngược lại về trang chủ
-      const params = new URLSearchParams(location.search);
-      const redirect = params.get("redirect") || "/";
-      navigate(redirect);
     } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Đăng nhập thất bại. Vui lòng thử lại."
-      );
       console.error("Login error:", error);
+      toast.error(
+        error.response?.data || "Đăng nhập thất bại. Vui lòng kiểm tra lại!"
+      );
     }
   };
 
@@ -76,7 +84,7 @@ const LoginForm = () => {
           name="email"
           rules={[
             { required: true, message: "Vui lòng nhập email!" },
-            { type: "email", message: "Vui lòng nhập email hợp lệ!" },
+            { type: "email", message: "Email không hợp lệ!" },
           ]}
         >
           <Input
@@ -89,10 +97,7 @@ const LoginForm = () => {
         <Form.Item
           label="Mật khẩu"
           name="password"
-          rules={[
-            { required: true, message: "Vui lòng nhập mật khẩu!" },
-            { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự!" },
-          ]}
+          rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
         >
           <Input.Password
             prefix={<LockOutlined />}
