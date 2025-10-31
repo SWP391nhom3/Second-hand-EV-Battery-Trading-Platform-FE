@@ -14,55 +14,47 @@ const LoginForm = () => {
 
   const handleSubmit = async (values) => {
     try {
-      // 🔹 Gọi đúng API backend
-      const response = await api.post("/api/Account/login", {
+      // 🔹 Gọi API đăng nhập
+      const response = await api.post("/api/Auth/login", {
         email: values.email,
         password: values.password,
       });
 
       const data = response.data || {};
 
-      if (!data.token || !data.user) {
-        toast.error("Phản hồi không hợp lệ từ server!");
-        return;
-      }
+      // 🔹 Lưu thông tin user vào localStorage
+      localStorage.setItem("user", JSON.stringify(data));
 
-      // 🔹 Lưu token và user
-      localStorage.setItem("authToken", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      api.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
+      toast.success("Đăng nhập thành công! 🎉");
 
-      toast.success("Đăng nhập thành công!");
-
-      // 🧭 Điều hướng theo role
-      const role = data.user.role?.toLowerCase();
-      console.log("User role:", role);
-
-      if (role === "admin") {
-        navigate("/admin/dashboard");
-      } else if (role === "staff") {
-        navigate("/staff"); // ✅ chỉ vào /staff thay vì /staff/dashboard
-      } else {
-        navigate("/");
+      // 🔹 Điều hướng theo vai trò (role)
+      const role = data.role?.toLowerCase();
+      switch (role) {
+        case "admin":
+          navigate("/admin");
+          break;
+        case "staff":
+          navigate("/staff");
+          break;
+        case "member":
+        default:
+          navigate("/");
+          break;
       }
     } catch (error) {
       console.error("Login error:", error);
       toast.error(
-        error.response?.data || "Đăng nhập thất bại. Vui lòng kiểm tra lại!"
+        error.response?.data?.message ||
+          "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin!"
       );
     }
-  };
-
-  const handleSubmitFailed = (errorInfo) => {
-    console.error("Form validation failed:", errorInfo);
-    toast.error("Vui lòng kiểm tra thông tin và thử lại.");
   };
 
   return (
     <div className={styles.loginFormContainer}>
       <div className={styles.formHeader}>
         <Title level={2} className={styles.formTitle}>
-          Chào mừng trở lại
+          Chào mừng trở lại 👋
         </Title>
         <Text className={styles.formSubtitle}>
           Đăng nhập vào tài khoản của bạn để tiếp tục
@@ -73,9 +65,7 @@ const LoginForm = () => {
         form={form}
         name="loginForm"
         layout="vertical"
-        initialValues={{ remember: true }}
         onFinish={handleSubmit}
-        onFinishFailed={handleSubmitFailed}
         autoComplete="off"
         size="large"
       >
@@ -102,19 +92,18 @@ const LoginForm = () => {
           <Input.Password
             prefix={<LockOutlined />}
             placeholder="Nhập mật khẩu của bạn"
+            autoComplete="current-password"
           />
         </Form.Item>
 
-        <Form.Item>
-          <div className={styles.formOptions}>
-            <Form.Item name="remember" valuePropName="checked" noStyle>
-              <Checkbox>Ghi nhớ đăng nhập</Checkbox>
-            </Form.Item>
-            <Link to="/forgot-password" className={styles.forgotLink}>
-              Quên mật khẩu?
-            </Link>
-          </div>
-        </Form.Item>
+        <div className={styles.formOptions}>
+          <Form.Item name="remember" valuePropName="checked" noStyle>
+            <Checkbox>Ghi nhớ đăng nhập</Checkbox>
+          </Form.Item>
+          <Link to="/forgot-password" className={styles.forgotLink}>
+            Quên mật khẩu?
+          </Link>
+        </div>
 
         <Form.Item>
           <Button
@@ -128,7 +117,7 @@ const LoginForm = () => {
         </Form.Item>
 
         <div className={styles.formFooter}>
-          <Text>Chưa có tài khoản? </Text>
+          <Text>Bạn là thành viên mới? </Text>
           <Link to="/register" className={styles.registerLink}>
             Đăng ký ngay
           </Link>
