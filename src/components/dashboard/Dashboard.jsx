@@ -13,7 +13,16 @@ import {
   SunOutlined,
 } from "@ant-design/icons";
 import { Layout, Menu, Button, Avatar, Typography, theme, Switch } from "antd";
-import logo from "../../assets/Logo-Page.png"; // ✅ dùng ảnh trong src/assets
+import logo from "../../assets/Logo-Page.png";
+
+// import các trang con
+import DashboardOverview from "./pages/DashboardOverView";
+import UserManagement from "./pages/UserManagement";
+import PostManagement from "./pages/PostManagement";
+import Transaction from "./pages/Transaction";
+import Commission from "./pages/Commission";
+import Request from "./pages/Request";
+import Reporting from "./pages/Reporting";
 
 const { Header, Sider, Content, Footer } = Layout;
 const { Title } = Typography;
@@ -21,20 +30,41 @@ const { Title } = Typography;
 const Dashboard = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [selectedKey, setSelectedKey] = useState("overview");
 
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
-  const items = [
-    { key: "1", icon: <UserOutlined />, label: "Người dùng" },
-    { key: "2", icon: <ShopOutlined />, label: "Sản phẩm" },
-    { key: "3", icon: <AppstoreOutlined />, label: "Danh mục" },
-    { key: "4", icon: <BarChartOutlined />, label: "Báo cáo" },
-    { key: "5", icon: <TeamOutlined />, label: "Nhân viên" },
-    { key: "6", icon: <VideoCameraOutlined />, label: "Quảng cáo" },
-    { key: "7", icon: <UploadOutlined />, label: "Tệp tải lên" },
+  const menuItems = [
+    { key: "overview", icon: <AppstoreOutlined />, label: "Tổng quan" },
+    { key: "users", icon: <UserOutlined />, label: "Người dùng" },
+    { key: "posts", icon: <ShopOutlined />, label: "Sản phẩm" },
+    { key: "transaction", icon: <UploadOutlined />, label: "Giao dịch" },
+    { key: "commission", icon: <TeamOutlined />, label: "Hoa hồng" },
+    { key: "request", icon: <VideoCameraOutlined />, label: "Yêu cầu" },
+    { key: "reporting", icon: <BarChartOutlined />, label: "Báo cáo" },
   ];
+
+  // render nội dung tương ứng
+  const renderContent = () => {
+    switch (selectedKey) {
+      case "users":
+        return <UserManagement />;
+      case "posts":
+        return <PostManagement />;
+      case "transaction":
+        return <Transaction />;
+      case "commission":
+        return <Commission />;
+      case "request":
+        return <Request />;
+      case "reporting":
+        return <Reporting />;
+      default:
+        return <DashboardOverview />;
+    }
+  };
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -78,12 +108,10 @@ const Dashboard = () => {
         <Menu
           theme={darkMode ? "dark" : "light"}
           mode="inline"
-          defaultSelectedKeys={["1"]}
-          items={items}
-          style={{
-            borderRight: "none",
-            fontWeight: 500,
-          }}
+          selectedKeys={[selectedKey]}
+          onClick={(e) => setSelectedKey(e.key)}
+          items={menuItems}
+          style={{ borderRight: "none", fontWeight: 500 }}
         />
       </Sider>
 
@@ -107,7 +135,8 @@ const Dashboard = () => {
               onClick={() => setCollapsed(!collapsed)}
             />
             <Title level={4} style={{ margin: 0 }}>
-              Bảng điều khiển
+              {menuItems.find((i) => i.key === selectedKey)?.label ||
+                "Bảng điều khiển"}
             </Title>
           </div>
 
@@ -136,11 +165,7 @@ const Dashboard = () => {
               minHeight: "75vh",
             }}
           >
-            <Title level={5}>Chào mừng đến với trang quản trị 🚀</Title>
-            <p>
-              Đây là giao diện Dashboard của admin. Bạn có thể quản lý người
-              dùng, sản phẩm, báo cáo và nhiều mục khác ở menu bên trái.
-            </p>
+            {renderContent()}
           </div>
         </Content>
 

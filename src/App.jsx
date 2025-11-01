@@ -9,13 +9,15 @@ import CustomerPage from "./pages/customer/CustomerPage";
 import StaffPage from "./pages/staff/StaffPage";
 import AdminPage from "./pages/admin/AdminPage";
 
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css"; // Đảm bảo import CSS
+
 function App() {
   const router = createBrowserRouter([
-    //đường dẫn của react router dom
     {
       path: "/",
       element: <HomePage />,
-      errorElement: <div>Something went wrong!</div>, // Thêm error handling
+      errorElement: <div>Something went wrong!</div>,
     },
     {
       path: "/login",
@@ -58,7 +60,25 @@ function App() {
       element: <div>404 - Page Not Found</div>,
     },
   ]);
-  return <RouterProvider router={router} />;
+
+  return (
+    <>
+      <RouterProvider router={router} />
+      {/* ĐƯA TOASTCONTAINER VÀO ĐÂY */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+    </>
+  );
 }
 
 export default App;

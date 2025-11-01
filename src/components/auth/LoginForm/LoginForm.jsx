@@ -1,5 +1,5 @@
-import React from "react";
-import { Button, Checkbox, Form, Input, Typography } from "antd";
+import React, { useState } from "react";
+import { Button, Checkbox, Form, Input, Typography, Alert } from "antd";
 import { MailOutlined, LockOutlined } from "@ant-design/icons";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -12,36 +12,54 @@ const LoginForm = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [form] = Form.useForm();
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleSubmit = async (values) => {
+    setErrorMessage("");
     try {
       const response = await api.post("api/Auth/login", values);
       const data = response.data || {};
-      // lưu token và user (tùy cấu trúc response của backend)
+
       if (data.token) {
         localStorage.setItem("authToken", data.token);
         api.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
       }
       if (data.user) {
         localStorage.setItem("user", JSON.stringify(data.user));
+        localStorage.setItem("role", data.user.role); // lưu role để dùng sau
       }
+
+      console.log("Successful login:", data);
       toast.success("Đăng nhập thành công!");
-      console.log("Successful Login:", values);
-      // notify other components (same-tab) that auth changed
-      try {
-        window.dispatchEvent(new Event("authChanged"));
-      } catch (e) {
-        /* ignore */
-      }
-      // Nếu có redirect trong query, quay về đó, ngược lại về trang chủ
+      window.dispatchEvent(new Event("authChanged"));
+
+      // 🔹 Điều hướng dựa vào role hoặc query param
       const params = new URLSearchParams(location.search);
-      const redirect = params.get("redirect") || "/";
-      navigate(redirect);
+      const redirect = params.get("redirect");
+      const role = data.role;
+
+      if (redirect) {
+        navigate(redirect);
+      } else if (role === "Admin") {
+        navigate("/admin");
+      } else if (role === "Staff") {
+        navigate("/staff");
+      } else {
+        navigate("/");
+      }
     } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Đăng nhập thất bại. Vui lòng thử lại."
-      );
       console.error("Login error:", error);
+
+      if (error.response?.status === 401) {
+        setErrorMessage("Email hoặc mật khẩu không đúng. Vui lòng thử lại!");
+      } else {
+        setErrorMessage(
+          error.response?.data?.message ||
+            "Đăng nhập thất bại. Vui lòng thử lại sau."
+        );
+      }
+
+      toast.error("Đăng nhập thất bại!");
     }
   };
 
@@ -60,6 +78,16 @@ const LoginForm = () => {
           Đăng nhập vào tài khoản của bạn để tiếp tục
         </Text>
       </div>
+
+      {errorMessage && (
+        <Alert
+          message={errorMessage}
+          type="error"
+          showIcon
+          className={styles.errorAlert}
+          style={{ marginBottom: "16px" }}
+        />
+      )}
 
       <Form
         form={form}
