@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button, Checkbox, Form, Input, Typography, Alert } from "antd";
 import { MailOutlined, LockOutlined } from "@ant-design/icons";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import api from "../../../configs/axios";
 import styles from "./LoginForm.module.css";
@@ -10,42 +10,39 @@ const { Title, Text } = Typography;
 
 const LoginForm = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [form] = Form.useForm();
   const [errorMessage, setErrorMessage] = useState("");
 
   const handleSubmit = async (values) => {
     setErrorMessage("");
     try {
-      const response = await api.post("api/Auth/login", values);
+      // 🔹 Gọi API đăng nhập
+      const response = await api.post("api/Auth/login", {
+        email: values.email,
+        password: values.password,
+      });
+
       const data = response.data || {};
 
-      if (data.token) {
-        localStorage.setItem("authToken", data.token);
-        api.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
-      }
-      if (data.user) {
-        localStorage.setItem("user", JSON.stringify(data.user));
-        localStorage.setItem("role", data.user.role); // lưu role để dùng sau
-      }
+      // 🔹 Lưu thông tin người dùng
+      localStorage.setItem("user", JSON.stringify(data));
+      localStorage.setItem("role", data.role);
 
+      toast.success("Đăng nhập thành công! 🎉");
       console.log("Successful login:", data);
-      toast.success("Đăng nhập thành công!");
-      window.dispatchEvent(new Event("authChanged"));
 
-      // 🔹 Điều hướng dựa vào role hoặc query param
-      const params = new URLSearchParams(location.search);
-      const redirect = params.get("redirect");
-      const role = data.role;
-
-      if (redirect) {
-        navigate(redirect);
-      } else if (role === "Admin") {
-        navigate("/admin");
-      } else if (role === "Staff") {
-        navigate("/staff");
-      } else {
-        navigate("/");
+      // 🔹 Điều hướng theo role
+      const role = data.role?.toLowerCase();
+      switch (role) {
+        case "admin":
+          navigate("/admin");
+          break;
+        case "staff":
+          navigate("/staff");
+          break;
+        default:
+          navigate("/");
+          break;
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -63,16 +60,11 @@ const LoginForm = () => {
     }
   };
 
-  const handleSubmitFailed = (errorInfo) => {
-    console.error("Form validation failed:", errorInfo);
-    toast.error("Vui lòng kiểm tra thông tin và thử lại.");
-  };
-
   return (
     <div className={styles.loginFormContainer}>
       <div className={styles.formHeader}>
         <Title level={2} className={styles.formTitle}>
-          Chào mừng trở lại
+          Chào mừng trở lại 👋
         </Title>
         <Text className={styles.formSubtitle}>
           Đăng nhập vào tài khoản của bạn để tiếp tục
@@ -93,9 +85,7 @@ const LoginForm = () => {
         form={form}
         name="loginForm"
         layout="vertical"
-        initialValues={{ remember: true }}
         onFinish={handleSubmit}
-        onFinishFailed={handleSubmitFailed}
         autoComplete="off"
         size="large"
       >
@@ -104,7 +94,7 @@ const LoginForm = () => {
           name="email"
           rules={[
             { required: true, message: "Vui lòng nhập email!" },
-            { type: "email", message: "Vui lòng nhập email hợp lệ!" },
+            { type: "email", message: "Email không hợp lệ!" },
           ]}
         >
           <Input
@@ -117,27 +107,23 @@ const LoginForm = () => {
         <Form.Item
           label="Mật khẩu"
           name="password"
-          rules={[
-            { required: true, message: "Vui lòng nhập mật khẩu!" },
-            { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự!" },
-          ]}
+          rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
         >
           <Input.Password
             prefix={<LockOutlined />}
             placeholder="Nhập mật khẩu của bạn"
+            autoComplete="current-password"
           />
         </Form.Item>
 
-        <Form.Item>
-          <div className={styles.formOptions}>
-            <Form.Item name="remember" valuePropName="checked" noStyle>
-              <Checkbox>Ghi nhớ đăng nhập</Checkbox>
-            </Form.Item>
-            <Link to="/forgot-password" className={styles.forgotLink}>
-              Quên mật khẩu?
-            </Link>
-          </div>
-        </Form.Item>
+        <div className={styles.formOptions}>
+          <Form.Item name="remember" valuePropName="checked" noStyle>
+            <Checkbox>Ghi nhớ đăng nhập</Checkbox>
+          </Form.Item>
+          <Link to="/forgot-password" className={styles.forgotLink}>
+            Quên mật khẩu?
+          </Link>
+        </div>
 
         <Form.Item>
           <Button
@@ -151,7 +137,7 @@ const LoginForm = () => {
         </Form.Item>
 
         <div className={styles.formFooter}>
-          <Text>Chưa có tài khoản? </Text>
+          <Text>Bạn là thành viên mới? </Text>
           <Link to="/register" className={styles.registerLink}>
             Đăng ký ngay
           </Link>
