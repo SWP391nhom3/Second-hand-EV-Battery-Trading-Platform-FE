@@ -31,8 +31,9 @@ const LoginForm = () => {
       toast.success("Đăng nhập thành công! 🎉");
       console.log("Successful login:", data);
 
+      // Không phải: data.role
       // 🔹 Điều hướng theo role
-      const role = data.role?.toLowerCase();
+      const role = data.account?.role?.toLowerCase();
       switch (role) {
         case "admin":
           navigate("/admin");
