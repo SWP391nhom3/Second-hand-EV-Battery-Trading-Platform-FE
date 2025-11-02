@@ -23,16 +23,36 @@ const LoginForm = () => {
       });
 
       const data = response.data || {};
+      
+      // 🔹 Lấy thông tin từ response structure
+      // Response: { token, account: { accountId, email, phone, role, member: {...} } }
+      const account = data.account || data;
+      const token = data.token;
+      const role = (account.role || data.role)?.toLowerCase();
 
-      // 🔹 Lưu thông tin người dùng
-      localStorage.setItem("user", JSON.stringify(data));
-      localStorage.setItem("role", data.role);
+      // 🔹 Lưu token và thông tin người dùng vào localStorage
+      if (token) {
+        localStorage.setItem("token", token);
+        localStorage.setItem("authToken", token); // ✅ Lưu cả authToken để tương thích với các component khác
+      }
+      localStorage.setItem("user", JSON.stringify(account));
+      localStorage.setItem("role", role);
+
+      // 🔹 Thông báo event để các component khác cập nhật
+      try {
+        window.dispatchEvent(new Event("authChanged"));
+      } catch (e) {
+        console.warn("Could not dispatch authChanged event:", e);
+      }
 
       toast.success("Đăng nhập thành công! 🎉");
-      console.log("Successful login:", data);
+      console.log("✅ Successful login:", {
+        token: token ? "✓ Saved" : "✗ Missing",
+        user: account,
+        role: role,
+      });
 
       // 🔹 Điều hướng theo role
-      const role = data.role?.toLowerCase();
       switch (role) {
         case "admin":
           navigate("/admin");
