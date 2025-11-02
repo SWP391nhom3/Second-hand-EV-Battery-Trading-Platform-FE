@@ -30,8 +30,11 @@ const Header = () => {
   // Sync auth state on mount and on events
   useEffect(() => {
     const checkAuth = () => {
+      // ✅ Kiểm tra cả "token" và "authToken" để tương thích
       const token =
+        localStorage.getItem("token") ||
         localStorage.getItem("authToken") ||
+        sessionStorage.getItem("token") ||
         sessionStorage.getItem("authToken");
       setIsLoggedIn(!!token);
     };
@@ -78,9 +81,12 @@ const Header = () => {
       icon: <LogoutOutlined />,
       label: "Đăng xuất",
       onClick: () => {
-        // remove auth and notify listeners
+        // ✅ Xóa tất cả auth data và notify listeners
+        localStorage.removeItem("token");
         localStorage.removeItem("authToken");
         localStorage.removeItem("user");
+        localStorage.removeItem("role");
+        sessionStorage.removeItem("token");
         sessionStorage.removeItem("authToken");
         setIsLoggedIn(false);
         message.success("Đã đăng xuất!");
@@ -203,9 +209,32 @@ const Header = () => {
             placement="bottomRight"
           >
             <Avatar
-              src={isLoggedIn ? "https://i.pravatar.cc/40" : null}
+              src={
+                isLoggedIn
+                  ? (() => {
+                      try {
+                        const user = JSON.parse(localStorage.getItem("user") || "{}");
+                        return user.member?.avatarUrl || user.avatarUrl || "https://i.pravatar.cc/40";
+                      } catch {
+                        return "https://i.pravatar.cc/40";
+                      }
+                    })()
+                  : null
+              }
               icon={<UserOutlined />}
               style={{ cursor: "pointer" }}
+              title={
+                isLoggedIn
+                  ? (() => {
+                      try {
+                        const user = JSON.parse(localStorage.getItem("user") || "{}");
+                        return user.email || user.member?.fullName || "User";
+                      } catch {
+                        return "User";
+                      }
+                    })()
+                  : "Đăng nhập"
+              }
             />
           </Dropdown>
 
