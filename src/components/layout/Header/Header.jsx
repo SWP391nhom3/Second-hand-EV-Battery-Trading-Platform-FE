@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Button, Badge, Avatar, Dropdown, message } from "antd";
+import React, { useState, useEffect } from "react"; // ← THÊM DÒNG NÀY!
+import { Button, Badge, Avatar, Dropdown, message, Space } from "antd";
 import {
   MenuOutlined,
   CloseOutlined,
@@ -7,35 +7,29 @@ import {
   UserOutlined,
   LoginOutlined,
   LogoutOutlined,
-  PlusOutlined, // added
+  PlusOutlined,
+  DashboardOutlined,
 } from "@ant-design/icons";
-
-import { useNavigate } from "react-router-dom"; // ✅ thêm dòng này
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
-  // khởi tạo từ localStorage để giữ chế độ người dùng đã chọn
   const [isDarkMode, setIsDarkMode] = useState(() => {
     try {
       return localStorage.getItem("isDarkMode") === "true";
-    } catch (e) {
+    } catch {
       return false;
     }
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const navigate = useNavigate(); //  hook điều hướng
+  const navigate = useNavigate();
 
-  // Sync auth state on mount and on events
+  // Kiểm tra trạng thái đăng nhập
   useEffect(() => {
     const checkAuth = () => {
-      // ✅ Kiểm tra cả "token" và "authToken" để tương thích
-      const token =
-        localStorage.getItem("token") ||
-        localStorage.getItem("authToken") ||
-        sessionStorage.getItem("token") ||
-        sessionStorage.getItem("authToken");
+      const token = localStorage.getItem("token");
       setIsLoggedIn(!!token);
     };
     checkAuth();
@@ -58,60 +52,94 @@ const Header = () => {
     setIsDarkMode(next);
     try {
       localStorage.setItem("isDarkMode", next ? "true" : "false");
-    } catch (e) {
-      /* ignore */
-    }
+    } catch {}
   };
 
   useEffect(() => {
-    // set cả className và style trực tiếp để tránh CSS global làm nền tối không mong muốn
     document.body.className = isDarkMode ? "dark" : "light";
     document.body.style.background = isDarkMode ? "#141414" : "#ffffff";
     document.body.style.color = isDarkMode ? "#ffffff" : "#000000";
   }, [isDarkMode]);
 
-  // ✅ Menu khi đã đăng nhập
-  const loggedInMenuItems = [
-    {
-      key: "profile",
-      label: <a href="/profile">👤 Hồ sơ cá nhân</a>,
-    },
-    {
-      key: "logout",
-      icon: <LogoutOutlined />,
-      label: "Đăng xuất",
-      onClick: () => {
-        // ✅ Xóa tất cả auth data và notify listeners
-        localStorage.removeItem("token");
-        localStorage.removeItem("authToken");
-        localStorage.removeItem("user");
-        localStorage.removeItem("role");
-        sessionStorage.removeItem("token");
-        sessionStorage.removeItem("authToken");
-        setIsLoggedIn(false);
-        message.success("Đã đăng xuất!");
-        try {
-          window.dispatchEvent(new Event("authChanged"));
-        } catch (e) {
-          /* ignore */
-        }
-        navigate("/");
-      },
-    },
-  ];
+  // Lấy thông tin user
+  const getUserInfo = () => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const name = user.member?.fullName || user.email?.split("@")[0] || "User";
+      const avatar =
+        user.member?.avatarUrl ||
+        user.avatarUrl ||
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(
+          name
+        )}&background=1890ff&color=fff`;
+      return { name, avatar };
+    } catch {
+      return {
+        name: "User",
+        avatar: `https://ui-avatars.com/api/?name=U&background=1890ff&color=fff`,
+      };
+    }
+  };
 
-  // ✅ Menu khi chưa đăng nhập
-  const guestMenuItems = [
-    {
-      key: "login",
-      icon: <LoginOutlined />,
-      label: "Đăng nhập",
-      onClick: () => {
-        message.info("Chuyển đến trang đăng nhập...");
-        navigate("/login"); // ✅ chuyển hướng sang trang login
-      },
-    },
-  ];
+  const { name: userName, avatar: userAvatar } = getUserInfo();
+  const role = localStorage.getItem("role")?.toLowerCase();
+
+  const menuItems = isLoggedIn
+    ? [
+        {
+          key: "profile",
+          label: (
+            <Space>
+              <UserOutlined />
+              Hồ sơ cá nhân
+            </Space>
+          ),
+          onClick: () => navigate("/profile"),
+        },
+        {
+          key: "dashboard",
+          icon: <DashboardOutlined />,
+          label:
+            role === "admin"
+              ? "Quản trị"
+              : role === "staff"
+              ? "Nhân viên"
+              : "Trang cá nhân",
+          onClick: () => {
+            if (role === "admin") navigate("/admin");
+            else if (role === "staff") navigate("/staff");
+            else navigate("/customer");
+          },
+        },
+        { type: "divider" },
+        {
+          key: "logout",
+          icon: <LogoutOutlined />,
+          label: "Đăng xuất",
+          danger: true,
+          onClick: () => {
+            localStorage.clear();
+            sessionStorage.clear();
+            setIsLoggedIn(false);
+            message.success("Đã đăng xuất!");
+            window.dispatchEvent(new Event("authChanged"));
+            navigate("/");
+          },
+        },
+      ]
+    : [
+        {
+          key: "login",
+          icon: <LoginOutlined />,
+          label: "Đăng nhập",
+          onClick: () => navigate("/login"),
+        },
+        {
+          key: "register",
+          label: "Đăng ký",
+          onClick: () => navigate("/register"),
+        },
+      ];
 
   return (
     <header
@@ -164,12 +192,12 @@ const Header = () => {
 
         {/* Actions */}
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          {/* Dark mode toggle */}
+          {/* Dark mode */}
           <Button
             type="text"
             shape="circle"
             onClick={toggleDarkMode}
-            icon={isDarkMode ? "🌞" : "🌙"}
+            icon={isDarkMode ? "☀️" : "🌙"} // ← Fix icon
           />
 
           {/* Giỏ hàng */}
@@ -194,6 +222,8 @@ const Header = () => {
                   borderRadius: 8,
                   padding: 10,
                   boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                  color: "#000",
+                  zIndex: 1000,
                 }}
               >
                 <h4>Giỏ hàng</h4>
@@ -202,43 +232,41 @@ const Header = () => {
             )}
           </div>
 
-          {/* Avatar / Login */}
+          {/* Avatar + Menu */}
           <Dropdown
-            menu={{ items: isLoggedIn ? loggedInMenuItems : guestMenuItems }}
+            menu={{ items: menuItems }}
             trigger={["click"]}
             placement="bottomRight"
           >
-            <Avatar
-              src={
-                isLoggedIn
-                  ? (() => {
-                      try {
-                        const user = JSON.parse(localStorage.getItem("user") || "{}");
-                        return user.member?.avatarUrl || user.avatarUrl || "https://i.pravatar.cc/40";
-                      } catch {
-                        return "https://i.pravatar.cc/40";
-                      }
-                    })()
-                  : null
-              }
-              icon={<UserOutlined />}
-              style={{ cursor: "pointer" }}
-              title={
-                isLoggedIn
-                  ? (() => {
-                      try {
-                        const user = JSON.parse(localStorage.getItem("user") || "{}");
-                        return user.email || user.member?.fullName || "User";
-                      } catch {
-                        return "User";
-                      }
-                    })()
-                  : "Đăng nhập"
-              }
-            />
+            <a
+              onClick={(e) => e.preventDefault()}
+              style={{ display: "flex", alignItems: "center", gap: 8 }}
+            >
+              {isLoggedIn ? (
+                <>
+                  <Avatar src={userAvatar} size="default" />
+                  <span
+                    style={{
+                      fontWeight: 500,
+                      maxWidth: 100,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {userName}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Avatar icon={<UserOutlined />} />
+                  <span>Đăng nhập</span>
+                </>
+              )}
+            </a>
           </Dropdown>
 
-          {/* Quick "Đăng bài" button */}
+          {/* Đăng bài */}
           <a href="/customer" style={{ textDecoration: "none" }}>
             <Button
               type="primary"
