@@ -26,11 +26,37 @@ const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
 
-  // Kiểm tra trạng thái đăng nhập
+  // ✅ Option 3: Kiểm tra trạng thái đăng nhập với sessionStorage + validate token
   useEffect(() => {
-    const checkAuth = () => {
-      const token = localStorage.getItem("token");
-      setIsLoggedIn(!!token);
+    const checkAuth = async () => {
+      try {
+        // ✅ Ưu tiên sessionStorage, fallback về localStorage
+        const { getToken, isLoggedIn: checkIsLoggedIn } = await import("../../../utils/sessionStorage");
+        const { validateToken } = await import("../../../utils/jwt");
+
+        const token = getToken() || localStorage.getItem("token") || localStorage.getItem("authToken");
+
+        if (token) {
+          // ✅ Validate token (kiểm tra expiration)
+          if (validateToken(token)) {
+            setIsLoggedIn(true);
+          } else {
+            // Token hết hạn hoặc invalid
+            setIsLoggedIn(false);
+            // Clear invalid token
+            sessionStorage.clear();
+            localStorage.removeItem("token");
+            localStorage.removeItem("authToken");
+            localStorage.removeItem("user");
+            localStorage.removeItem("role");
+          }
+        } else {
+          setIsLoggedIn(false);
+        }
+      } catch (error) {
+        console.error("❌ Error checking auth:", error);
+        setIsLoggedIn(false);
+      }
     };
     checkAuth();
     window.addEventListener("authChanged", checkAuth);
@@ -61,10 +87,18 @@ const Header = () => {
     document.body.style.color = isDarkMode ? "#ffffff" : "#000000";
   }, [isDarkMode]);
 
-  // Lấy thông tin user
+  // ✅ Option 3: Lấy thông tin user từ sessionStorage (ưu tiên), fallback về localStorage
   const getUserInfo = () => {
     try {
-      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      // ✅ Ưu tiên sessionStorage, fallback về localStorage
+      const userStr = sessionStorage.getItem("user") || localStorage.getItem("user");
+      if (!userStr) {
+        return {
+          name: "User",
+          avatar: `https://ui-avatars.com/api/?name=U&background=1890ff&color=fff`,
+        };
+      }
+      const user = JSON.parse(userStr);
       const name = user.member?.fullName || user.email?.split("@")[0] || "User";
       const avatar =
         user.member?.avatarUrl ||
@@ -82,7 +116,8 @@ const Header = () => {
   };
 
   const { name: userName, avatar: userAvatar } = getUserInfo();
-  const role = localStorage.getItem("role")?.toLowerCase();
+  // ✅ Ưu tiên sessionStorage, fallback về localStorage
+  const role = (sessionStorage.getItem("role") || localStorage.getItem("role"))?.toLowerCase();
 
   const menuItems = isLoggedIn
     ? [
@@ -117,13 +152,29 @@ const Header = () => {
           icon: <LogoutOutlined />,
           label: "Đăng xuất",
           danger: true,
-          onClick: () => {
-            localStorage.clear();
-            sessionStorage.clear();
-            setIsLoggedIn(false);
-            message.success("Đã đăng xuất!");
-            window.dispatchEvent(new Event("authChanged"));
-            navigate("/");
+          onClick: async () => {
+            try {
+              // ✅ Option 3: Xóa tất cả auth data từ sessionStorage và localStorage
+              const { clearSession } = await import("../../../utils/sessionStorage");
+              clearSession();
+              
+              localStorage.removeItem("token");
+              localStorage.removeItem("authToken");
+              localStorage.removeItem("user");
+              localStorage.removeItem("role");
+              
+              setIsLoggedIn(false);
+              message.success("Đã đăng xuất!");
+              window.dispatchEvent(new Event("authChanged"));
+              navigate("/");
+            } catch (error) {
+              console.error("❌ Error during logout:", error);
+              // Fallback: Xóa thủ công
+              sessionStorage.clear();
+              localStorage.clear();
+              setIsLoggedIn(false);
+              navigate("/");
+            }
           },
         },
       ]

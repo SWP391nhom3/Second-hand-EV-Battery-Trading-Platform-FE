@@ -167,38 +167,72 @@ const LoginForm = () => {
   const handleSubmit = async (values) => {
     setErrorMessage("");
     try {
+      // 🔹 Gọi API đăng nhập
       const response = await api.post("api/Auth/login", {
         email: values.email,
         password: values.password,
       });
 
-      const data = response.data;
+      const data = response.data || {};
 
+      // 🔹 Validate response
       if (!data.token || !data.account) {
         throw new Error("Dữ liệu trả về không hợp lệ");
       }
 
-      // Lưu đúng thông tin
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.account));
-      localStorage.setItem("role", data.account.role || "customer");
+      const token = data.token;
+      const account = data.account;
 
-      // Cập nhật Header ngay lập tức
-      window.dispatchEvent(new Event("authChanged"));
+      // ✅ Option 3: Kết hợp sessionStorage + decode JWT
+      // 1. Decode JWT để lấy thông tin từ token (validate token)
+      const { decodeToken, getUserFromToken, validateToken } = await import("../../../utils/jwt");
+      const { saveToken, saveUser, saveRole, clearSession } = await import("../../../utils/sessionStorage");
 
-      toast.success("Đăng nhập thành công!");
+      // Validate token trước khi lưu
+      if (!validateToken(token)) {
+        throw new Error("Token không hợp lệ hoặc đã hết hạn");
+      }
 
-      // Chuyển hướng theo role
-      const role = (data.account.role || "customer").toLowerCase();
-      if (role === "admin") {
-        navigate("/admin");
-      } else if (role === "staff") {
-        navigate("/staff");
-      } else {
-        navigate("/");
+      // Decode token để lấy thông tin (fallback nếu account không có đủ thông tin)
+      const tokenUser = getUserFromToken(token);
+      const role = (account.role || tokenUser?.role || "Member")?.toLowerCase();
+
+      // 2. Lưu vào sessionStorage (session-based - mất khi đóng tab)
+      saveToken(token);
+      saveUser(account);
+      saveRole(role);
+
+      // 3. Log để debug
+      console.log("✅ Login successful:", {
+        token: token ? "✓ Saved to sessionStorage" : "✗ Missing",
+        user: account,
+        role: role,
+        tokenClaims: tokenUser,
+      });
+
+      // 4. Cập nhật Header và components khác
+      try {
+        window.dispatchEvent(new Event("authChanged"));
+      } catch (e) {
+        console.warn("Could not dispatch authChanged event:", e);
+      }
+
+      toast.success("Đăng nhập thành công! 🎉");
+
+      // 5. Điều hướng theo role
+      switch (role) {
+        case "admin":
+          navigate("/admin");
+          break;
+        case "staff":
+          navigate("/staff");
+          break;
+        default:
+          navigate("/");
+          break;
       }
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("❌ Login error:", error);
       const msg =
         error.response?.data?.message ||
         error.message ||
