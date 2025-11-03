@@ -108,30 +108,17 @@
   flex-direction: column;
 }
 
+.packageCard :global(.ant-card-body) {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 .packageCard:hover {
   transform: translateY(-8px);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
 }
-
-/* .popularCard {z
-  border: 2px solid #ff4d4f;
-  position: relative;
-} */
-
-/* .popularCard::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 77, 79, 0.1) 0%,
-    rgba(255, 77, 79, 0) 50%
-  );
-  pointer-events: none;
-} */
 
 /* Package Header */
 .packageHeader {
@@ -139,6 +126,7 @@
   text-align: center;
   color: white;
   position: relative;
+  flex-shrink: 0;
 }
 
 .packageIcon {
@@ -158,14 +146,15 @@
 }
 
 .packageName {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
   margin: 0 0 12px 0;
   color: white;
+  line-height: 1.3;
 }
 
 .tierTag {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   padding: 4px 12px;
   letter-spacing: 1px;
@@ -173,10 +162,14 @@
 
 /* Package Price */
 .packagePrice {
-  padding: 24px 24px 16px;
+  padding: 24px;
   text-align: center;
-  background: #fafafa;
   border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .priceInfo {
@@ -220,10 +213,68 @@
 
 .freePrice .priceAmount {
   font-size: 32px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+}
+
+/* Package Details */
+.packageDetails {
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border-top: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.detailItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.detailIcon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.detailContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.detailLabel {
+  font-size: 11px;
+  color: #8c8c8c;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+  font-weight: 600;
+}
+
+.detailValue {
+  font-size: 13px;
+  color: #262626;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Package Features */
+.packageFeatures {
+  padding: 24px;
+  flex: 1;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+.packageFeatures .sectionTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #262626;
+  margin: 0 0 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .postLimit {
@@ -289,28 +340,25 @@
   font-size: 18px;
 }
 
-/* Package Features */
-.packageFeatures {
-  padding: 24px;
-  flex: 1;
-}
-
 .featureItem {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   padding: 8px 0;
-  font-size: 15px;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .featureIcon {
   color: #52c41a;
-  font-size: 18px;
+  font-size: 16px;
   flex-shrink: 0;
+  margin-top: 2px;
 }
 
 .featureText {
   color: #262626;
+  flex: 1;
 }
 
 .featureDisabled {
@@ -323,19 +371,10 @@
 
 /* Package Benefits */
 .packageBenefits {
-  padding: 0 24px 24px;
+  padding: 20px 24px 24px;
   background: #f9fafb;
-  margin: 0 -1px -1px -1px;
-}
-
-.packageBenefits h4 {
-  font-size: 14px;
-  font-weight: 600;
-  color: #595959;
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  margin-top: auto;
+  border-top: 1px solid #f0f0f0;
 }
 
 .packageBenefits ul {
@@ -345,10 +384,11 @@
 }
 
 .packageBenefits li {
-  position: relative;
-  padding: 4px 0;
   font-size: 13px;
   color: #595959;
+  padding: 4px 0;
+  position: relative;
+  line-height: 1.5;
 }
 
 .packageBenefits li::before {
@@ -597,4 +637,149 @@
 
 .packageCard:nth-child(4) {
   animation-delay: 0.4s;
+}
+
+/* Info Section */
+.infoSection {
+  margin-bottom: 60px;
+  padding-top: 40px;
+}
+
+.infoCard {
+  text-align: center;
+  padding: 32px 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.infoCard:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.infoCard h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #262626;
+}
+
+.infoCard p {
+  font-size: 15px;
+  color: #595959;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Comparison Section */
+.comparisonSection {
+  margin: 60px 0;
+  padding: 40px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.sectionTitle {
+  font-size: 32px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 40px;
+  color: #262626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.comparisonTable {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 15px;
+}
+
+.comparisonTable thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.comparisonTable th {
+  padding: 20px 16px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 16px;
+  border: none;
+  white-space: nowrap;
+}
+
+.comparisonTable th:first-child {
+  text-align: left;
+  border-top-left-radius: 12px;
+}
+
+.comparisonTable th:last-child {
+  border-top-right-radius: 12px;
+}
+
+.comparisonTable tbody tr {
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.2s ease;
+}
+
+.comparisonTable tbody tr:hover {
+  background: #fafafa;
+}
+
+.comparisonTable tbody tr:last-child {
+  border-bottom: none;
+}
+
+.comparisonTable tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 12px;
+}
+
+.comparisonTable tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 12px;
+}
+
+.comparisonTable td {
+  padding: 16px;
+  text-align: center;
+  color: #595959;
+  border: none;
+}
+
+.comparisonTable td:first-child {
+  text-align: left;
+  font-weight: 500;
+  color: #262626;
+  background: #fafafa;
+}
+
+.popularColumn {
+  background: linear-gradient(135deg, rgba(240, 147, 251, 0.1) 0%, rgba(245, 87, 108, 0.1) 100%) !important;
+  position: relative;
+}
+
+.comparisonTable thead .popularColumn::before {
+  content: "⭐ PHỔ BIẾN";
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
 }

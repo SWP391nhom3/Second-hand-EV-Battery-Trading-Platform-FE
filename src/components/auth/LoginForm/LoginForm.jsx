@@ -182,6 +182,27 @@ const LoginForm = () => {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.account));
       localStorage.setItem("role", data.account.role || "customer");
+      
+      // ✅ Lưu userId/accountId để CustomerDashboard có thể lấy data từ API
+      if (data.account.id) {
+        localStorage.setItem("userId", data.account.id);
+      } else if (data.account.accountId) {
+        localStorage.setItem("userId", data.account.accountId);
+      }
+      
+      // Lưu thêm thông tin cơ bản
+      if (data.account.username) {
+        localStorage.setItem("username", data.account.username);
+      }
+      if (data.account.email) {
+        localStorage.setItem("email", data.account.email);
+      }
+
+      console.log("✅ Saved to localStorage:", {
+        token: "exists",
+        userId: localStorage.getItem("userId"),
+        role: data.account.role,
+      });
 
       // Cập nhật Header ngay lập tức
       window.dispatchEvent(new Event("authChanged"));

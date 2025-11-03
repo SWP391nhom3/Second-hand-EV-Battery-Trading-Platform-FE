@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Row,
   Col,
@@ -17,6 +17,8 @@ import {
   Tooltip,
   Timeline,
   Rate,
+  Spin,
+  message,
 } from "antd";
 import {
   UserOutlined,
@@ -42,6 +44,7 @@ import {
   PlusOutlined,
 } from "@ant-design/icons";
 import CreatePostModal from "./CreatePostModal";
+import api from "../../configs/axios";
 import styles from "./CustomerDashboard.module.css";
 
 const { Title, Text, Paragraph } = Typography;
@@ -49,15 +52,111 @@ const { Title, Text, Paragraph } = Typography;
 const CustomerDashboard = () => {
   const [_activeCard, setActiveCard] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [customerData, setCustomerData] = useState(null);
 
-  // Mock data - có thể lấy từ API
-  const customerData = {
+  // Fetch customer data from API
+  useEffect(() => {
+    fetchCustomerData();
+  }, []);
+
+  const fetchCustomerData = async () => {
+    setLoading(true);
+    try {
+      // Thử lấy user ID từ nhiều nguồn khác nhau
+      const userId = localStorage.getItem("userId") || 
+                     sessionStorage.getItem("userId") ||
+                     localStorage.getItem("accountId") ||
+                     sessionStorage.getItem("accountId");
+      
+      const token = localStorage.getItem("token") || 
+                    sessionStorage.getItem("token") ||
+                    localStorage.getItem("authToken") ||
+                    sessionStorage.getItem("authToken");
+
+      console.log("🔍 Debug - userId:", userId);
+      console.log("🔍 Debug - token:", token ? "exists" : "not found");
+
+      // Nếu không có userId nhưng có token, hiển thị data mặc định
+      if (!userId && !token) {
+        console.warn("⚠️ No userId or token found, using default data");
+        setCustomerData(getDefaultCustomerData());
+        message.warning("Đang hiển thị dữ liệu mẫu. Vui lòng đăng nhập để xem dữ liệu thực.");
+        setLoading(false);
+        return;
+      }
+
+      // Nếu có userId, gọi API
+      if (userId) {
+        try {
+          const response = await api.get(`/api/Member/${userId}`);
+          console.log("✅ Member data from API:", response.data);
+
+          // Transform API data to match frontend format
+          const memberData = response.data;
+          
+          setCustomerData({
+            profile: {
+              name: memberData.fullName || memberData.username || "Khách hàng",
+              email: memberData.email || "",
+              phone: memberData.phone || memberData.phoneNumber || "",
+              avatar: memberData.avatar || memberData.profileImage || null,
+              memberSince: memberData.createdDate || memberData.joinDate || new Date().toISOString(),
+              tier: memberData.tier || memberData.membershipLevel || "silver",
+              points: memberData.points || memberData.loyaltyPoints || 0,
+            },
+            stats: {
+              totalPosts: memberData.totalPosts || 0,
+              activePosts: memberData.activePosts || 0,
+              totalViews: memberData.totalViews || 0,
+              totalLikes: memberData.totalLikes || 0,
+              completedDeals: memberData.completedDeals || memberData.successfulTransactions || 0,
+              rating: memberData.rating || memberData.averageRating || 0,
+              responseRate: memberData.responseRate || 0,
+              responseTime: memberData.responseTime || "N/A",
+            },
+            currentPackage: {
+              name: memberData.currentPackageName || "Gói cơ bản",
+              postsRemaining: memberData.postsRemaining || 0,
+              totalPosts: memberData.totalPackagePosts || 0,
+              expiryDate: memberData.packageExpiryDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+              daysLeft: memberData.packageDaysLeft || 0,
+            },
+            recentActivities: memberData.recentActivities || [],
+            topPosts: memberData.topPosts || [],
+            achievements: memberData.achievements || getDefaultAchievements(memberData),
+          });
+        } catch (apiError) {
+          console.error("❌ API Error:", apiError);
+          // Nếu API lỗi, vẫn hiển thị data mẫu
+          console.warn("⚠️ API failed, using default data");
+          setCustomerData(getDefaultCustomerData());
+          message.warning("Không thể tải dữ liệu từ server. Đang hiển thị dữ liệu mẫu.");
+        }
+      } else {
+        // Không có userId nhưng có token - hiển thị data mặc định
+        console.warn("⚠️ No userId but token exists, using default data");
+        setCustomerData(getDefaultCustomerData());
+      }
+
+    } catch (error) {
+      console.error("❌ Error in fetchCustomerData:", error);
+      // Luôn fallback sang default data thay vì để null
+      setCustomerData(getDefaultCustomerData());
+      message.error("Có lỗi xảy ra. Đang hiển thị dữ liệu mẫu.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Default data structure nếu API không trả về đầy đủ
+  const getDefaultCustomerData = () => ({
     profile: {
-      name: "Nguyễn Văn A",
-      email: "nguyenvana@example.com",
+      name: localStorage.getItem("username") || "Khách hàng",
+      email: localStorage.getItem("email") || "customer@example.com",
       phone: "0901234567",
       avatar: null,
-      memberSince: "2024-01-15",
+      memberSince: new Date().toISOString(),
       tier: "gold",
       points: 2450,
     },
@@ -75,7 +174,7 @@ const CustomerDashboard = () => {
       name: "Gói Vàng",
       postsRemaining: 18,
       totalPosts: 30,
-      expiryDate: "2025-02-15",
+      expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       daysLeft: 23,
     },
     recentActivities: [
@@ -172,6 +271,45 @@ const CustomerDashboard = () => {
         earned: false,
       },
     ],
+  });
+
+  // Generate achievements based on member stats
+  const getDefaultAchievements = (memberData) => {
+    const achievements = [
+      {
+        id: 1,
+        title: "Người bán uy tín",
+        description: "Hoàn thành 10+ giao dịch",
+        icon: <TrophyOutlined />,
+        color: "#FFD700",
+        earned: (memberData.completedDeals || 0) >= 10,
+      },
+      {
+        id: 2,
+        title: "Phản hồi nhanh",
+        description: "Tỷ lệ phản hồi >90%",
+        icon: <ThunderboltOutlined />,
+        color: "#1890ff",
+        earned: (memberData.responseRate || 0) >= 90,
+      },
+      {
+        id: 3,
+        title: "Sao vàng",
+        description: "Đánh giá 4.5+ sao",
+        icon: <StarOutlined />,
+        color: "#FF6B6B",
+        earned: (memberData.rating || 0) >= 4.5,
+      },
+      {
+        id: 4,
+        title: "VIP Member",
+        description: "Sử dụng gói cao cấp",
+        icon: <CrownOutlined />,
+        color: "#9B59B6",
+        earned: memberData.tier === "gold" || memberData.tier === "diamond",
+      },
+    ];
+    return achievements;
   };
 
   const getTierColor = (tier) => {
@@ -194,6 +332,36 @@ const CustomerDashboard = () => {
     return labels[tier] || "Thành viên";
   };
 
+  // Show loading spinner while fetching data
+  if (loading) {
+    return (
+      <div className={styles.customerDashboard} style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '60vh' 
+      }}>
+        <Spin size="large" tip="Đang tải dữ liệu..." />
+      </div>
+    );
+  }
+
+  // Show empty state if no data
+  if (!customerData) {
+    return (
+      <div className={styles.customerDashboard}>
+        <Empty
+          description="Không thể tải dữ liệu"
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+        >
+          <Button type="primary" onClick={fetchCustomerData}>
+            Thử lại
+          </Button>
+        </Empty>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.customerDashboard}>
       {/* Welcome Banner */}
@@ -211,19 +379,19 @@ const CustomerDashboard = () => {
                 Thành viên từ {new Date(customerData.profile.memberSince).toLocaleDateString('vi-VN')}
               </Text>
               <Space>
-                <Tag color={getTierColor(customerData.profile.tier)} icon={<CrownOutlined />}>
+                {/* <Tag color={getTierColor(customerData.profile.tier)} icon={<CrownOutlined />}>
                   Hạng {getTierLabel(customerData.profile.tier)}
-                </Tag>
+                </Tag> */}
                 <Tag icon={<StarOutlined />}>{customerData.stats.rating} ⭐</Tag>
                 <Tag icon={<GiftOutlined />}>{customerData.profile.points} điểm</Tag>
               </Space>
             </Space>
           </Col>
-          <Col xs={24} md={6} style={{ textAlign: 'right' }}>
+          {/* <Col xs={24} md={6} style={{ textAlign: 'right' }}>
             <Button type="primary" size="large" icon={<RocketOutlined />}>
               Nâng cấp hạng
             </Button>
-          </Col>
+          </Col> */}
         </Row>
       </Card>
 
@@ -294,56 +462,6 @@ const CustomerDashboard = () => {
       <Row gutter={[16, 16]}>
         {/* Left Column */}
         <Col xs={24} lg={16}>
-          {/* Current Package Status */}
-          <Card
-            title={
-              <Space>
-                <RocketOutlined />
-                <span>Gói hiện tại</span>
-              </Space>
-            }
-            extra={<Tag color="gold">Đang hoạt động</Tag>}
-            className={styles.packageCard}
-          >
-            <Row gutter={16}>
-              <Col span={12}>
-                <Statistic
-                  title="Bài đăng còn lại"
-                  value={customerData.currentPackage.postsRemaining}
-                  suffix={`/ ${customerData.currentPackage.totalPosts}`}
-                />
-                <Progress
-                  percent={(customerData.currentPackage.postsRemaining / customerData.currentPackage.totalPosts) * 100}
-                  strokeColor={{
-                    '0%': '#108ee9',
-                    '100%': '#87d068',
-                  }}
-                  status="active"
-                />
-              </Col>
-              <Col span={12}>
-                <Statistic
-                  title="Thời gian còn lại"
-                  value={customerData.currentPackage.daysLeft}
-                  suffix="ngày"
-                  prefix={<ClockCircleOutlined />}
-                />
-                <Text type="secondary">
-                  Hết hạn: {new Date(customerData.currentPackage.expiryDate).toLocaleDateString('vi-VN')}
-                </Text>
-              </Col>
-            </Row>
-            <Divider />
-            <Space>
-              <Button type="primary" icon={<ThunderboltOutlined />}>
-                Gia hạn gói
-              </Button>
-              <Button icon={<CrownOutlined />}>
-                Nâng cấp gói
-              </Button>
-            </Space>
-          </Card>
-
           {/* Top Posts */}
           <Card
             title={
@@ -352,45 +470,47 @@ const CustomerDashboard = () => {
                 <span>Tin đăng nổi bật</span>
               </Space>
             }
-            extra={<Button type="link">Xem tất cả →</Button>}
-            className={styles.topPostsCard}
-          >
-            <List
-              itemLayout="horizontal"
-              dataSource={customerData.topPosts}
-              renderItem={(item) => (
-                <List.Item
-                  actions={[
-                    <Space key="views">
-                      <EyeOutlined />
-                      {item.views}
-                    </Space>,
-                    <Space key="likes">
-                      <HeartOutlined />
-                      {item.likes}
-                    </Space>,
-                  ]}
-                >
-                  <List.Item.Meta
-                    title={
-                      <Space>
-                        {item.title}
-                        {item.status === 'sold' && <Tag color="red">Đã bán</Tag>}
-                        {item.status === 'active' && <Tag color="green">Đang bán</Tag>}
-                      </Space>
-                    }
-                    description={
-                      <Text strong style={{ color: '#1890ff' }}>
-                        {item.price}₫
-                      </Text>
-                    }
-                  />
-                </List.Item>
+              extra={<Button type="link">Xem tất cả →</Button>}
+              className={styles.topPostsCard}
+            >
+              {customerData.topPosts && customerData.topPosts.length > 0 ? (
+                <List
+                  itemLayout="horizontal"
+                  dataSource={customerData.topPosts}
+                  renderItem={(item) => (
+                    <List.Item
+                      actions={[
+                        <Space key="views">
+                          <EyeOutlined />
+                          {item.views}
+                        </Space>,
+                        <Space key="likes">
+                          <HeartOutlined />
+                          {item.likes}
+                        </Space>,
+                      ]}
+                    >
+                      <List.Item.Meta
+                        title={
+                          <Space>
+                            {item.title}
+                            {item.status === 'sold' && <Tag color="red">Đã bán</Tag>}
+                            {item.status === 'active' && <Tag color="green">Đang bán</Tag>}
+                          </Space>
+                        }
+                        description={
+                          <Text strong style={{ color: '#1890ff' }}>
+                            {item.price}₫
+                          </Text>
+                        }
+                      />
+                    </List.Item>
+                  )}
+                />
+              ) : (
+                <Empty description="Chưa có tin đăng nào" image={Empty.PRESENTED_IMAGE_SIMPLE} />
               )}
-            />
-          </Card>
-
-          {/* Recent Activities */}
+            </Card>          {/* Recent Activities */}
           <Card
             title={
               <Space>
@@ -400,22 +520,26 @@ const CustomerDashboard = () => {
             }
             className={styles.activityCard}
           >
-            <Timeline
-              items={customerData.recentActivities.map((activity) => ({
-                color: activity.status === 'success' ? 'green' : activity.status === 'warning' ? 'orange' : 'blue',
-                children: (
-                  <div>
-                    <Text strong>{activity.title}</Text>
-                    <br />
-                    <Text type="secondary">{activity.action}</Text>
-                    <br />
-                    <Text type="secondary" style={{ fontSize: '12px' }}>
-                      <ClockCircleOutlined /> {activity.time}
-                    </Text>
-                  </div>
-                ),
-              }))}
-            />
+            {customerData.recentActivities && customerData.recentActivities.length > 0 ? (
+              <Timeline
+                items={customerData.recentActivities.map((activity) => ({
+                  color: activity.status === 'success' ? 'green' : activity.status === 'warning' ? 'orange' : 'blue',
+                  children: (
+                    <div>
+                      <Text strong>{activity.title}</Text>
+                      <br />
+                      <Text type="secondary">{activity.action}</Text>
+                      <br />
+                      <Text type="secondary" style={{ fontSize: '12px' }}>
+                        <ClockCircleOutlined /> {activity.time}
+                      </Text>
+                    </div>
+                  ),
+                }))}
+              />
+            ) : (
+              <Empty description="Chưa có hoạt động nào" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+            )}
           </Card>
         </Col>
 
@@ -484,7 +608,7 @@ const CustomerDashboard = () => {
           </Card>
 
           {/* Achievements */}
-          <Card
+          {/* <Card
             title={
               <Space>
                 <TrophyOutlined />
@@ -492,44 +616,48 @@ const CustomerDashboard = () => {
               </Space>
             }
             className={styles.achievementsCard}
-          >
-            <Row gutter={[12, 12]}>
-              {customerData.achievements.map((achievement) => (
-                <Col span={12} key={achievement.id}>
-                  <Tooltip title={achievement.description}>
-                    <Card
-                      hoverable
-                      className={`${styles.achievementBadge} ${
-                        achievement.earned ? styles.earned : styles.locked
-                      }`}
-                      bodyStyle={{ padding: '16px', textAlign: 'center' }}
-                    >
-                      <div
-                        style={{
-                          fontSize: '32px',
-                          color: achievement.earned ? achievement.color : '#d9d9d9',
-                          marginBottom: 8,
-                        }}
-                      >
-                        {achievement.icon}
-                      </div>
-                      <Text
-                        strong
-                        style={{
-                          fontSize: '12px',
-                          color: achievement.earned ? '#000' : '#999',
-                        }}
-                      >
-                        {achievement.title}
-                      </Text>
-                    </Card>
-                  </Tooltip>
-                </Col>
-              ))}
-            </Row>
-          </Card>
-
-          {/* Quick Actions */}
+            >
+              <Row gutter={[12, 12]}>
+                {customerData.achievements && customerData.achievements.length > 0 ? (
+                  customerData.achievements.map((achievement) => (
+                    <Col span={12} key={achievement.id}>
+                      <Tooltip title={achievement.description}>
+                        <Card
+                          hoverable
+                          className={`${styles.achievementBadge} ${
+                            achievement.earned ? styles.earned : styles.locked
+                          }`}
+                          bodyStyle={{ padding: '16px', textAlign: 'center' }}
+                        >
+                          <div
+                            style={{
+                              fontSize: '32px',
+                              color: achievement.earned ? achievement.color : '#d9d9d9',
+                              marginBottom: 8,
+                            }}
+                          >
+                            {achievement.icon}
+                          </div>
+                          <Text
+                            strong
+                            style={{
+                              fontSize: '12px',
+                              color: achievement.earned ? '#000' : '#999',
+                            }}
+                          >
+                            {achievement.title}
+                          </Text>
+                        </Card>
+                      </Tooltip>
+                    </Col>
+                  ))
+                ) : (
+                  <Col span={24}>
+                    <Empty description="Chưa có thành tích nào" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                  </Col>
+                )}
+              </Row>
+            </Card>          Quick Actions */}
           <Card
             title={
               <Space>
@@ -590,7 +718,9 @@ const CustomerDashboard = () => {
         onCancel={() => setModalVisible(false)}
         onSuccess={() => {
           setModalVisible(false);
-          // Có thể reload data hoặc show notification
+          // Reload data sau khi tạo post thành công
+          fetchCustomerData();
+          message.success("Đã tạo tin đăng mới!");
         }}
       />
     </div>
