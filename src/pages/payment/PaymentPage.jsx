@@ -28,6 +28,7 @@ import {
   ClockCircleOutlined,
 } from "@ant-design/icons";
 import { Header, Footer } from "../../components/layout";
+import api from "../../configs/axios";
 import styles from "./PaymentPage.module.css";
 
 const { Step } = Steps;
@@ -43,6 +44,7 @@ const PaymentPage = () => {
   const [paymentMethod, setPaymentMethod] = useState("bank");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [paymentId, setPaymentId] = useState(null);
 
   // Lấy thông tin từ state - có thể là gói đăng tin hoặc sản phẩm
   const paymentData = location.state || {};
@@ -131,7 +133,7 @@ const PaymentPage = () => {
     content: `THANHTOAN ${displayData.name.toUpperCase().replace(/\s/g, "")}`,
   };
 
-  const handleFormSubmit = (values) => {
+  const handleFormSubmit = async (values) => {
     if (!agreedToTerms) {
       message.error("Vui lòng đồng ý với điều khoản và điều kiện");
       return;
@@ -139,23 +141,94 @@ const PaymentPage = () => {
 
     setLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      // Tạo payment record trên server
+      const paymentPayload = {
+        amount: totalPrice * 1.1, // Bao gồm VAT
+        paymentMethod: paymentMethod,
+        status: "Pending",
+        paymentDate: new Date().toISOString(),
+        // Thông tin từ form
+        buyerInfo: {
+          fullName: values.fullName,
+          phone: values.phone,
+          email: values.email,
+          address: values.address,
+          city: values.city,
+        },
+        // Thông tin đơn hàng
+        orderInfo: isPackage ? {
+          type: "package",
+          packageId: packageData?.id,
+          packageName: packageData?.name,
+          quantity: quantity,
+          pricePerPost: packageData?.pricePerPost,
+        } : {
+          type: "product",
+          productId: productData?.id,
+          productName: productData?.name,
+          quantity: quantity,
+          price: productData?.price,
+        },
+        note: values.note,
+        coupon: values.coupon,
+      };
+
+      const response = await api.post("/api/Payment", paymentPayload);
+      
+      console.log("✅ Payment created:", response.data);
+      
+      if (response.data && response.data.id) {
+        setPaymentId(response.data.id);
+        setCurrentStep(1);
+        message.success("Thông tin đã được xác nhận!");
+      } else {
+        throw new Error("Không nhận được payment ID từ server");
+      }
+    } catch (error) {
+      console.error("❌ Error creating payment:", error);
+      message.error(
+        error.response?.data?.message || 
+        "Không thể tạo đơn thanh toán. Vui lòng thử lại!"
+      );
+    } finally {
       setLoading(false);
-      setCurrentStep(1);
-      message.success("Thông tin đã được xác nhận!");
-    }, 1500);
+    }
   };
 
-  const handlePaymentConfirm = () => {
+  const handlePaymentConfirm = async () => {
+    if (!paymentId) {
+      message.error("Không tìm thấy thông tin thanh toán!");
+      return;
+    }
+
     setLoading(true);
     
-    // Simulate payment processing
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      // Gọi API process payment
+      const response = await api.post(`/api/Payment/process/${paymentId}`, {
+        paymentMethod: paymentMethod,
+        // Thêm thông tin bổ sung nếu cần
+      });
+
+      console.log("✅ Payment processed:", response.data);
+      
+      // Cập nhật status thành "Completed"
+      await api.put(`/api/Payment/${paymentId}/status`, {
+        status: "Completed"
+      });
+
       setCurrentStep(2);
       message.success("Thanh toán thành công!");
-    }, 2000);
+    } catch (error) {
+      console.error("❌ Error processing payment:", error);
+      message.error(
+        error.response?.data?.message || 
+        "Xử lý thanh toán thất bại. Vui lòng thử lại!"
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const steps = [

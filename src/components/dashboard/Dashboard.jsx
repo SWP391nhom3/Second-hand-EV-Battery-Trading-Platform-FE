@@ -49,6 +49,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import logo from "../../assets/Logo-Page.png";
+import PostManagement from "./pages/PostManagement";
 
 const { Header, Sider, Content, Footer } = Layout;
 const { Title, Text } = Typography;
@@ -827,6 +828,11 @@ const Dashboard = () => {
       icon: <FileDoneOutlined />,
       label: "Yêu cầu Staff",
     },
+    {
+      key: "post-management",
+      icon: <FileDoneOutlined />,
+      label: "Quản lý bài viết",
+    },
   ];
 
   const renderContent = () => {
@@ -839,6 +845,8 @@ const Dashboard = () => {
         return <TransactionManagement />;
       case "staff-requests":
         return <StaffRequestManagement />;
+      case "post-management":
+        return <PostManagement />;
       default:
         return <DashboardOverview />;
     }

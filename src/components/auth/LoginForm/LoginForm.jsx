@@ -185,8 +185,12 @@ const LoginForm = () => {
 
       // ✅ Option 3: Kết hợp sessionStorage + decode JWT
       // 1. Decode JWT để lấy thông tin từ token (validate token)
-      const { decodeToken, getUserFromToken, validateToken } = await import("../../../utils/jwt");
-      const { saveToken, saveUser, saveRole, clearSession } = await import("../../../utils/sessionStorage");
+      const { decodeToken, getUserFromToken, validateToken } = await import(
+        "../../../utils/jwt"
+      );
+      const { saveToken, saveUser, saveRole, clearSession } = await import(
+        "../../../utils/sessionStorage"
+      );
 
       // Validate token trước khi lưu
       if (!validateToken(token)) {

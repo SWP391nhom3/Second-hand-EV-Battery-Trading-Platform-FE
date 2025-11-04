@@ -4,13 +4,14 @@ import { validateToken, isTokenExpired } from "../utils/jwt";
 
 // Use environment variable for API URL, fallback to default
 const apiBaseURL =
-  import.meta.env.VITE_API_BASE_URL || "https://localhost:5001";
+  import.meta.env.VITE_API_BASE_URL || "https://localhost:8080";
 
 const api = axios.create({
   baseURL: apiBaseURL,
   headers: {
     "Content-Type": "application/json",
   },
+  timeout: 10000, // 10 seconds timeout
 });
 
 // ✅ Request interceptor: Tự động thêm token vào mọi request

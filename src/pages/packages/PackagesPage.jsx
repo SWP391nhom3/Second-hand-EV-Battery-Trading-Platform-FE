@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Row,
@@ -16,6 +16,8 @@ import {
   Select,
   message,
   Tabs,
+  Spin,
+  Empty,
 } from "antd";
 import {
   CrownOutlined,
@@ -30,6 +32,7 @@ import {
   InfoCircleOutlined,
 } from "@ant-design/icons";
 import { Header, Footer } from "../../components/layout";
+import api from "../../configs/axios";
 import styles from "./PackagesPage.module.css";
 
 const { Meta } = Card;
@@ -41,142 +44,124 @@ const PackagesPage = () => {
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
+  const [packages, setPackages] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // Dữ liệu các gói đăng tin theo bài
-  const packages = [
-    {
-      id: 1,
-      name: "Gói Cơ Bản",
-      tier: "basic",
-      icon: <TrophyOutlined />,
-      pricePerPost: 0,
-      originalPrice: 0,
-      minPosts: 1,
-      maxPosts: 3,
-      color: "#CD7F32",
-      gradient: "linear-gradient(135deg, #D4AF37 0%, #CD7F32 100%)",
-      popular: false,
-      features: [
-        { text: "Miễn phí 3 bài đăng", icon: <CheckCircleOutlined /> },
-        { text: "Hiển thị 3 ngày/bài", icon: <CheckCircleOutlined /> },
-        { text: "Hỗ trợ cơ bản", icon: <CheckCircleOutlined /> },
-        {
-          text: "Không ưu tiên hiển thị",
+  // Fetch packages from API on mount
+  useEffect(() => {
+    fetchPackages();
+  }, []);
+
+  const fetchPackages = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get("/api/PostPackage/active");
+      
+      console.log("✅ API Response:", response.data);
+      
+      if (!response.data || response.data.length === 0) {
+        message.warning("Hiện tại chưa có gói đăng tin nào!");
+        setPackages([]);
+        return;
+      }
+      
+      // Transform API data to match frontend format
+      const transformedPackages = response.data.map((pkg) => {
+        let features = [];
+        let benefits = [];
+        
+        try {
+          features = typeof pkg.features === 'string' 
+            ? JSON.parse(pkg.features) 
+            : (Array.isArray(pkg.features) ? pkg.features : []);
+        } catch (e) {
+          features = [];
+        }
+        
+        try {
+          benefits = typeof pkg.benefits === 'string' 
+            ? JSON.parse(pkg.benefits) 
+            : (Array.isArray(pkg.benefits) ? pkg.benefits : []);
+        } catch (e) {
+          benefits = [];
+        }
+
+        const formattedFeatures = features.map(feature => ({
+          text: typeof feature === 'string' ? feature : feature.text || '',
           icon: <CheckCircleOutlined />,
-          disabled: true,
-        },
-        {
-          text: "Không huy hiệu",
-          icon: <CheckCircleOutlined />,
-          disabled: true,
-        },
-      ],
-      displayDays: 7,
-      priority: "Thấp",
-      support: "Email",
-      badge: null,
-      benefits: [
-        "Dùng thử miễn phí",
-        "Phù hợp người mới",
-        "Không cần thanh toán",
-      ],
-    },
-    {
-      id: 2,
-      name: "Gói Tiết Kiệm",
-      tier: "silver",
-      icon: <StarOutlined />,
-      pricePerPost: 50000,
-      originalPrice: 0,
-      minPosts: 1,
-      maxPosts: 50,
-      color: "#C0C0C0",
-      gradient: "linear-gradient(135deg, #E8E8E8 0%, #A8A8A8 100%)",
-      popular: false,
-      features: [
-        { text: "50.000₫/bài đăng", icon: <CheckCircleOutlined /> },
-        { text: "Hiển thị 7 ngày/bài", icon: <CheckCircleOutlined /> },
-        { text: "Huy hiệu Bạc", icon: <CheckCircleOutlined /> },
-        { text: "Ưu tiên hiển thị trung bình", icon: <CheckCircleOutlined /> },
-        { text: "Hỗ trợ email & chat", icon: <CheckCircleOutlined /> },
-      ],
-      displayDays: 14,
-      priority: "Trung bình",
-      support: "Email + Chat",
-      badge: "Bạc",
-      benefits: [
-        "Giá cố định, rõ ràng",
-        "Tăng khả năng tiếp cận",
-        "Huy hiệu tin cậy",
-      ],
-    },
-    {
-      id: 3,
-      name: "Gói Phổ Biến",
-      tier: "gold",
-      icon: <FireOutlined />,
-      pricePerPost: 100000,
-      originalPrice: 0,
-      minPosts: 1,
-      maxPosts: 100,
-      color: "#FFD700",
-      gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-      popular: true,
-      features: [
-        { text: "100.000₫/bài đăng", icon: <CheckCircleOutlined /> },
-        { text: "Hiển thị 14 ngày/bài", icon: <CheckCircleOutlined /> },
-        { text: "Huy hiệu Vàng", icon: <CheckCircleOutlined /> },
-        { text: "Ưu tiên hiển thị cao", icon: <CheckCircleOutlined /> },
-        { text: "Hỗ trợ 24/7", icon: <CheckCircleOutlined /> },
-        { text: "Đẩy tin tự động", icon: <CheckCircleOutlined /> },
-        { text: "Thống kê chi tiết", icon: <CheckCircleOutlined /> },
-      ],
-      displayDays: 30,
-      priority: "Cao",
-      support: "24/7",
-      badge: "Vàng",
-      benefits: [
-        "Giá tốt nhất",
-        "Tối ưu doanh số",
-        "Tiếp cận tối đa",
-        "Dashboard chuyên nghiệp",
-      ],
-    },
-    {
-      id: 4,
-      name: "Gói Cao Cấp",
-      tier: "diamond",
-      icon: <CrownOutlined />,
-      pricePerPost: 150000,
-      originalPrice: 0,
-      minPosts: 1,
-      maxPosts: 500,
-      color: "#B9F2FF",
-      gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-      popular: false,
-      features: [
-        { text: "150.000₫/bài đăng", icon: <CheckCircleOutlined /> },
-        { text: "Hiển thị 30 ngày/bài", icon: <CheckCircleOutlined /> },
-        { text: "Huy hiệu Kim Cương", icon: <CheckCircleOutlined /> },
-        { text: "Ưu tiên tối đa", icon: <CheckCircleOutlined /> },
-        { text: "Hỗ trợ VIP 24/7", icon: <CheckCircleOutlined /> },
-        { text: "Đẩy tin cao cấp", icon: <CheckCircleOutlined /> },
-        { text: "Thống kê AI", icon: <CheckCircleOutlined /> },
-        { text: "Quản lý tài khoản riêng", icon: <CheckCircleOutlined /> },
-        { text: "Tư vấn chiến lược", icon: <CheckCircleOutlined /> },
-      ],
-      displayDays: 60,
-      priority: "Tối đa",
-      support: "VIP 24/7",
-      badge: "Kim Cương",
-      benefits: [
-        "Dịch vụ cao cấp nhất",
-        "Dành cho doanh nghiệp",
-        "Tối ưu doanh thu tối đa",
-        "AI hỗ trợ bán hàng",
-      ],
-    },
-  ];
+          disabled: false
+        }));
+
+        // Xác định thời gian mặc định dựa trên tier
+        const tierLower = (pkg.packageName || pkg.name || "").toLowerCase();
+        let defaultDisplayDays = 3; // Mặc định cho Cơ Bản
+        if (tierLower.includes("tiêu chuẩn") || tierLower.includes("standard") || tierLower.includes("silver")) {
+          defaultDisplayDays = 7;
+        } else if (tierLower.includes("premium") || tierLower.includes("cao cấp") || tierLower.includes("diamond")) {
+          defaultDisplayDays = 20;
+        }
+
+        return {
+          id: pkg.id || pkg.packageId,
+          name: pkg.packageName || pkg.name || "Gói đăng tin",
+          tier: (pkg.packageName || pkg.name || "").toLowerCase().replace(/\s+/g, "-"),
+          icon: getIconByTier(pkg.packageName || pkg.name),
+          pricePerPost: pkg.price || pkg.pricePerPost || 0,
+          originalPrice: pkg.originalPrice || 0,
+          minPosts: pkg.minPosts || 1,
+          maxPosts: pkg.maxPosts || 100,
+          color: getColorByTier(pkg.packageName || pkg.name),
+          gradient: getGradientByTier(pkg.packageName || pkg.name),
+          popular: pkg.isPopular || false,
+          features: formattedFeatures,
+          displayDays: pkg.durationDays || pkg.displayDays || defaultDisplayDays,
+          priority: pkg.priority || "Trung bình",
+          support: pkg.support || "Email",
+          badge: pkg.badge || null,
+          benefits: benefits,
+          description: pkg.description || "",
+          isActive: pkg.isActive !== false,
+        };
+      });
+
+      setPackages(transformedPackages);
+      message.success(`Đã tải ${transformedPackages.length} gói thành công!`);
+    } catch (error) {
+      console.error("❌ Error fetching packages:", error);
+      message.error("Không thể tải danh sách gói từ server!");
+      setPackages([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Helper functions for icons and colors
+  const getIconByTier = (tier) => {
+    const tierLower = tier?.toLowerCase() || "";
+    if (tierLower.includes("basic") || tierLower.includes("cơ bản")) return <TrophyOutlined />;
+    if (tierLower.includes("silver") || tierLower.includes("bạc") || tierLower.includes("tiết kiệm")) return <StarOutlined />;
+    if (tierLower.includes("gold") || tierLower.includes("vàng") || tierLower.includes("phổ biến")) return <FireOutlined />;
+    if (tierLower.includes("diamond") || tierLower.includes("kim cương") || tierLower.includes("cao cấp")) return <CrownOutlined />;
+    return <StarOutlined />;
+  };
+
+  const getColorByTier = (tier) => {
+    const tierLower = tier?.toLowerCase() || "";
+    if (tierLower.includes("basic") || tierLower.includes("cơ bản")) return "#CD7F32";
+    if (tierLower.includes("silver") || tierLower.includes("bạc") || tierLower.includes("tiết kiệm")) return "#C0C0C0";
+    if (tierLower.includes("gold") || tierLower.includes("vàng") || tierLower.includes("phổ biến")) return "#FFD700";
+    if (tierLower.includes("diamond") || tierLower.includes("kim cương") || tierLower.includes("cao cấp")) return "#B9F2FF";
+    return "#1890ff";
+  };
+
+  const getGradientByTier = (tier) => {
+    const tierLower = tier?.toLowerCase() || "";
+    if (tierLower.includes("basic") || tierLower.includes("cơ bản")) return "linear-gradient(135deg, #D4AF37 0%, #CD7F32 100%)";
+    if (tierLower.includes("silver") || tierLower.includes("bạc") || tierLower.includes("tiết kiệm")) return "linear-gradient(135deg, #E8E8E8 0%, #A8A8A8 100%)";
+    if (tierLower.includes("gold") || tierLower.includes("vàng") || tierLower.includes("phổ biến")) return "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)";
+    if (tierLower.includes("diamond") || tierLower.includes("kim cương") || tierLower.includes("cao cấp")) return "linear-gradient(135deg, #667eea 0%, #764ba2 100%)";
+    return "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)";
+  };
 
   const handleSelectPackage = (pkg) => {
     // Kiểm tra đăng nhập trước khi chuyển tới trang thanh toán
@@ -280,25 +265,37 @@ const PackagesPage = () => {
 
       {/* Filter Tabs */}
       <div className={styles.contentWrapper}>
-        <div className={styles.tabsSection}>
-          <Tabs
-            activeKey={activeTab}
-            onChange={setActiveTab}
-            centered
-            size="large"
-            className={styles.filterTabs}
-          >
-            <TabPane tab="Tất cả gói" key="all" />
-            <TabPane tab="Miễn phí" key="free" />
-            <TabPane tab="Trả phí" key="paid" />
-            <TabPane tab="Phổ biến" key="popular" />
-          </Tabs>
+        {/* Information Section */}
+        <div className={styles.infoSection}>
+          <Row gutter={[24, 24]}>
+            <Col xs={24} md={8}>
+              <Card className={styles.infoCard} bordered={false}>
+                <ThunderboltOutlined style={{ fontSize: 32, color: '#1890ff', marginBottom: 16 }} />
+                <h3>Linh Hoạt Tối Đa</h3>
+                <p>Chọn số lượng bài đăng phù hợp với nhu cầu. Không bị ràng buộc gói cố định, chỉ trả tiền cho những gì bạn sử dụng.</p>
+              </Card>
+            </Col>
+            <Col xs={24} md={8}>
+              <Card className={styles.infoCard} bordered={false}>
+                <SafetyOutlined style={{ fontSize: 32, color: '#52c41a', marginBottom: 16 }} />
+                <h3>Bảo Mật & Uy Tín</h3>
+                <p>Tin đăng của bạn được kiểm duyệt kỹ lưỡng, hiển thị cho đúng khách hàng tiềm năng với độ tin cậy cao nhất.</p>
+              </Card>
+            </Col>
+            <Col xs={24} md={8}>
+              <Card className={styles.infoCard} bordered={false}>
+                <RocketOutlined style={{ fontSize: 32, color: '#722ed1', marginBottom: 16 }} />
+                <h3>Tăng Trưởng Nhanh</h3>
+                <p>Các gói cao cấp giúp tin của bạn được ưu tiên hiển thị, tăng lượt xem và tỷ lệ chuyển đổi đáng kể.</p>
+              </Card>
+            </Col>
+          </Row>
         </div>
 
         {/* Packages Grid */}
-        <Row gutter={[24, 24]} className={styles.packagesGrid}>
+        <Row gutter={[24, 24]} className={styles.packagesGrid} justify="center">
           {getPackagesByTab().map((pkg) => (
-            <Col xs={24} sm={12} lg={6} key={pkg.id}>
+            <Col xs={24} sm={12} md={12} lg={8} xl={6} key={pkg.id}>
               <Badge.Ribbon
                 text={pkg.popular ? "Phổ biến nhất" : null}
                 color="red"
@@ -310,6 +307,7 @@ const PackagesPage = () => {
                   }`}
                   hoverable
                   bordered={false}
+                  style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
                 >
                   {/* Package Header */}
                   <div
@@ -360,8 +358,54 @@ const PackagesPage = () => {
                     )}
                   </div>
 
+                  {/* Package Details */}
+                  <div className={styles.packageDetails}>
+                    <Row gutter={[8, 12]}>
+                      <Col span={12}>
+                        <div className={styles.detailItem}>
+                          <span className={styles.detailIcon}>⏱️</span>
+                          <div className={styles.detailContent}>
+                            <div className={styles.detailLabel}>Thời hạn</div>
+                            <div className={styles.detailValue}>{pkg.displayDays} ngày/bài</div>
+                          </div>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <div className={styles.detailItem}>
+                          <span className={styles.detailIcon}>🎯</span>
+                          <div className={styles.detailContent}>
+                            <div className={styles.detailLabel}>Ưu tiên</div>
+                            <div className={styles.detailValue}>{pkg.priority}</div>
+                          </div>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <div className={styles.detailItem}>
+                          <span className={styles.detailIcon}>💬</span>
+                          <div className={styles.detailContent}>
+                            <div className={styles.detailLabel}>Hỗ trợ</div>
+                            <div className={styles.detailValue}>{pkg.support}</div>
+                          </div>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <div className={styles.detailItem}>
+                          <span className={styles.detailIcon}>
+                            {pkg.badge ? '🏆' : '📝'}
+                          </span>
+                          <div className={styles.detailContent}>
+                            <div className={styles.detailLabel}>Huy hiệu</div>
+                            <div className={styles.detailValue}>
+                              {pkg.badge || 'Không'}
+                            </div>
+                          </div>
+                        </div>
+                      </Col>
+                    </Row>
+                  </div>
+
                   {/* Package Features */}
-                  <div className={styles.packageFeatures}>
+                  <div className={styles.packageFeatures} style={{ flex: 1 }}>
                     <Space
                       direction="vertical"
                       size="small"
@@ -387,32 +431,11 @@ const PackagesPage = () => {
 
                   {/* Package Benefits */}
                   <div className={styles.packageBenefits}>
-                    <h4>
-                      <SafetyOutlined /> Ưu điểm nổi bật
-                    </h4>
                     <ul>
                       {pkg.benefits.map((benefit, index) => (
                         <li key={index}>{benefit}</li>
                       ))}
                     </ul>
-                  </div>
-
-                  {/* Action Button */}
-                  <Button
-                    type="default"
-                    size="large"
-                    block
-                    icon={<ShoppingCartOutlined />}
-                    onClick={() => handleSelectPackage(pkg)}
-                    className={styles.selectButton}
-                  >
-                    {pkg.pricePerPost === 0 ? "Nhận miễn phí" : "Mua ngay"}
-                  </Button>
-
-                  <div className={styles.packageInfo}>
-                    <Tooltip title="Xem thông tin chi tiết">
-                      <InfoCircleOutlined /> Chi tiết gói
-                    </Tooltip>
                   </div>
                 </Card>
               </Badge.Ribbon>
@@ -422,98 +445,85 @@ const PackagesPage = () => {
 
         {/* Comparison Table Section */}
         <div className={styles.comparisonSection}>
-          <h2 className={styles.sectionTitle}>So Sánh Chi Tiết Các Gói</h2>
-          <div className={styles.comparisonTable}>
-            <table>
+          <h2 className={styles.sectionTitle}>
+            <InfoCircleOutlined /> So Sánh Chi Tiết Các Gói
+          </h2>
+          <div className={styles.tableWrapper}>
+            <table className={styles.comparisonTable}>
               <thead>
                 <tr>
                   <th>Tính năng</th>
                   <th>
                     <div className={styles.tableHeader}>
                       <TrophyOutlined />
-                      <span>Cơ Bản</span>
+                      <span>Gói Cơ Bản</span>
                     </div>
                   </th>
                   <th>
                     <div className={styles.tableHeader}>
                       <StarOutlined />
-                      <span>Tiết Kiệm</span>
-                    </div>
-                  </th>
-                  <th>
-                    <div className={styles.tableHeader}>
-                      <FireOutlined />
-                      <span>Phổ Biến</span>
+                      <span>Gói Tiêu Chuẩn</span>
                     </div>
                   </th>
                   <th>
                     <div className={styles.tableHeader}>
                       <CrownOutlined />
-                      <span>Cao Cấp</span>
+                      <span>Gói Premium</span>
                     </div>
                   </th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td>Giá/bài đăng</td>
-                  <td>Miễn phí</td>
+                  <td><strong>Giá/bài đăng</strong></td>
                   <td>50.000₫</td>
-                  <td>100.000₫</td>
-                  <td>150.000₫</td>
+                  <td>90.000₫</td>
+                  <td>180.000₫</td>
                 </tr>
-                <tr>
-                  <td>Số lượng tối đa</td>
+                {/* <tr>
+                  <td><strong>Số lượng tối đa</strong></td>
                   <td>3 bài</td>
                   <td>50 bài</td>
-                  <td>100 bài</td>
                   <td>500 bài</td>
-                </tr>
+                </tr> */}
                 <tr>
-                  <td>Thời gian hiển thị</td>
+                  <td><strong>Thời gian hiển thị</strong></td>
                   <td>3 ngày</td>
                   <td>7 ngày</td>
-                  <td>14 ngày</td>
-                  <td>30 ngày</td>
+                  <td>20 ngày</td>
                 </tr>
                 <tr>
-                  <td>Mức độ ưu tiên</td>
+                  <td><strong>Mức độ ưu tiên</strong></td>
                   <td>Thấp</td>
                   <td>Trung bình</td>
-                  <td>Cao</td>
                   <td>Tối đa</td>
                 </tr>
                 <tr>
-                  <td>Hỗ trợ khách hàng</td>
+                  <td><strong>Hỗ trợ khách hàng</strong></td>
                   <td>Email</td>
                   <td>Email + Chat</td>
-                  <td>24/7</td>
                   <td>VIP 24/7</td>
                 </tr>
                 <tr>
-                  <td>Huy hiệu</td>
-                  <td>Không</td>
+                  <td><strong>Huy hiệu</strong></td>
                   <td>Bạc</td>
                   <td>Vàng</td>
                   <td>Kim Cương</td>
                 </tr>
                 <tr>
-                  <td>Thống kê & phân tích</td>
+                  <td><strong>Thống kê & phân tích</strong></td>
                   <td>❌</td>
                   <td>Cơ bản</td>
-                  <td>Chi tiết</td>
                   <td>AI nâng cao</td>
                 </tr>
                 <tr>
-                  <td>Đẩy tin tự động</td>
+                  <td><strong>Đẩy tin tự động</strong></td>
                   <td>❌</td>
                   <td>❌</td>
-                  <td>✅</td>
                   <td>✅ Cao cấp</td>
                 </tr>
                 <tr>
-                  <td>Tư vấn chiến lược</td>
-                  <td>❌</td>
+                  <td><strong>Tư vấn chiến lược</strong></td>
                   <td>❌</td>
                   <td>❌</td>
                   <td>✅</td>

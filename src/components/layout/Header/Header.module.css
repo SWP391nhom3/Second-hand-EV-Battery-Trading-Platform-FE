@@ -184,18 +184,3 @@
     display: none !important;
   }
 }
-
-/* Dark Mode Support */
-:global(.dark) .header {
-  background-color: #141414;
-  color: #fff;
-}
-
-:global(.dark) .dropdownMenu {
-  background-color: #1f1f1f;
-  border-color: #303030;
-}
-
-:global(.dark) .mobileNavLink:hover {
-  background-color: #262626;
-}

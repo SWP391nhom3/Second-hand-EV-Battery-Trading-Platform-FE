@@ -31,10 +31,15 @@ const Header = () => {
     const checkAuth = async () => {
       try {
         // ✅ Ưu tiên sessionStorage, fallback về localStorage
-        const { getToken, isLoggedIn: checkIsLoggedIn } = await import("../../../utils/sessionStorage");
+        const { getToken, isLoggedIn: checkIsLoggedIn } = await import(
+          "../../../utils/sessionStorage"
+        );
         const { validateToken } = await import("../../../utils/jwt");
 
-        const token = getToken() || localStorage.getItem("token") || localStorage.getItem("authToken");
+        const token =
+          getToken() ||
+          localStorage.getItem("token") ||
+          localStorage.getItem("authToken");
 
         if (token) {
           // ✅ Validate token (kiểm tra expiration)
@@ -91,7 +96,8 @@ const Header = () => {
   const getUserInfo = () => {
     try {
       // ✅ Ưu tiên sessionStorage, fallback về localStorage
-      const userStr = sessionStorage.getItem("user") || localStorage.getItem("user");
+      const userStr =
+        sessionStorage.getItem("user") || localStorage.getItem("user");
       if (!userStr) {
         return {
           name: "User",
@@ -117,7 +123,9 @@ const Header = () => {
 
   const { name: userName, avatar: userAvatar } = getUserInfo();
   // ✅ Ưu tiên sessionStorage, fallback về localStorage
-  const role = (sessionStorage.getItem("role") || localStorage.getItem("role"))?.toLowerCase();
+  const role = (
+    sessionStorage.getItem("role") || localStorage.getItem("role")
+  )?.toLowerCase();
 
   const menuItems = isLoggedIn
     ? [
@@ -155,14 +163,16 @@ const Header = () => {
           onClick: async () => {
             try {
               // ✅ Option 3: Xóa tất cả auth data từ sessionStorage và localStorage
-              const { clearSession } = await import("../../../utils/sessionStorage");
+              const { clearSession } = await import(
+                "../../../utils/sessionStorage"
+              );
               clearSession();
-              
+
               localStorage.removeItem("token");
               localStorage.removeItem("authToken");
               localStorage.removeItem("user");
               localStorage.removeItem("role");
-              
+
               setIsLoggedIn(false);
               message.success("Đã đăng xuất!");
               window.dispatchEvent(new Event("authChanged"));
@@ -243,14 +253,6 @@ const Header = () => {
 
         {/* Actions */}
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          {/* Dark mode */}
-          <Button
-            type="text"
-            shape="circle"
-            onClick={toggleDarkMode}
-            icon={isDarkMode ? "☀️" : "🌙"} // ← Fix icon
-          />
-
           {/* Giỏ hàng */}
           <div style={{ position: "relative" }}>
             <Badge count={cartCount} size="small">
