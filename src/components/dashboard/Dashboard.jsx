@@ -26,14 +26,12 @@ import {
   Card,
   Row,
   Col,
-  Statistic,
   Table,
   Tag,
   Badge,
   Modal,
   Form,
   Input,
-  Select,
   message,
   Space,
 } from "antd";
@@ -210,7 +208,7 @@ const fakeStaffRequests = [
   },
 ];
 
-// === DASHBOARD OVERVIEW - THIẾT KẾ CARSALE ===
+// === DASHBOARD OVERVIEW ===
 const monthlySalesData = [
   { month: "Th1", sales: 32 },
   { month: "Th2", sales: 45 },
@@ -584,20 +582,21 @@ const UserManagement = () => {
   );
 };
 
-// === PRODUCT MANAGEMENT ===
+// === PRODUCT MANAGEMENT (LOẠI BỎ SELECT) ===
 const ProductManagement = () => {
   const [products, setProducts] = useState(fakeProducts);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [form] = Form.useForm();
 
-  const handleStatusChange = (key, newStatus) => {
-    setProducts((prev) =>
-      prev.map((p) =>
-        p.key === key ? { ...p, transactionStatus: newStatus } : p
-      )
-    );
-    message.success("Cập nhật trạng thái thành công!");
+  const handleSendToStaff = () => {
+    form.validateFields().then((values) => {
+      message.success(
+        `Đã gửi yêu cầu hỗ trợ cho Staff: ${values.customerName}`
+      );
+      setIsModalOpen(false);
+      form.resetFields();
+    });
   };
 
   const columns = [
@@ -614,26 +613,33 @@ const ProductManagement = () => {
       title: "Trạng thái giao dịch",
       key: "transactionStatus",
       render: (_, record) => {
-        if (record.paymentFlow === "staff")
-          return <Tag color="orange">Qua Staff</Tag>;
+        if (record.paymentFlow === "staff") {
+          return (
+            <Tag color="orange" icon={<ClockCircleOutlined />}>
+              Đang chờ Staff
+            </Tag>
+          );
+        }
+
         const status = record.transactionStatus || "Chưa xác định";
+        let color = "default";
+        let icon = null;
+
+        if (status === "Đã thanh toán") {
+          color = "green";
+          icon = <CheckCircleOutlined />;
+        } else if (status === "Chờ thanh toán") {
+          color = "orange";
+          icon = <ClockCircleOutlined />;
+        } else if (status === "Hủy") {
+          color = "red";
+          icon = <StopOutlined />;
+        }
+
         return (
-          <Select
-            value={status}
-            size="small"
-            style={{ width: 140 }}
-            onChange={(val) => handleStatusChange(record.key, val)}
-          >
-            <Select.Option value="Chờ thanh toán">
-              <Tag color="orange">Chờ thanh toán</Tag>
-            </Select.Option>
-            <Select.Option value="Đã thanh toán">
-              <Tag color="green">Đã thanh toán</Tag>
-            </Select.Option>
-            <Select.Option value="Hủy">
-              <Tag color="red">Hủy</Tag>
-            </Select.Option>
-          </Select>
+          <Tag color={color} icon={icon}>
+            {status}
+          </Tag>
         );
       },
     },
@@ -645,11 +651,13 @@ const ProductManagement = () => {
           {record.paymentFlow === "staff" ? (
             <Button
               size="small"
+              type="primary"
               icon={<SendOutlined />}
               onClick={() => {
                 setSelectedProduct(record);
                 setIsModalOpen(true);
               }}
+              disabled={record.stock === 0}
             >
               Gửi Staff
             </Button>
@@ -658,7 +666,28 @@ const ProductManagement = () => {
               size="small"
               type="primary"
               icon={<CheckCircleOutlined />}
-              disabled={record.stock === 0}
+              disabled={
+                record.stock === 0 ||
+                record.transactionStatus === "Đã thanh toán"
+              }
+              onClick={() => {
+                if (record.transactionStatus !== "Đã thanh toán") {
+                  Modal.confirm({
+                    title: "Xác nhận thanh toán",
+                    content: `Xác nhận khách hàng đã thanh toán cho ${record.name}?`,
+                    onOk: () => {
+                      setProducts((prev) =>
+                        prev.map((p) =>
+                          p.key === record.key
+                            ? { ...p, transactionStatus: "Đã thanh toán" }
+                            : p
+                        )
+                      );
+                      message.success("Đã cập nhật trạng thái: Đã thanh toán");
+                    },
+                  });
+                }
+              }}
             >
               Thanh toán
             </Button>
@@ -678,10 +707,15 @@ const ProductManagement = () => {
       />
 
       <Modal
-        title="Gửi yêu cầu đến Staff"
+        title="Gửi yêu cầu hỗ trợ đến Staff"
         open={isModalOpen}
-        onCancel={() => setIsModalOpen(false)}
-        onOk={() => form.submit()}
+        onCancel={() => {
+          setIsModalOpen(false);
+          form.resetFields();
+        }}
+        onOk={handleSendToStaff}
+        okText="Gửi yêu cầu"
+        cancelText="Hủy"
       >
         <Form form={form} layout="vertical">
           <Form.Item label="Sản phẩm">
@@ -690,14 +724,16 @@ const ProductManagement = () => {
           <Form.Item
             name="customerName"
             label="Tên khách hàng"
-            rules={[{ required: true }]}
+            rules={[
+              { required: true, message: "Vui lòng nhập tên khách hàng" },
+            ]}
           >
             <Input placeholder="Nhập tên khách hàng" />
           </Form.Item>
           <Form.Item
             name="phone"
             label="Số điện thoại"
-            rules={[{ required: true }]}
+            rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}
           >
             <Input placeholder="090..." />
           </Form.Item>
@@ -710,15 +746,15 @@ const ProductManagement = () => {
   );
 };
 
-// === TRANSACTION MANAGEMENT ===
+// === TRANSACTION MANAGEMENT (LOẠI BỎ SELECT) ===
 const TransactionManagement = () => {
   const [transactions, setTransactions] = useState(fakeTransactions);
 
-  const updateStatus = (key, status) => {
+  const updateTransactionStatus = (key, newStatus) => {
     setTransactions((prev) =>
-      prev.map((t) => (t.key === key ? { ...t, status } : t))
+      prev.map((t) => (t.key === key ? { ...t, status: newStatus } : t))
     );
-    message.success("Cập nhật trạng thái giao dịch thành công!");
+    message.success(`Cập nhật trạng thái: ${newStatus}`);
   };
 
   const columns = [
@@ -735,33 +771,84 @@ const TransactionManagement = () => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: (status, record) => (
-        <Select
-          value={status}
-          size="small"
-          style={{ width: 150 }}
-          onChange={(val) => updateStatus(record.key, val)}
-        >
-          <Select.Option value="Chờ thanh toán">
-            <Tag color="orange" icon={<ClockCircleOutlined />}>
-              Chờ thanh toán
-            </Tag>
-          </Select.Option>
-          <Select.Option value="Đã thanh toán">
-            <Tag color="green" icon={<CheckCircleOutlined />}>
-              Đã thanh toán
-            </Tag>
-          </Select.Option>
-          <Select.Option value="Đang chờ Staff">
-            <Tag color="processing">Đang chờ Staff</Tag>
-          </Select.Option>
-          <Select.Option value="Hủy">
-            <Tag color="red" icon={<StopOutlined />}>
-              Hủy
-            </Tag>
-          </Select.Option>
-        </Select>
-      ),
+      render: (status) => {
+        let color = "default";
+        let icon = null;
+
+        switch (status) {
+          case "Đã thanh toán":
+            color = "green";
+            icon = <CheckCircleOutlined />;
+            break;
+          case "Chờ thanh toán":
+            color = "orange";
+            icon = <ClockCircleOutlined />;
+            break;
+          case "Đang chờ Staff":
+            color = "processing";
+            icon = <ClockCircleOutlined />;
+            break;
+          case "Hủy":
+            color = "red";
+            icon = <StopOutlined />;
+            break;
+          default:
+            color = "default";
+        }
+
+        return (
+          <Tag color={color} icon={icon}>
+            {status}
+          </Tag>
+        );
+      },
+    },
+    {
+      title: "Hành động",
+      key: "action",
+      render: (_, record) => {
+        const isStaffFlow =
+          fakeProducts.find((p) => p.name === record.product)?.paymentFlow ===
+          "staff";
+
+        return (
+          <Space>
+            {isStaffFlow ? (
+              <Button
+                size="small"
+                type="primary"
+                icon={<SendOutlined />}
+                disabled={record.status !== "Đang chờ Staff"}
+                onClick={() => {
+                  message.info("Đã gửi nhắc nhở đến Staff!");
+                }}
+              >
+                Nhắc Staff
+              </Button>
+            ) : (
+              <Button
+                size="small"
+                type="primary"
+                icon={<CheckCircleOutlined />}
+                disabled={
+                  record.status === "Đã thanh toán" || record.status === "Hủy"
+                }
+                onClick={() => {
+                  Modal.confirm({
+                    title: "Xác nhận thanh toán",
+                    content: `Xác nhận thanh toán cho đơn ${record.orderId}?`,
+                    onOk: () => {
+                      updateTransactionStatus(record.key, "Đã thanh toán");
+                    },
+                  });
+                }}
+              >
+                Thanh toán
+              </Button>
+            )}
+          </Space>
+        );
+      },
     },
     { title: "Ngày", dataIndex: "date", key: "date" },
   ];
@@ -958,4 +1045,5 @@ const Dashboard = () => {
     </Layout>
   );
 };
+
 export default Dashboard;
