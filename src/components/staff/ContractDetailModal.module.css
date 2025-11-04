@@ -1,0 +1,425 @@
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 1rem;
+}
+
+.modalContent {
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  max-width: 60rem; /* max-w-5xl */
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.header {
+  background-image: linear-gradient(to right, #2563eb, #4f46e5); /* from-blue-600 to-indigo-600 */
+  padding: 1.5rem;
+  color: #ffffff;
+}
+
+.headerFlex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.headerTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.headerSubtitle {
+  color: #bfdbfe; /* text-blue-100 */
+  margin-top: 0.25rem;
+}
+
+.closeButton {
+  color: #ffffff;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.closeButton:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.closeButton svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.mainContent {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sectionCard {
+  border: 2px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+}
+
+.sectionTitle {
+  font-weight: 700;
+  font-size: 1.125rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #1f2937;
+}
+
+.sectionTitle svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.vehicleInfoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+.vehicleInfoItemLabel {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.vehicleInfoItemValue {
+  font-weight: 600;
+  color: #111827;
+}
+
+.priceSection {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.priceFlex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.priceLabel {
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.priceValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.memberInfoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+.buyerCard {
+  border: 2px solid #a7f3d0;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  background-color: #ecfdf5;
+}
+
+.sellerCard {
+  border: 2px solid #e9d5ff;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  background-color: #f5f3ff;
+}
+
+.memberCardTitle {
+  font-weight: 700;
+  font-size: 1.125rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.buyerCardTitle svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #047857;
+}
+
+.sellerCardTitle svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #7e22ce;
+}
+
+.memberDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.memberAvatarContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.memberAvatar {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 9999px;
+  border: 2px solid #a7f3d0; /* Assuming green for buyer, purple for seller */
+}
+
+.sellerAvatar {
+  border: 2px solid #e9d5ff;
+}
+
+.memberName {
+  font-weight: 700;
+  color: #111827;
+  font-size: 1.125rem;
+}
+
+.memberId {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.memberContactItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #374151;
+}
+
+.memberContactIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.memberContactText {
+  font-size: 0.875rem;
+}
+
+.memberAddressIcon {
+  margin-top: 0.25rem;
+}
+
+.feeTableContainer {
+  border: 2px solid #e5e7eb;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.feeTableHeaderWrapper {
+  background-color: #f3f4f6;
+  padding: 1rem;
+}
+
+.feeTableTitle {
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: #1f2937;
+}
+
+.feeTableActual {
+  width: 100%;
+}
+
+.feeTableHead {
+  background-color: #f9fafb;
+  border-bottom: 2px solid #d1d5db;
+}
+
+.feeTableTh {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.feeTableThRight {
+  text-align: right;
+}
+
+.feeTableThCenter {
+  text-align: center;
+}
+
+.feeTableThGreen {
+  color: #059669;
+}
+
+.feeTableThPurple {
+  color: #7e22ce;
+}
+
+.feeTableBody {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.feeTableRow {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.feeTableCell {
+  padding: 0.75rem 1rem;
+}
+
+.feeItemContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.feeItemIcon svg {
+  width: 1rem;
+  height: 1rem;
+  color: #4b5563;
+}
+
+.feeItemName {
+  font-weight: 500;
+  color: #111827;
+}
+
+.feeItemAmount {
+  text-align: right;
+  font-weight: 600;
+  color: #111827;
+}
+
+.checkIconAuto {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #22c55e;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.summaryCard {
+  border: 2px solid #d1d5db;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  background-color: #f9fafb;
+}
+
+.summaryTitle {
+  font-weight: 700;
+  font-size: 1.125rem;
+  margin-bottom: 1rem;
+  color: #1f2937;
+}
+
+.summaryItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summaryLabel {
+  color: #4b5563;
+}
+
+.summaryValue {
+  font-weight: 700;
+  color: #111827;
+}
+
+.summarySeparator {
+  border-top: 2px solid #d1d5db;
+  padding-top: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.finalAmountBuyer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.finalAmountLabelBuyer {
+  color: #059669;
+  font-weight: 600;
+}
+
+.finalAmountValueBuyer {
+  font-weight: 700;
+  color: #059669;
+  font-size: 1.25rem;
+}
+
+.subTextRight {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-align: right;
+}
+
+.finalAmountSeller {
+  border-top: 1px solid #d1d5db;
+  padding-top: 0.75rem;
+}
+
+.finalAmountLabelSeller {
+  color: #7e22ce;
+  font-weight: 600;
+}
+
+.finalAmountValueSeller {
+  font-weight: 700;
+  color: #7e22ce;
+  font-size: 1.25rem;
+}
+
+.footerButtons {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.closeModalButton {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 2px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.closeModalButton:hover {
+  background-color: #f9fafb;
+}
+
+.downloadButton {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background-color: #2563eb;
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.downloadButton:hover {
+  background-color: #1d4ed8;
+}
+
+.downloadButton svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
