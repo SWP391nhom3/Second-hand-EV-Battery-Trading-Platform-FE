@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Row,
@@ -18,6 +18,8 @@ import {
   Progress,
   List,
   Breadcrumb,
+  Spin,
+  message,
 } from "antd";
 import {
   ShoppingCartOutlined,
@@ -28,7 +30,9 @@ import {
   CheckCircleOutlined,
   HomeOutlined,
   UserOutlined,
+  LoadingOutlined,
 } from "@ant-design/icons";
+import postService from "../../services/postService";
 import styles from "./ProductDetailPage.module.css";
 
 const { Title, Text, Paragraph } = Typography;
@@ -39,153 +43,174 @@ const ProductDetailPage = () => {
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [product, setProduct] = useState(null);
 
-  // Mock data - trong thực tế sẽ fetch từ API dựa trên id
-  const product = {
-    id: id,
-    name: "Pin Tesla Model S 85kWh",
-    brand: "Tesla",
-    price: 240000000,
-    originalPrice: 360000000,
-    rating: 4.8,
-    reviews: 156,
-    sold: 89,
-    inStock: true,
-    stockQuantity: 15,
-    membershipLevel: 4,
-    tag: "Kim cương",
-    category: "battery", // 'battery', 'motorcycle', 'car'
-    images: [
-      "https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=800",
-      "https://images.unsplash.com/photo-1617788138017-80ad40651399?w=800",
-      "https://images.unsplash.com/photo-1617788138058-1e97ae4b5aef?w=800",
-      "https://images.unsplash.com/photo-1612538498613-76d10ae0c237?w=800",
-    ],
-    description: `Pin Tesla Model S 85kWh là giải pháp năng lượng cao cấp, được tái chế từ xe Tesla Model S đời 2018-2020. 
-    Pin đã qua kiểm tra kỹ lưỡng và vẫn giữ được 92% dung lượng ban đầu, đảm bảo hiệu suất tối ưu cho nhu cầu sử dụng của bạn.`,
+  // Fetch product details from API
+  useEffect(() => {
+    const fetchProductDetail = async () => {
+      try {
+        setLoading(true);
+        console.log("📦 Fetching product detail for ID:", id);
+        
+        const response = await postService.getPostById(id);
+        console.log("✅ Product detail response:", response);
+        
+        // Determine if product is available (status check)
+        const isAvailable = response.status === "Active" || response.status === "Approved";
+        
+        // Transform API data to component format
+        const productData = {
+          // Post info
+          id: response.postId,
+          name: response.title,
+          price: response.price,
+          description: response.description || "Không có mô tả",
+          postType: response.postType, // "Direct" or "Staff-Assisted"
+          transactionType: response.transactionType, // Transaction type
+          contactInfo: response.contactInfo,
+          status: response.status,
+          featured: response.featured || false,
+          createdAt: response.createdAt,
+          updatedAt: response.updatedAt,
+          expiryDate: response.expiryDate,
+          
+          // Display info
+          brand: response.battery?.brand || response.vehicle?.brand || "Unknown",
+          originalPrice: response.price * 1.5, // Calculate discount
+          rating: response.member?.rating || 4.5,
+          reviews: 0,
+          sold: 0,
+          inStock: isAvailable,
+          stockQuantity: isAvailable ? 1 : 0,
+          membershipLevel: 3,
+          tag: response.featured ? "Nổi bật" : "Tiêu chuẩn",
+          category: response.batteryId ? 'battery' : response.vehicleId ? 'vehicle' : 'unknown',
+          images: response.images || [
+            "https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=800"
+          ],
+          
+          // Battery specifications
+          specifications: response.battery ? {
+            type: "Pin điện",
+            capacity: `${response.battery.capacityKWh} kWh`,
+            cycleCount: response.battery.cycleCount?.toString() || "N/A",
+            manufactureYear: response.battery.manufactureYear?.toString() || "N/A",
+            condition: response.battery.condition || "good",
+            healthStatus: response.battery.cycleCount ? 
+              `${Math.max(100 - (response.battery.cycleCount / 30), 50).toFixed(0)}%` : "90%",
+            brand: response.battery.brand,
+            description: response.battery.description,
+          } : response.vehicle ? {
+            // Vehicle specifications
+            type: "Xe điện",
+            brand: response.vehicle.brand,
+            model: response.vehicle.model,
+            manufactureYear: response.vehicle.manufactureYear?.toString() || "N/A",
+            mileageKm: `${response.vehicle.mileageKm?.toLocaleString()} km` || "N/A",
+            batteryCapacity: `${response.vehicle.batteryCapacity} kWh`,
+            condition: response.vehicle.condition || "good",
+            description: response.vehicle.description,
+          } : {},
+          
+          features: [
+            response.postType === "Staff-Assisted" ? "Có hỗ trợ từ nhân viên" : "Giao dịch trực tiếp",
+            response.featured ? "Tin đăng nổi bật" : "Tin đăng thường",
+            "Đã qua kiểm tra",
+            response.battery ? "Pin chất lượng" : "Xe điện đầy đủ",
+          ],
+          
+          applications: [
+            response.battery ? "Thay thế pin cũ" : "Sử dụng cá nhân",
+            "Tiết kiệm năng lượng",
+            "Thân thiện môi trường",
+          ],
+          
+          // Seller info from Member
+          seller: {
+            id: response.member?.memberId,
+            name: response.member?.fullName || "Người bán",
+            avatar: response.member?.avatarUrl,
+            address: response.member?.address,
+            rating: response.member?.rating || 4.5,
+            joinDate: response.member?.joinedAt ? 
+              new Date(response.member.joinedAt).getFullYear() : "2024",
+            status: response.member?.status,
+            verified: response.member?.status === "Active",
+            responseRate: "95%",
+            responseTime: "2 giờ",
+            followers: 100,
+            products: 10,
+          },
+          
+          // Staff info if staff-assisted
+          staff: response.staff ? {
+            id: response.staff.memberId,
+            name: response.staff.fullName,
+          } : null,
+          
+          warranty: {
+            period: "12 tháng",
+            coverage: [
+              "Bảo hành chất lượng sản phẩm",
+              "Hỗ trợ kỹ thuật",
+            ],
+            notCovered: [
+              "Hư hỏng do sử dụng sai cách",
+            ],
+          },
+          
+          shipping: {
+            freeShipping: true,
+            estimatedDays: "3-5 ngày",
+            shippingFrom: response.member?.address || "TP. Hồ Chí Minh",
+            methods: [
+              "Giao hàng tiêu chuẩn (3-5 ngày)",
+              "Giao hàng nhanh (1-2 ngày)",
+            ],
+          },
+          
+          reviewsList: [],
+          relatedProducts: [],
+        };
+        
+        setProduct(productData);
+      } catch (error) {
+        console.error("❌ Error fetching product detail:", error);
+        message.error("Không thể tải thông tin sản phẩm. Vui lòng thử lại!");
+        // Optionally navigate back if product not found
+        if (error.response?.status === 404) {
+          setTimeout(() => navigate("/products"), 2000);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    if (id) {
+      fetchProductDetail();
+    }
+  }, [id]);
 
-    specifications: {
-      capacity: "85 kWh",
-      voltage: "375V",
-      current: "227A",
-      cellType: "Li-ion 18650",
-      weight: "540 kg",
-      dimensions: "2100 x 1200 x 150 mm",
-      cycleLife: "3000+ chu kỳ",
-      warranty: "24 tháng",
-      condition: "Như mới",
-      healthStatus: "92%",
-      yearManufactured: "2019",
-      certification: "CE, UL, UN38.3",
-    },
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '100px 0' }}>
+        <Spin size="large" indicator={<LoadingOutlined spin />} />
+        <div style={{ marginTop: 20 }}>Đang tải thông tin sản phẩm...</div>
+      </div>
+    );
+  }
 
-    features: [
-      "Dung lượng cao 85kWh phù hợp cho nhiều ứng dụng",
-      "Độ sức khỏe pin 92% được chứng nhận",
-      "Hệ thống BMS (Battery Management System) tích hợp",
-      "Bảo hành chính hãng 24 tháng",
-      "Đã qua kiểm tra an toàn nghiêm ngặt",
-      "Hỗ trợ lắp đặt và tư vấn kỹ thuật miễn phí",
-      "Chứng nhận chất lượng quốc tế",
-      "Có thể kết nối song song để tăng dung lượng",
-    ],
-
-    applications: [
-      "Hệ thống lưu trữ năng lượng mặt trời (Solar ESS)",
-      "Trạm sạc xe điện công suất cao",
-      "Nguồn điện dự phòng cho doanh nghiệp",
-      "Hệ thống điện độc lập (Off-grid)",
-      "Xe điện và xe buýt điện",
-      "Tàu thuyền và du thuyền điện",
-    ],
-
-    seller: {
-      name: "Green Energy Solutions",
-      rating: 4.9,
-      responseRate: "98%",
-      responseTime: "2 giờ",
-      followers: 2453,
-      products: 87,
-      joinDate: "Tháng 3, 2023",
-      verified: true,
-    },
-
-    warranty: {
-      period: "24 tháng",
-      coverage: [
-        "Bảo hành chất lượng pin",
-        "Thay thế miễn phí nếu lỗi nhà sản xuất",
-        "Hỗ trợ kỹ thuật 24/7",
-        "Kiểm tra và bảo dưỡng định kỳ",
-      ],
-      notCovered: [
-        "Hư hỏng do sử dụng sai cách",
-        "Thiệt hại do thiên tai",
-        "Tự ý sửa chữa, thay đổi",
-      ],
-    },
-
-    shipping: {
-      freeShipping: true,
-      estimatedDays: "3-5 ngày",
-      shippingFrom: "TP. Hồ Chí Minh",
-      methods: [
-        "Giao hàng tiêu chuẩn (3-5 ngày)",
-        "Giao hàng nhanh (1-2 ngày) +500.000₫",
-        "Nhận tại kho (Miễn phí)",
-      ],
-    },
-
-    reviewsList: [
-      {
-        id: 1,
-        userName: "Nguyễn Văn A",
-        rating: 5,
-        date: "15/10/2024",
-        content:
-          "Pin chất lượng tuyệt vời, đúng như mô tả. Dung lượng vẫn rất tốt, đã lắp vào hệ thống solar của nhà và hoạt động ổn định.",
-        images: ["https://via.placeholder.com/100"],
-        helpful: 24,
-      },
-      {
-        id: 2,
-        userName: "Trần Thị B",
-        rating: 4,
-        date: "10/10/2024",
-        content:
-          "Sản phẩm tốt, giao hàng nhanh. Nhân viên hỗ trợ lắp đặt rất nhiệt tình.",
-        helpful: 15,
-      },
-      {
-        id: 3,
-        userName: "Lê Văn C",
-        rating: 5,
-        date: "05/10/2024",
-        content:
-          "Mua lần 2 rồi, chất lượng ổn định. Giá cả hợp lý so với thị trường.",
-        helpful: 18,
-      },
-    ],
-
-    relatedProducts: [
-      {
-        id: 2,
-        name: "Pin Tesla Model 3 75kWh",
-        price: 216000000,
-        image:
-          "https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=400",
-        rating: 4.7,
-      },
-      {
-        id: 3,
-        name: "Pin Nissan Leaf 40kWh",
-        price: 120000000,
-        image:
-          "https://images.unsplash.com/photo-1617788138017-80ad40651399?w=400",
-        rating: 4.5,
-      },
-    ],
-  };
+  if (!product) {
+    return (
+      <div style={{ textAlign: 'center', padding: '100px 0' }}>
+        <Title level={3}>Không tìm thấy sản phẩm</Title>
+        <Button type="primary" onClick={() => navigate('/products')}>
+          Quay lại trang sản phẩm
+        </Button>
+      </div>
+    );
+  }
 
   const getMembershipInfo = (level) => {
     switch (level) {

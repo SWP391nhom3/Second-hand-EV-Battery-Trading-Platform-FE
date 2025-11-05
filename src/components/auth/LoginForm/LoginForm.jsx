@@ -168,7 +168,7 @@ const LoginForm = () => {
     setErrorMessage("");
     try {
       // 🔹 Gọi API đăng nhập
-      const response = await api.post("api/Auth/login", {
+      const response = await api.post("/api/Auth/login", {
         email: values.email,
         password: values.password,
       });

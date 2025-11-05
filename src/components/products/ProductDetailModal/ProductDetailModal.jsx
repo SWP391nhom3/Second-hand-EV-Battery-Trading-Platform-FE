@@ -33,6 +33,8 @@ import {
   WarningOutlined,
   CalendarOutlined,
   CreditCardOutlined,
+  FireOutlined,
+  StarOutlined,
 } from '@ant-design/icons';
 import styles from './ProductDetailModal.module.css';
 
@@ -66,19 +68,23 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
     membershipLevel,
     tag,
     inStock = true,
-    category, // 'battery', 'motorcycle', 'car'
+    category, // 'battery', 'motorcycle', 'car', 'vehicle'
+    description, // Mô tả thực từ user
+    cycleCount, // Số chu kỳ pin
+    manufactureYear, // Năm sản xuất
+    model, // Model xe (cho vehicle)
+    mileageKm, // Số km đã đi (cho vehicle)
+    contactInfo, // Thông tin liên hệ thực
+    status, // Trạng thái bài đăng
+    package: packageInfo, // Package information
+    packageSubscription, // Package subscription details
   } = product;
 
   // Kiểm tra xem sản phẩm có phải xe máy hoặc ô tô không
-  const isVehicle = category === 'motorcycle' || category === 'car';
+  const isVehicle = category === 'motorcycle' || category === 'car' || category === 'vehicle';
 
-  // Mock additional images
-  const images = [
-    image,
-    'https://images.unsplash.com/photo-1617788138017-80ad40651399?w=800',
-    'https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=800',
-    'https://images.unsplash.com/photo-1612538498613-76d10ae4b5aef?w=800',
-  ];
+  // Get images from product data
+  const images = product.images || [image];
 
   const getMembershipColor = (level) => {
     switch (level) {
@@ -161,7 +167,13 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
   const handleContactSeller = () => {
     Modal.info({
       title: 'Liên hệ người bán',
-      content: `Số điện thoại: 0${Math.floor(Math.random() * 900000000 + 100000000)}`,
+      content: (
+        <div>
+          <p><strong>Tên:</strong> {seller?.name || 'Người bán'}</p>
+          {contactInfo && <p><strong>Liên hệ:</strong> {contactInfo}</p>}
+          {seller?.address && <p><strong>Địa chỉ:</strong> {seller.address}</p>}
+        </div>
+      ),
     });
   };
 
@@ -249,6 +261,134 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
 
             <Divider />
 
+            {/* Package Information */}
+            {packageInfo && (
+              <>
+                <div className={styles.packageSection}>
+                  <div className={styles.packageHeader}>
+                    <Text strong style={{ fontSize: 18, color: '#faad14' }}>
+                      {packageInfo.priorityLevel >= 3 ? '�' : '�📦'} Gói đăng tin
+                    </Text>
+                  </div>
+                  <Space direction="vertical" size="middle" style={{ width: '100%', marginTop: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      <Tag 
+                        color={
+                          packageInfo.priorityLevel >= 3 ? 'gold' : 
+                          packageInfo.priorityLevel === 2 ? 'blue' : 
+                          packageInfo.priorityLevel === 1 ? 'orange' :
+                          'default'
+                        }
+                        icon={packageInfo.featured ? <FireOutlined /> : <CheckCircleOutlined />}
+                        style={{ 
+                          fontSize: 15, 
+                          padding: '6px 16px',
+                          borderRadius: '8px',
+                          fontWeight: '600',
+                          border: packageInfo.priorityLevel >= 3 ? '2px solid #faad14' : 
+                                 packageInfo.priorityLevel === 2 ? '2px solid #1890ff' : 
+                                 '1px solid #d9d9d9',
+                          boxShadow: packageInfo.priorityLevel >= 3 ? '0 4px 12px rgba(250, 173, 20, 0.3)' : 
+                                    packageInfo.priorityLevel === 2 ? '0 4px 12px rgba(24, 144, 255, 0.2)' : 
+                                    'none'
+                        }}
+                      >
+                        {packageInfo.priorityLevel >= 3 && '👑 '}
+                        {packageInfo.name}
+                      </Tag>
+                      {packageInfo.featured && (
+                        <Tag 
+                          color="red" 
+                          icon={<StarOutlined />}
+                          style={{
+                            fontSize: 13,
+                            padding: '4px 12px',
+                            fontWeight: '600',
+                            animation: 'pulse 2s ease-in-out infinite'
+                          }}
+                        >
+                          ⭐ Nổi bật
+                        </Tag>
+                      )}
+                    </div>
+                    <div style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+                      gap: '12px',
+                      padding: '12px',
+                      background: '#fafafa',
+                      borderRadius: '8px'
+                    }}>
+                      <div>
+                        <Text type="secondary" style={{ fontSize: 12 }}>Mức ưu tiên</Text>
+                        <div style={{ fontSize: 16, fontWeight: '600', color: '#1890ff', marginTop: '4px' }}>
+                          Level {packageInfo.priorityLevel}
+                        </div>
+                      </div>
+                      <div>
+                        <Text type="secondary" style={{ fontSize: 12 }}>Thời hạn gói</Text>
+                        <div style={{ fontSize: 16, fontWeight: '600', color: '#52c41a', marginTop: '4px' }}>
+                          {packageInfo.durationDay} ngày
+                        </div>
+                      </div>
+                      {packageInfo.price > 0 && (
+                        <div>
+                          <Text type="secondary" style={{ fontSize: 12 }}>Giá gói</Text>
+                          <div style={{ fontSize: 16, fontWeight: '600', color: '#faad14', marginTop: '4px' }}>
+                            {packageInfo.price?.toLocaleString('vi-VN')}₫
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    {packageSubscription && packageSubscription.status && (
+                      <>
+                        <div style={{ 
+                          padding: '12px',
+                          background: packageSubscription.remainingDays > 7 ? '#f6ffed' : 
+                                     packageSubscription.remainingDays > 3 ? '#fffbe6' : '#fff1f0',
+                          borderRadius: '8px',
+                          border: `1px solid ${
+                            packageSubscription.remainingDays > 7 ? '#b7eb8f' : 
+                            packageSubscription.remainingDays > 3 ? '#ffe58f' : '#ffccc7'
+                          }`
+                        }}>
+                          <Text type="secondary" style={{ fontSize: 13, fontWeight: '500' }}>
+                            Thời gian còn lại:
+                          </Text>
+                          <Progress
+                            percent={Math.round((packageSubscription.remainingDays / packageInfo.durationDay) * 100)}
+                            strokeColor={
+                              packageSubscription.remainingDays > 7 ? '#52c41a' :
+                              packageSubscription.remainingDays > 3 ? '#faad14' : '#ff4d4f'
+                            }
+                            strokeWidth={10}
+                            format={() => `${packageSubscription.remainingDays} ngày`}
+                            style={{ marginTop: '8px' }}
+                          />
+                        </div>
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '8px',
+                          padding: '8px 12px',
+                          background: '#fafafa',
+                          borderRadius: '6px'
+                        }}>
+                          <CalendarOutlined style={{ color: '#1890ff', fontSize: 16 }} />
+                          <Text type="secondary" style={{ fontSize: 13 }}>
+                            <Text strong>{new Date(packageSubscription.startDate).toLocaleDateString('vi-VN')}</Text>
+                            {' → '}
+                            <Text strong>{new Date(packageSubscription.endDate).toLocaleDateString('vi-VN')}</Text>
+                          </Text>
+                        </div>
+                      </>
+                    )}
+                  </Space>
+                </div>
+                <Divider />
+              </>
+            )}
+
             {/* Product Title */}
             <div className={styles.titleSection}>
               <Tag color="blue">{brand}</Tag>
@@ -323,59 +463,108 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
 
             {/* Specifications */}
             <Descriptions column={2} size="small" bordered>
-              <Descriptions.Item
-                label={
-                  <>
-                    <ThunderboltOutlined /> Dung lượng
-                  </>
-                }
-              >
-                <Text strong>{capacity} kWh</Text>
-              </Descriptions.Item>
-              <Descriptions.Item
-                label={
-                  <>
-                    <SafetyOutlined /> Điện áp
-                  </>
-                }
-              >
-                <Text strong>{voltage}V</Text>
-              </Descriptions.Item>
-              <Descriptions.Item
-                label={
-                  <>
-                    <CalendarOutlined /> Thời gian sử dụng
-                  </>
-                }
-              >
-                <Text strong>{usageYears || warranty} năm</Text>
-              </Descriptions.Item>
-              <Descriptions.Item
-                label={
-                  <>
-                    <CheckCircleOutlined /> Bảo hành
-                  </>
-                }
-              >
-                <Text strong>{warranty} tháng</Text>
-              </Descriptions.Item>
+              {capacity && (
+                <Descriptions.Item
+                  label={
+                    <>
+                      <ThunderboltOutlined /> Dung lượng
+                    </>
+                  }
+                >
+                  <Text strong>{capacity} kWh</Text>
+                </Descriptions.Item>
+              )}
+              {voltage && (
+                <Descriptions.Item
+                  label={
+                    <>
+                      <SafetyOutlined /> Điện áp
+                    </>
+                  }
+                >
+                  <Text strong>{voltage}V</Text>
+                </Descriptions.Item>
+              )}
+              {(usageYears || manufactureYear) && (
+                <Descriptions.Item
+                  label={
+                    <>
+                      <CalendarOutlined /> {manufactureYear ? 'Năm sản xuất' : 'Thời gian sử dụng'}
+                    </>
+                  }
+                >
+                  <Text strong>{manufactureYear || `${usageYears} năm`}</Text>
+                </Descriptions.Item>
+              )}
+              {cycleCount !== undefined && cycleCount !== null && (
+                <Descriptions.Item
+                  label={
+                    <>
+                      <ThunderboltOutlined /> Số chu kỳ
+                    </>
+                  }
+                >
+                  <Text strong>{cycleCount} lần</Text>
+                </Descriptions.Item>
+              )}
+              {mileageKm && (
+                <Descriptions.Item
+                  label={
+                    <>
+                      <CalendarOutlined /> Số km đã đi
+                    </>
+                  }
+                >
+                  <Text strong>{mileageKm.toLocaleString('vi-VN')} km</Text>
+                </Descriptions.Item>
+              )}
+              {model && (
+                <Descriptions.Item
+                  label={
+                    <>
+                      <CheckCircleOutlined /> Model
+                    </>
+                  }
+                >
+                  <Text strong>{model}</Text>
+                </Descriptions.Item>
+              )}
+              {warranty && (
+                <Descriptions.Item
+                  label={
+                    <>
+                      <CheckCircleOutlined /> Bảo hành
+                    </>
+                  }
+                >
+                  <Text strong>{warranty} tháng</Text>
+                </Descriptions.Item>
+              )}
             </Descriptions>
 
             <Divider />
 
             {/* Quantity & Actions */}
             <div className={styles.actionSection}>
-              <div className={styles.quantitySection}>
-                <Text strong>Số lượng:</Text>
-                <InputNumber
-                  min={1}
-                  max={10}
-                  value={quantity}
-                  onChange={setQuantity}
-                  style={{ width: 100, margin: '0 12px' }}
-                />
-                <Text type="secondary">(Còn {Math.floor(Math.random() * 10 + 1)} sản phẩm)</Text>
-              </div>
+              {!isVehicle && (
+                <div className={styles.quantitySection}>
+                  <Text strong>Số lượng:</Text>
+                  <InputNumber
+                    min={1}
+                    max={10}
+                    value={quantity}
+                    onChange={setQuantity}
+                    style={{ width: 100, margin: '0 12px' }}
+                  />
+                  {status && (
+                    <Text type="secondary">
+                      {status === 'Active' || status === 'Approved' 
+                        ? '(Còn hàng)' 
+                        : `(${status})`}
+                    </Text>
+                  )}
+                </div>
+              )}
 
               <Space direction="vertical" size="middle" style={{ width: '100%', marginTop: 16 }}>
                 <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
@@ -470,27 +659,33 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
       <Divider />
       <Tabs defaultActiveKey="1">
         <Tabs.TabPane tab="Mô tả chi tiết" key="1">
-          <Paragraph>
-            Pin {brand} {name} là sản phẩm chất lượng cao, đã qua sử dụng {usageYears || 2} năm
-            nhưng vẫn giữ được {batteryHealth || 90}% dung lượng ban đầu. Pin được kiểm tra kỹ
-            lưỡng, đảm bảo an toàn và hiệu suất ổn định.
+          <Paragraph style={{ whiteSpace: 'pre-wrap' }}>
+            {description || `Pin ${brand} ${name} là sản phẩm chất lượng cao${
+              usageYears ? `, đã qua sử dụng ${usageYears} năm` : ''
+            }${
+              batteryHealth ? ` nhưng vẫn giữ được ${batteryHealth}% dung lượng ban đầu` : ''
+            }. Pin được kiểm tra kỹ lưỡng, đảm bảo an toàn và hiệu suất ổn định.`}
           </Paragraph>
-          <List
-            header={<Text strong>Ưu điểm:</Text>}
-            dataSource={[
-              'Dung lượng cao, phù hợp nhiều ứng dụng',
-              'Độ bền cao, tuổi thọ lâu dài',
-              'Đã qua kiểm tra an toàn nghiêm ngặt',
-              'Bảo hành chính hãng',
-              'Hỗ trợ lắp đặt miễn phí',
-            ]}
-            renderItem={(item) => (
-              <List.Item>
-                <CheckCircleOutlined style={{ color: '#52c41a', marginRight: 8 }} />
-                {item}
-              </List.Item>
-            )}
-          />
+          {(capacity || batteryHealth || cycleCount || manufactureYear) && (
+            <List
+              header={<Text strong>Thông số kỹ thuật:</Text>}
+              dataSource={[
+                capacity && `Dung lượng: ${capacity} kWh`,
+                batteryHealth && `Độ khỏe pin: ${batteryHealth}%`,
+                cycleCount !== undefined && cycleCount !== null && `Số chu kỳ: ${cycleCount} lần`,
+                manufactureYear && `Năm sản xuất: ${manufactureYear}`,
+                mileageKm && `Số km đã đi: ${mileageKm.toLocaleString('vi-VN')} km`,
+                model && `Model: ${model}`,
+                condition && `Tình trạng: ${condition}`,
+              ].filter(Boolean)}
+              renderItem={(item) => (
+                <List.Item>
+                  <CheckCircleOutlined style={{ color: '#52c41a', marginRight: 8 }} />
+                  {item}
+                </List.Item>
+              )}
+            />
+          )}
         </Tabs.TabPane>
         <Tabs.TabPane tab="Chính sách" key="2">
           <Space direction="vertical" size="middle" style={{ width: '100%' }}>
@@ -501,13 +696,15 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
                 <br />- Hoàn tiền 100% nếu không đúng mô tả
               </Paragraph>
             </div>
-            <div>
-              <Text strong>Chính sách bảo hành:</Text>
-              <Paragraph>
-                - Bảo hành {warranty} tháng
-                <br />- Hỗ trợ kỹ thuật 24/7
-              </Paragraph>
-            </div>
+            {warranty && (
+              <div>
+                <Text strong>Chính sách bảo hành:</Text>
+                <Paragraph>
+                  - Bảo hành {warranty} tháng
+                  <br />- Hỗ trợ kỹ thuật 24/7
+                </Paragraph>
+              </div>
+            )}
             <div>
               <Text strong>Chính sách vận chuyển:</Text>
               <Paragraph>
@@ -518,6 +715,47 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
             </div>
           </Space>
         </Tabs.TabPane>
+        {seller && (
+          <Tabs.TabPane tab="Thông tin người bán" key="3">
+            <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <Avatar size={64} icon={<UserOutlined />} src={seller.avatar} />
+                <div>
+                  <Text strong style={{ fontSize: 18 }}>{seller.name}</Text>
+                  <div>
+                    <Rate disabled value={seller.rating || 4.5} style={{ fontSize: 14 }} />
+                    <Text type="secondary" style={{ marginLeft: 8 }}>
+                      ({seller.totalSales || 0} giao dịch)
+                    </Text>
+                  </div>
+                  {seller.joinedAt && (
+                    <Text type="secondary" style={{ display: 'block' }}>
+                      Tham gia: {new Date(seller.joinedAt).toLocaleDateString('vi-VN')}
+                    </Text>
+                  )}
+                </div>
+              </div>
+              {seller.address && (
+                <div>
+                  <Text strong>Địa chỉ:</Text>
+                  <Paragraph>{seller.address}</Paragraph>
+                </div>
+              )}
+              {contactInfo && (
+                <div>
+                  <Text strong>Thông tin liên hệ:</Text>
+                  <Paragraph>{contactInfo}</Paragraph>
+                </div>
+              )}
+              {seller.verified && (
+                <div className={styles.infoItem}>
+                  <CheckCircleOutlined style={{ color: '#52c41a' }} />
+                  <Text style={{ color: '#52c41a' }}>Đã xác thực tài khoản</Text>
+                </div>
+              )}
+            </Space>
+          </Tabs.TabPane>
+        )}
       </Tabs>
     </Modal>
   );

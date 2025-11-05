@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   Slider,
@@ -9,6 +9,7 @@ import {
   Collapse,
   InputNumber,
   Tag,
+  Spin,
 } from "antd";
 import {
   FilterOutlined,
@@ -16,57 +17,32 @@ import {
   ThunderboltOutlined,
   DollarOutlined,
 } from "@ant-design/icons";
+import vehicleModelService from "../../../services/vehicleModelService";
+import batteryModelService from "../../../services/batteryModelService";
+import postService from "../../../services/postService";
 import styles from "./ProductFilters.module.css";
 
 const { Panel } = Collapse;
 
 const ProductFilters = ({ onFilterChange, onResetFilters }) => {
-  const [priceRange, setPriceRange] = useState([0, 1500000000]); // 0 - 1,500 triệu VND (bao gồm xe ô tô điện)
+  const [priceRange, setPriceRange] = useState([0, 1500000000]); // 0 - 1,500 triệu VND
   const [capacityRange, setCapacityRange] = useState([0, 100]);
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [selectedConditions, setSelectedConditions] = useState([]);
-  const [selectedMemberships, setSelectedMemberships] = useState([]);
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
-  const [warranty, setWarranty] = useState("all");
-  const [inStockOnly, setInStockOnly] = useState(false);
 
-  const brands = [
-    { label: "Tesla", value: "tesla" },
-    { label: "Nissan", value: "nissan" },
-    { label: "BMW", value: "bmw" },
-    { label: "Chevrolet", value: "chevrolet" },
-    { label: "Hyundai", value: "hyundai" },
-    { label: "Volkswagen", value: "volkswagen" },
-    { label: "VinFast", value: "vinfast" },
-    { label: "Kia", value: "kia" },
-    { label: "MG", value: "mg" },
-    { label: "BYD", value: "byd" },
-  ];
+  // State cho filter options từ API
+  const [brands, setBrands] = useState([]);
+  const [locations, setLocations] = useState([]);
+  const [loading, setLoading] = useState(false);
 
+  // Static filter options (không thay đổi)
   const conditions = [
-    { label: "Xuất sắc", value: "excellent", color: "green" },
-    { label: "Rất tốt", value: "very-good", color: "blue" },
-    { label: "Tốt", value: "good", color: "cyan" },
-    { label: "Khá", value: "fair", color: "orange" },
-  ];
-
-  const membershipTiers = [
-    { label: "💎 Kim cương", value: 4, color: "#667eea" },
-    { label: "🥇 Vàng", value: 3, color: "#f093fb" },
-    { label: "🥈 Bạc", value: 2, color: "#4facfe" },
-    { label: "🥉 Đồng", value: 1, color: "#fa709a" },
-  ];
-
-  const locations = [
-    { label: "TP. Hồ Chí Minh", value: "TP. Hồ Chí Minh" },
-    { label: "Hà Nội", value: "Hà Nội" },
-    { label: "Đà Nẵng", value: "Đà Nẵng" },
-    { label: "Cần Thơ", value: "Cần Thơ" },
-    { label: "Hải Phòng", value: "Hải Phòng" },
-    { label: "Biên Hòa", value: "Biên Hòa" },
-    { label: "Nha Trang", value: "Nha Trang" },
-    { label: "Huế", value: "Huế" },
+    { label: "Xuất sắc", value: "Excellent", color: "green" },
+    { label: "Rất tốt", value: "Very Good", color: "blue" },
+    { label: "Tốt", value: "Good", color: "cyan" },
+    { label: "Khá", value: "Fair", color: "orange" },
   ];
 
   const productCategories = [
@@ -78,13 +54,6 @@ const ProductFilters = ({ onFilterChange, onResetFilters }) => {
       description: "Pin xe điện"
     },
     { 
-      label: "Xe máy điện", 
-      value: "motorcycle",
-      icon: "🛵",
-      color: "#1890ff",
-      description: "Xe máy điện"
-    },
-    { 
       label: "Xe ô tô điện", 
       value: "car",
       icon: "🚗",
@@ -93,12 +62,74 @@ const ProductFilters = ({ onFilterChange, onResetFilters }) => {
     },
   ];
 
-  const warrantyOptions = [
-    { label: "Tất cả", value: "all" },
-    { label: "1+ Năm", value: "1" },
-    { label: "2+ Năm", value: "2" },
-    { label: "3+ Năm", value: "3" },
-  ];
+  // Fetch filter options từ API
+  useEffect(() => {
+    fetchFilterOptions();
+  }, []);
+
+  const fetchFilterOptions = async () => {
+    setLoading(true);
+    try {
+      // Fetch brands từ vehicle models và battery models
+      const [vehicleFilters, batteryFilters, posts] = await Promise.all([
+        vehicleModelService.getAllFilters().catch(() => ({ brands: [] })),
+        batteryModelService.getAllFilters().catch(() => ({ brands: [] })),
+        postService.getPosts({ pageSize: 1000 }).catch(() => [])
+      ]);
+
+      // Combine brands từ cả vehicle và battery
+      const vehicleBrands = vehicleFilters.brands || [];
+      const batteryBrands = batteryFilters.brands || [];
+      const allBrands = [...new Set([...vehicleBrands, ...batteryBrands])];
+      
+      // Sort alphabetically
+      const sortedBrands = allBrands
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b, 'vi'))
+        .map(brand => ({
+          label: brand,
+          value: brand.toLowerCase()
+        }));
+      
+      setBrands(sortedBrands);
+
+      // Extract unique locations từ posts
+      const postsArray = Array.isArray(posts) ? posts : posts.data || posts.items || [];
+      const uniqueLocations = [...new Set(
+        postsArray
+          .map(post => post.member?.address)
+          .filter(Boolean)
+          .map(addr => {
+            // Extract city from address
+            const match = addr.match(/TP\.\s*[^,]+|Hà Nội|Đà Nẵng|Cần Thơ|Hải Phòng|[^,]+$/i);
+            return match ? match[0].trim() : null;
+          })
+          .filter(Boolean)
+      )];
+
+      // Sort alphabetically
+      const sortedLocations = uniqueLocations
+        .sort((a, b) => a.localeCompare(b, 'vi'))
+        .map(loc => ({
+          label: loc,
+          value: loc
+        }));
+
+      setLocations(sortedLocations);
+
+      console.log('✅ Filter options loaded:', {
+        brands: sortedBrands.length,
+        locations: sortedLocations.length
+      });
+    } catch (error) {
+      console.error('❌ Error fetching filter options:', error);
+      // Set empty arrays on error
+      setBrands([]);
+      setLocations([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleApplyFilters = () => {
     const filters = {
@@ -106,11 +137,8 @@ const ProductFilters = ({ onFilterChange, onResetFilters }) => {
       capacityRange,
       brands: selectedBrands,
       conditions: selectedConditions,
-      memberships: selectedMemberships,
       locations: selectedLocations,
       categories: selectedCategories,
-      warranty,
-      inStockOnly,
     };
     onFilterChange(filters);
   };
@@ -120,32 +148,40 @@ const ProductFilters = ({ onFilterChange, onResetFilters }) => {
     setCapacityRange([0, 100]);
     setSelectedBrands([]);
     setSelectedConditions([]);
-    setSelectedMemberships([]);
     setSelectedLocations([]);
     setSelectedCategories([]);
-    setWarranty("all");
-    setInStockOnly(false);
     onResetFilters();
   };
 
   const activeFiltersCount = 
     selectedBrands.length +
     selectedConditions.length +
-    selectedMemberships.length +
     selectedLocations.length +
-    selectedCategories.length +
-    (warranty !== "all" ? 1 : 0) +
-    (inStockOnly ? 1 : 0);
+    selectedCategories.length;
 
   return (
     <Card className={styles.filtersCard}>
       <div className={styles.filterHeader}>
-        <h3 className={styles.filterTitle}>
-          <FilterOutlined /> Bộ lọc
-        </h3>
-        {activeFiltersCount > 0 && (
-          <Tag color="blue">{activeFiltersCount} đang áp dụng</Tag>
-        )}
+        <div>
+          <h3 className={styles.filterTitle}>
+            <FilterOutlined /> Bộ lọc
+            {activeFiltersCount > 0 && (
+              <Tag color="blue" style={{ marginLeft: 8 }}>
+                {activeFiltersCount}
+              </Tag>
+            )}
+          </h3>
+        </div>
+        <Space>
+          <Button
+            type="text"
+            size="small"
+            icon={<ReloadOutlined spin={loading} />}
+            onClick={fetchFilterOptions}
+            disabled={loading}
+            title="Tải lại bộ lọc"
+          />
+        </Space>
       </div>
 
       <Collapse
@@ -269,27 +305,6 @@ const ProductFilters = ({ onFilterChange, onResetFilters }) => {
           </Checkbox.Group>
         </Panel>
 
-        {/* Membership Tiers */}
-        <Panel header={<span className={styles.panelHeader}>👑 Gói thành viên</span>} key="membership">
-          <Checkbox.Group
-            value={selectedMemberships}
-            onChange={setSelectedMemberships}
-            className={styles.checkboxGroup}
-          >
-            <Space direction="vertical" style={{ width: "100%" }}>
-              {membershipTiers.map((tier) => (
-                <div key={tier.value} className={styles.checkboxItem}>
-                  <Checkbox value={tier.value}>
-                    <span style={{ color: tier.color, fontWeight: 600 }}>
-                      {tier.label}
-                    </span>
-                  </Checkbox>
-                </div>
-              ))}
-            </Space>
-          </Checkbox.Group>
-        </Panel>
-
         {/* Locations */}
         <Panel header={<span className={styles.panelHeader}>📍 Khu vực</span>} key="location">
           <Checkbox.Group
@@ -324,33 +339,6 @@ const ProductFilters = ({ onFilterChange, onResetFilters }) => {
               ))}
             </Space>
           </Checkbox.Group>
-        </Panel>
-
-        {/* Warranty */}
-        <Panel header={<span className={styles.panelHeader}>🛡️ Bảo hành</span>} key="warranty">
-          <Radio.Group
-            value={warranty}
-            onChange={(e) => setWarranty(e.target.value)}
-            className={styles.radioGroup}
-          >
-            <Space direction="vertical">
-              {warrantyOptions.map((option) => (
-                <Radio key={option.value} value={option.value}>
-                  {option.label}
-                </Radio>
-              ))}
-            </Space>
-          </Radio.Group>
-        </Panel>
-
-        {/* Availability */}
-        <Panel header={<span className={styles.panelHeader}>📦 Tình trạng hàng</span>} key="availability">
-          <Checkbox
-            checked={inStockOnly}
-            onChange={(e) => setInStockOnly(e.target.checked)}
-          >
-            Chỉ hàng có sẵn
-          </Checkbox>
         </Panel>
       </Collapse>
 

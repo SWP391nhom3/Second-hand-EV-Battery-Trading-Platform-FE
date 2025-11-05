@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Row, Col, Input, Breadcrumb, message } from "antd";
 import { SearchOutlined, HomeOutlined } from "@ant-design/icons";
+import { useLocation } from "react-router-dom";
 import { Header, Footer } from "../../components/layout";
 import {
   ProductFilters,
@@ -15,6 +16,7 @@ import styles from "./Products.module.css";
 const { Search } = Input;
 
 const Products = () => {
+  const location = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({
     priceRange: [0, 99999999999],
@@ -40,6 +42,15 @@ const Products = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
+
+  // Check if coming from create post
+  useEffect(() => {
+    if (location.state?.newPost) {
+      message.success("Bài đăng của bạn đã được tạo thành công và đang chờ duyệt!");
+      // Clear the location state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   // Fetch products from API
   useEffect(() => {
@@ -84,9 +95,10 @@ const Products = () => {
         params.locations = filters.locations.join(',');
       }
 
-      if (filters.categories && filters.categories.length > 0) {
-        params.categories = filters.categories.join(',');
-      }
+      // NOTE: Backend API doesn't support category filter, so we'll filter on frontend
+      // if (filters.categories && filters.categories.length > 0) {
+      //   params.categories = filters.categories.join(',');
+      // }
 
       if (filters.warranty && filters.warranty !== 'all') {
         params.minWarranty = parseInt(filters.warranty);
@@ -142,39 +154,150 @@ const Products = () => {
         totalCount = 0;
       }
       
-      // Transform API response to match frontend product structure
-      const transformedProducts = postsData.map(post => ({
-        id: post.postId || post.id,
-        name: post.title || post.name || 'Sản phẩm',
-        brand: post.battery?.batteryModel?.brand || post.vehicle?.vehicleModel?.brand || post.brand || 'Unknown',
-        capacity: post.battery?.batteryModel?.capacity || post.vehicle?.vehicleModel?.batteryCapacity || post.capacity || 0,
-        voltage: post.battery?.batteryModel?.voltage || post.vehicle?.vehicleModel?.voltage || post.voltage || 0,
-        warranty: post.battery?.warrantyMonths || post.vehicle?.warrantyMonths || post.warranty || 12,
-        condition: post.battery?.condition || post.vehicle?.condition || post.condition || 'Tốt',
-        price: post.price || 0,
-        originalPrice: post.originalPrice || post.price || 0,
-        rating: post.member?.rating || post.rating || 4.0,
-        reviews: post.reviewCount || post.reviews || 0,
-        image: post.imageUrl || post.battery?.imageUrl || post.vehicle?.imageUrl || post.image || 'https://via.placeholder.com/400x300',
-        tag: post.postType === 'DirectSale' ? 'Bán trực tiếp' : 'Yêu cầu hỗ trợ',
-        membershipLevel: post.member?.packageId || post.membershipLevel || 1,
-        inStock: post.status === 'Available' || post.inStock !== false,
-        category: post.battery ? 'battery' : post.vehicle?.vehicleModel?.vehicleType === 'Motorcycle' ? 'motorcycle' : post.category || 'battery',
-        description: post.description || 'Không có mô tả',
-        seller: {
-          name: post.member?.fullName || post.seller?.name || 'Người bán',
-          avatar: post.member?.avatar || post.seller?.avatar,
-          rating: post.member?.rating || post.seller?.rating || 4.5,
-          totalSales: post.member?.totalSales || post.seller?.totalSales || 0,
-        },
-        batteryHealth: post.battery?.batteryHealth || post.vehicle?.batteryHealth || post.batteryHealth || 90,
-        usageYears: post.battery?.usageYears || post.vehicle?.usageYears || post.usageYears || 1,
-        location: post.member?.address || post.location || 'TP. Hồ Chí Minh',
-        postedDate: formatPostedDate(post.createdAt || post.createdDate || post.postedDate),
-      }));
+      // Transform API response to match frontend product structure based on new schema
+      const transformedProducts = postsData.map((post, index) => {
+        // Determine if it's battery or vehicle
+        const isBattery = post.batteryId && post.battery;
+        const isVehicle = post.vehicleId && post.vehicle;
+        
+        // Extract package information from PostPackageSubs
+        const packageSub = post.postPackageSubs?.[0] || post.postPackageSub;
+        const packageInfo = packageSub?.package || packageSub?.postPackage;
+        
+        // Debug log for first 3 posts
+        if (index < 3) {
+          console.log(`🔍 Post #${index + 1} Package Debug:`, {
+            postId: post.postId,
+            title: post.title,
+            postPackageSubs: post.postPackageSubs,
+            packageSub: packageSub,
+            packageInfo: packageInfo,
+            extractedPackage: packageInfo ? {
+              id: packageInfo.packageId,
+              name: packageInfo.name,
+              priorityLevel: packageInfo.priorityLevel,
+              featured: packageInfo.featured
+            } : 'NO PACKAGE'
+          });
+        }
+        
+        return {
+          // Post basic info
+          id: post.postId || post.id,
+          name: post.title || 'Sản phẩm',
+          description: post.description || 'Không có mô tả',
+          price: post.price || 0,
+          originalPrice: post.price ? (post.price * 1.2) : 0, // 20% markup for original
+          postType: post.postType, // "Direct" or "Staff-Assisted"
+          transactionType: post.transactionType,
+          status: post.status,
+          featured: post.featured || false,
+          contactInfo: post.contactInfo,
+          createdAt: post.createdAt,
+          updatedAt: post.updatedAt,
+          expiryDate: post.expiryDate,
+          
+          // Package information
+          package: packageInfo ? {
+            id: packageInfo.packageId,
+            name: packageInfo.name,
+            price: packageInfo.price,
+            durationDay: packageInfo.durationDay,
+            priorityLevel: packageInfo.priorityLevel,
+            featured: packageInfo.featured,
+          } : null,
+          packageSubscription: packageSub ? {
+            startDate: packageSub.startDate,
+            endDate: packageSub.endDate,
+            status: packageSub.status,
+            remainingDays: packageSub.endDate ? 
+              Math.max(0, Math.ceil((new Date(packageSub.endDate) - new Date()) / (1000 * 60 * 60 * 24))) : 0,
+          } : null,
+          
+          // Product specific info
+          brand: isBattery ? post.battery.brand : 
+                 isVehicle ? post.vehicle.brand : 'Unknown',
+          capacity: isBattery ? post.battery.capacityKWh : 
+                   isVehicle ? post.vehicle.batteryCapacity : 0,
+          condition: isBattery ? post.battery.condition : 
+                    isVehicle ? post.vehicle.condition : 'good',
+          category: isBattery ? 'battery' : isVehicle ? 'vehicle' : 'unknown',
+          
+          // Battery specific
+          ...(isBattery && {
+            cycleCount: post.battery.cycleCount,
+            manufactureYear: post.battery.manufactureYear,
+            batteryHealth: post.battery.cycleCount ? 
+              Math.max(100 - (post.battery.cycleCount / 30), 50) : 90,
+          }),
+          
+          // Vehicle specific
+          ...(isVehicle && {
+            model: post.vehicle.model,
+            mileageKm: post.vehicle.mileageKm,
+            manufactureYear: post.vehicle.manufactureYear,
+            batteryHealth: 85, // Default for vehicle
+          }),
+          
+          // Display info
+          image: post.imageUrl || 
+                (isBattery ? post.battery.imageUrl : 
+                 isVehicle ? post.vehicle.imageUrl : 
+                 'https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=400'),
+          tag: post.featured ? 'Nổi bật' : 
+               post.postType === 'Direct' ? 'Trực tiếp' : 'Hỗ trợ',
+          inStock: post.status === 'Active' || post.status === 'Approved',
+          
+          // Member/Seller info
+          membershipLevel: post.member?.packageId || 1,
+          rating: post.member?.rating || 4.5,
+          reviews: 0, // Not in schema yet
+          seller: {
+            id: post.member?.memberId,
+            name: post.member?.fullName || 'Người bán',
+            avatar: post.member?.avatarUrl,
+            address: post.member?.address,
+            rating: post.member?.rating || 4.5,
+            joinedAt: post.member?.joinedAt,
+            status: post.member?.status,
+            verified: post.member?.status === 'Active',
+            totalSales: 0, // Not in schema
+          },
+          
+          // Location
+          location: post.member?.address || 'Việt Nam',
+          
+          // Date info
+          postedDate: formatPostedDate(post.createdAt),
+          
+          // Staff info if applicable
+          ...(post.staff && {
+            assignedStaff: {
+              id: post.staff.memberId,
+              name: post.staff.fullName,
+            }
+          }),
+          
+          // Usage calculation
+          usageYears: post.battery?.manufactureYear ? 
+            new Date().getFullYear() - post.battery.manufactureYear :
+            post.vehicle?.manufactureYear ?
+            new Date().getFullYear() - post.vehicle.manufactureYear : 0,
+        };
+      });
 
-      setProducts(transformedProducts);
-      setTotal(totalCount);
+      // Apply frontend filters (for fields not supported by backend API)
+      let filteredProducts = transformedProducts;
+      
+      // Filter by category (battery/vehicle) - Backend doesn't support this
+      if (filters.categories && filters.categories.length > 0) {
+        filteredProducts = filteredProducts.filter(product => 
+          filters.categories.includes(product.category)
+        );
+      }
+
+      setProducts(filteredProducts);
+      setTotal(filteredProducts.length); // Use filtered count
     } catch (error) {
       console.error('Error fetching products:', error);
       

@@ -30,6 +30,12 @@ const vehicleService = {
     const response = await api.delete(`/api/Vehicle/${id}`);
     return response.data;
   },
+
+  // GET /api/Vehicle/member/{memberId} - Get vehicles by member
+  getVehiclesByMember: async (memberId) => {
+    const response = await api.get(`/api/Vehicle/member/${memberId}`);
+    return response.data;
+  },
 };
 
 export default vehicleService;

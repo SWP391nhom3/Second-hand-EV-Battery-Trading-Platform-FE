@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Modal, Form, Input, Select, message, Row, Col } from 'antd';
 import { UserOutlined, PhoneOutlined, MailOutlined, EnvironmentOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import postRequestService from '../../../services/postRequestService';
+import { getUser } from '../../../utils/sessionStorage';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -14,31 +16,38 @@ const ContactVehicleModal = ({ visible, onClose, product }) => {
       const values = await form.validateFields();
       setLoading(true);
 
-      // Tạo dữ liệu gửi đi
-      const contactData = {
-        ...values,
-        productId: product?.id,
-        productName: product?.name,
-        productPrice: product?.price,
-        productCategory: product?.category,
-        submittedAt: new Date().toISOString(),
+      // Get current user
+      const currentUser = getUser();
+      if (!currentUser || !currentUser.memberId) {
+        message.error('Vui lòng đăng nhập để gửi yêu cầu!');
+        setLoading(false);
+        return;
+      }
+
+      // Prepare request data for API
+      const requestData = {
+        postId: product?.id,
+        buyerId: currentUser.memberId,
+        message: `${values.message}\n\nThông tin liên hệ:\nHọ tên: ${values.fullName}\nEmail: ${values.email}\nSĐT: ${values.phone}\nĐịa chỉ: ${values.address || 'Chưa cung cấp'}\nThời gian: ${values.preferredTime || 'Bất kỳ'}`,
+        offerPrice: values.offerPrice || product?.price,
       };
 
-      console.log('Thông tin liên hệ:', contactData);
+      console.log('📤 Sending contact request:', requestData);
 
-      // TODO: Gọi API gửi thông tin
-      // await axios.post('/api/contact-vehicle', contactData);
+      // Call API to create post request
+      await postRequestService.createPostRequest(requestData);
 
-      // Giả lập delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      message.success('Đã gửi thông tin thành công! Nhân viên sẽ liên hệ với bạn trong vòng 24 giờ.');
+      message.success('Đã gửi yêu cầu thành công! Người bán sẽ liên hệ với bạn sớm.');
       form.resetFields();
       onClose();
     } catch (error) {
-      console.error('Lỗi khi gửi thông tin:', error);
+      console.error('❌ Error sending contact request:', error);
       if (error.errorFields) {
         message.error('Vui lòng điền đầy đủ thông tin!');
+      } else if (error.response?.status === 401) {
+        message.error('Vui lòng đăng nhập để gửi yêu cầu!');
+      } else {
+        message.error(error.response?.data?.message || 'Không thể gửi yêu cầu. Vui lòng thử lại!');
       }
     } finally {
       setLoading(false);
