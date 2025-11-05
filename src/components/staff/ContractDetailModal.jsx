@@ -65,13 +65,23 @@ const ContractDetailModal = ({ isOpen, onClose, contract, constructFees, service
               </div>
               <div>
                 <p className={styles.vehicleInfoItemLabel}>Số km đã đi</p>
-                <p className={styles.vehicleInfoItemValue}>{contract.vehicle.mileage.toLocaleString('vi-VN')} km</p>
+                <p className={styles.vehicleInfoItemValue}>
+                  {contract.vehicle.mileage
+                    ? contract.vehicle.mileage.toLocaleString("vi-VN")
+                    : "0"}{" "}
+                  km
+                </p>
               </div>
             </div>
             <div className={styles.priceSection}>
               <div className={styles.priceFlex}>
                 <span className={styles.priceLabel}>Giá trị xe:</span>
-                <span className={styles.priceValue}>{contract.vehicle.price.toLocaleString('vi-VN')} ₫</span>
+                <span className={styles.priceValue}>
+                  {contract.vehicle.price
+                    ? contract.vehicle.price.toLocaleString("vi-VN")
+                    : "0"}{" "}
+                  ₫
+                </span>
               </div>
             </div>
           </div>
@@ -167,7 +177,7 @@ const ContractDetailModal = ({ isOpen, onClose, contract, constructFees, service
                         </div>
                       </td>
                       <td className={`${styles.feeTableCell} ${styles.feeItemAmount}`}>
-                        {amount.toLocaleString('vi-VN')} ₫
+                        {(amount || 0).toLocaleString('vi-VN')} ₫
                       </td>
                       <td className={styles.feeTableCell}>
                         {buyerPays && <Check className={styles.checkIconAuto} />}
@@ -188,28 +198,38 @@ const ContractDetailModal = ({ isOpen, onClose, contract, constructFees, service
             <div className={styles.mainContent}>
               <div className={styles.summaryItem}>
                 <span className={styles.summaryLabel}>Giá trị xe:</span>
-                <span className={styles.summaryValue}>{contract.vehicle.price.toLocaleString('vi-VN')} ₫</span>
+                <span className={styles.summaryValue}>
+                  {(contract.vehicle.price || 0).toLocaleString('vi-VN')} ₫
+                </span>
               </div>
               <div className={styles.summaryItem}>
                 <span className={styles.summaryLabel}>Tổng phí:</span>
-                <span className={styles.summaryValue}>{totalFees.toLocaleString('vi-VN')} ₫</span>
+                <span className={styles.summaryValue}>
+                  {(totalFees || 0).toLocaleString('vi-VN')} ₫
+                </span>
               </div>
               <div className={styles.summarySeparator}>
                 <div className={styles.finalAmountBuyer}>
                   <span className={styles.finalAmountLabelBuyer}>Người mua phải trả:</span>
-                  <span className={styles.finalAmountValueBuyer}>{finalBuyerAmount.toLocaleString('vi-VN')} ₫</span>
+                  <span className={styles.finalAmountValueBuyer}>
+                    {(finalBuyerAmount || 0).toLocaleString('vi-VN')} ₫
+                  </span>
                 </div>
                 <p className={styles.subTextRight}>
-                  (Giá xe {contract.vehicle.price.toLocaleString('vi-VN')} ₫ + Phí {buyerTotal.toLocaleString('vi-VN')} ₫)
+                  (Giá xe {(contract.vehicle.price || 0).toLocaleString('vi-VN')} ₫ + Phí{" "}
+                  {(buyerTotal || 0).toLocaleString('vi-VN')} ₫)
                 </p>
               </div>
               <div className={styles.finalAmountSeller}>
                 <div className={styles.finalAmountBuyer}>
                   <span className={styles.finalAmountLabelSeller}>Người bán nhận được:</span>
-                  <span className={styles.finalAmountValueSeller}>{finalSellerAmount.toLocaleString('vi-VN')} ₫</span>
+                  <span className={styles.finalAmountValueSeller}>
+                    {(finalSellerAmount || 0).toLocaleString('vi-VN')} ₫
+                  </span>
                 </div>
                 <p className={styles.subTextRight}>
-                  (Giá xe {contract.vehicle.price.toLocaleString('vi-VN')} ₫ - Phí {sellerTotal.toLocaleString('vi-VN')} ₫)
+                  (Giá xe {(contract.vehicle.price || 0).toLocaleString('vi-VN')} ₫ - Phí{" "}
+                  {(sellerTotal || 0).toLocaleString('vi-VN')} ₫)
                 </p>
               </div>
             </div>
