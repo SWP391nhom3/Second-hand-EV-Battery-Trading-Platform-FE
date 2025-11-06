@@ -16,11 +16,13 @@ import {
   CheckCircle,
   Search,
   Send,
+  Package,
 } from "lucide-react";
 import ContractDetailModal from "./ContractDetailModal";
 import SendLinkModal from "./SendLinkModal";
 import FeeSelectionModal from "./FeeSelection";
 import ConfirmPaymentModal from "./ConfirmPaymentModal";
+import orderAssignmentService from "../../services/orderAssignmentService";
 import styles from "./StaffDashboard.module.css";
 
 // === MOCK DATA ===
@@ -433,6 +435,11 @@ export default function StaffDashboard() {
   const [meetingChecks, setMeetingChecks] = useState({ buyer: false, seller: false });
   const [costApprovals, setCostApprovals] = useState({ buyer: false, seller: false });
   const [constructFees, setConstructFees] = useState({});
+  
+  // State cho đơn hàng được gán từ Admin
+  const [assignedOrders, setAssignedOrders] = useState([]);
+  const [activeTab, setActiveTab] = useState("contracts"); // "contracts" hoặc "assigned-orders"
+  const currentStaffId = "staff1"; // TODO: Lấy từ authentication
 
   const formatCurrency = (n) => new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
 
@@ -549,6 +556,38 @@ export default function StaffDashboard() {
     });
   }, [requests, searchTerm]);
 
+  // Load assigned orders từ Admin
+  useEffect(() => {
+    const loadAssignedOrders = async () => {
+      try {
+        // TODO: Uncomment khi có API
+        // const orders = await orderAssignmentService.getAssignedOrders(currentStaffId);
+        // setAssignedOrders(orders);
+        
+        // Load từ localStorage tạm thời
+        const orders = orderAssignmentService.getAssignedOrdersSync(currentStaffId);
+        setAssignedOrders(orders);
+      } catch (error) {
+        console.error("Error loading assigned orders:", error);
+      }
+    };
+
+    loadAssignedOrders();
+
+    // Subscribe to storage changes (cross-tab communication)
+    const unsubscribe = orderAssignmentService.subscribeToChanges(() => {
+      loadAssignedOrders();
+    });
+
+    // Poll for updates every 5 seconds
+    const interval = setInterval(loadAssignedOrders, 5000);
+
+    return () => {
+      unsubscribe();
+      clearInterval(interval);
+    };
+  }, [currentStaffId]);
+
   const stats = useMemo(() => {
     return {
       total: requests.length,
@@ -556,8 +595,9 @@ export default function StaffDashboard() {
         ["pending", "contacting", "waiting_approval", "awaiting_meeting"].includes(r.status)
       ).length,
       completed: requests.filter((r) => r.status === "completed").length,
+      assignedOrders: assignedOrders.length,
     };
-  }, [requests]);
+  }, [requests, assignedOrders]);
 
   // Don't auto-select - let user choose
 
@@ -606,8 +646,29 @@ export default function StaffDashboard() {
     <div className={styles.container}>
       {/* Header */}
       <div className={styles.header}>
-        <h1 className={styles.pageTitle}>Staff Dashboard</h1>
-        <p className={styles.subTitle}>Tổng quan & xử lý hợp đồng từ Admin</p>
+        <div>
+          <h1 className={styles.pageTitle}>Staff Dashboard</h1>
+          <p className={styles.subTitle}>Tổng quan & xử lý hợp đồng từ Admin</p>
+        </div>
+        <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
+          <button
+            className={`${styles.btn} ${activeTab === "contracts" ? styles.btnPrimary : styles.btnGhost}`}
+            onClick={() => setActiveTab("contracts")}
+          >
+            <FileText size={16} /> Hợp đồng
+          </button>
+          <button
+            className={`${styles.btn} ${activeTab === "assigned-orders" ? styles.btnPrimary : styles.btnGhost}`}
+            onClick={() => setActiveTab("assigned-orders")}
+          >
+            <Package size={16} /> Đơn hàng được gán
+            {assignedOrders.length > 0 && (
+              <span style={{ marginLeft: 8, background: "#ff4d4f", color: "white", borderRadius: "10px", padding: "2px 8px", fontSize: 12 }}>
+                {assignedOrders.length}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -626,20 +687,21 @@ export default function StaffDashboard() {
         </div>
       </div>
 
-      <div className={styles.columns}>
-        {/* Left: List */}
-        <div className={styles.colLeft}>
-          <RequestList
-            requests={filteredRequests}
-            selectedRequest={selectedRequest}
-            onSelect={handleSelectRequest}
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-          />
-        </div>
+      {activeTab === "contracts" ? (
+        <div className={styles.columns}>
+          {/* Left: List */}
+          <div className={styles.colLeft}>
+            <RequestList
+              requests={filteredRequests}
+              selectedRequest={selectedRequest}
+              onSelect={handleSelectRequest}
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+            />
+          </div>
 
-        {/* Right: Detail */}
-        <div className={styles.colRight}>
+          {/* Right: Detail */}
+          <div className={styles.colRight}>
           {selectedRequest ? (
             <>
               {/* Stepper */}
@@ -815,6 +877,66 @@ export default function StaffDashboard() {
           )}
         </div>
       </div>
+      ) : (
+        <div className={styles.columns}>
+          <div className={styles.colLeft}>
+            <div className={styles.card}>
+              <div className={styles.cardHeader}>
+                <h2 className={styles.cardTitle}>Đơn hàng được gán từ Admin</h2>
+              </div>
+              <div className={styles.list}>
+                {assignedOrders.length === 0 ? (
+                  <div style={{ padding: "40px", textAlign: "center", color: "#999" }}>
+                    <Package size={48} style={{ marginBottom: 16, opacity: 0.3 }} />
+                    <p>Chưa có đơn hàng nào được gán</p>
+                  </div>
+                ) : (
+                  assignedOrders.map((order) => (
+                    <div
+                      key={order.orderId}
+                      className={styles.listItem}
+                      onClick={() => {
+                        // TODO: Mở modal chi tiết đơn hàng
+                        alert(`Chi tiết đơn hàng: ${order.orderId}\nSản phẩm: ${order.productName}\nGiá đề xuất: ${order.offerPrice.toLocaleString()}₫`);
+                      }}
+                    >
+                      <div className={styles.listItemTop}>
+                        <div className={styles.listItemId}>{order.orderId}</div>
+                        <span className={styles.statusBadge} style={{ background: "#1677ff", color: "white" }}>
+                          Đã gán
+                        </span>
+                      </div>
+                      <div className={styles.listItemVehicle}>{order.productName}</div>
+                      <div className={styles.listItemPeople}>
+                        Giá đề xuất: {order.offerPrice?.toLocaleString()}₫
+                      </div>
+                      <div style={{ marginTop: 8, fontSize: 12, color: "#666" }}>
+                        Gán lúc: {order.assignedAt ? new Date(order.assignedAt).toLocaleString("vi-VN") : "N/A"}
+                      </div>
+                      <button
+                        className={`${styles.btn} ${styles.btnPrimarySm}`}
+                        style={{ marginTop: 12, width: "100%" }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // TODO: Xử lý đơn hàng
+                          alert(`Xử lý đơn hàng: ${order.orderId}`);
+                        }}
+                      >
+                        Xử lý đơn hàng
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+          <div className={styles.colRight}>
+            <div className={styles.empty}>
+              {selectedRequest ? "Chọn một đơn hàng để xem chi tiết" : "Chọn một đơn hàng từ danh sách để xem chi tiết"}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* MODAL: Edit Cost */}
       {showEditCostModal && selectedRequest && (

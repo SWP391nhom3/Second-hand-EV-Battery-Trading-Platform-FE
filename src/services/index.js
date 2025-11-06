@@ -9,5 +9,7 @@ export { default as vehicleModelService } from "./vehicleModelService";
 export { default as paymentService } from "./paymentService";
 export { default as packageService } from "./packageService";
 export { default as postRequestService } from "./postRequestService";
+export { default as orderRequestService } from "./orderRequestService";
+export { default as orderAssignmentService } from "./orderAssignmentService";
 export { default as memberService } from "./memberService";
 export { default as constructService } from "./constructService";
