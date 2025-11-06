@@ -61,76 +61,30 @@ const Products = () => {
     try {
       setLoading(true);
       
-      // Build API params
-      const params = {
-        pageNumber: currentPage,
-        pageSize: pageSize,
-      };
+  console.log('🔍 Fetching products...');
+  console.log('🌐 API Base URL:', import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000');
 
-      // Add search query
-      if (searchQuery) {
-        params.search = searchQuery;
-      }
+  // Helper: normalize image URLs - return null for empty/blank strings
+  const resolveImage = (url) => (url && typeof url === 'string' && url.trim() !== '' ? url : null);
 
-      // Add filters
-      if (filters.priceRange) {
-        params.minPrice = filters.priceRange[0];
-        params.maxPrice = filters.priceRange[1];
-      }
-
-      if (filters.capacityRange) {
-        params.minCapacity = filters.capacityRange[0];
-        params.maxCapacity = filters.capacityRange[1];
-      }
-
-      if (filters.brands && filters.brands.length > 0) {
-        params.brands = filters.brands.join(',');
-      }
-
-      if (filters.conditions && filters.conditions.length > 0) {
-        params.conditions = filters.conditions.join(',');
-      }
-
-      if (filters.locations && filters.locations.length > 0) {
-        params.locations = filters.locations.join(',');
-      }
-
-      // NOTE: Backend API doesn't support category filter, so we'll filter on frontend
-      // if (filters.categories && filters.categories.length > 0) {
-      //   params.categories = filters.categories.join(',');
-      // }
-
-      if (filters.warranty && filters.warranty !== 'all') {
-        params.minWarranty = parseInt(filters.warranty);
-      }
-
-      if (filters.inStockOnly) {
-        params.inStock = true;
-      }
-
-      // Add sorting
-      if (sortBy === 'price-asc') {
-        params.sortBy = 'price';
-        params.sortOrder = 'asc';
-      } else if (sortBy === 'price-desc') {
-        params.sortBy = 'price';
-        params.sortOrder = 'desc';
-      } else if (sortBy === 'rating') {
-        params.sortBy = 'rating';
-        params.sortOrder = 'desc';
-      } else if (sortBy === 'newest') {
-        params.sortBy = 'createdAt';
-        params.sortOrder = 'desc';
-      }
-
-      const response = await postService.getPosts(params);
+      console.log('📡 Calling API...');
       
-      console.log('API Response:', response); // Debug log
+      // TEMPORARY FIX: Use admin endpoint to get approved posts
+      // TODO: Backend should provide public endpoint that returns approved posts
+      // For now, we use admin/all which returns all posts including approved ones
+      let response;
+      let apiMethod = 'getAdminAllPosts() - temporary fix';
       
-      // Handle different response structures
-      // postService.getPosts already returns response.data from axios
-      let postsData = [];
-      let totalCount = 0;
+      console.log('🔍 Fetching all posts (including approved)...');
+      response = await postService.getAdminAllPosts();
+      console.log('✅ API response:', response);
+      console.log('✅ Number of posts returned:', Array.isArray(response) ? response.length : 0);
+        console.log(`📦 Using API method: ${apiMethod}`);
+
+  // Handle different response structures
+  // postService.getPosts already returns response.data from axios
+  let postsData = [];
+  let totalCount = 0;
       
       if (Array.isArray(response)) {
         // Response is directly an array
@@ -187,7 +141,6 @@ const Products = () => {
           name: post.title || 'Sản phẩm',
           description: post.description || 'Không có mô tả',
           price: post.price || 0,
-          originalPrice: post.price ? (post.price * 1.2) : 0, // 20% markup for original
           postType: post.postType, // "Direct" or "Staff-Assisted"
           transactionType: post.transactionType,
           status: post.status,
@@ -239,14 +192,18 @@ const Products = () => {
             batteryHealth: 85, // Default for vehicle
           }),
           
-          // Display info
-          image: post.imageUrl || 
-                (isBattery ? post.battery.imageUrl : 
-                 isVehicle ? post.vehicle.imageUrl : 
-                 'https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=400'),
+          // Display info - normalize image URLs to avoid empty-string src
+          image: (function() {
+            const byPost = resolveImage(post.imageUrl);
+            const byBattery = isBattery ? resolveImage(post.battery?.imageUrl) : null;
+            const byVehicle = isVehicle ? resolveImage(post.vehicle?.imageUrl) : null;
+            // fallback -> null (do not render empty src)
+            return byPost || byBattery || byVehicle || null;
+          })(),
           tag: post.featured ? 'Nổi bật' : 
                post.postType === 'Direct' ? 'Trực tiếp' : 'Hỗ trợ',
-          inStock: post.status === 'Active' || post.status === 'Approved',
+          inStock: post.status?.toUpperCase() === 'ACTIVE' || 
+                   post.status?.toUpperCase() === 'APPROVED',
           
           // Member/Seller info
           membershipLevel: post.member?.packageId || 1,
@@ -289,11 +246,42 @@ const Products = () => {
       // Apply frontend filters (for fields not supported by backend API)
       let filteredProducts = transformedProducts;
       
+      console.log('🔍 Before filtering - Total posts:', filteredProducts.length);
+      console.log('📊 Full post details:', filteredProducts.map(p => ({ 
+        id: p.id, 
+        title: p.name, 
+        status: p.status,
+        postType: p.postType,
+        category: p.category,
+        price: p.price
+      })));
+      
+      // Filter by status - Show only approved/active posts
+      filteredProducts = filteredProducts.filter(product => {
+        const status = product.status?.toString().toLowerCase();
+        console.log(`🔍 Checking post ${product.id} - Status: "${product.status}" -> lowercase: "${status}"`);
+        
+        // Accept these statuses (API returns "Approved" with capital A)
+        const validStatuses = ['approved', 'active', 'published'];
+        const isValid = validStatuses.includes(status);
+        
+        console.log(`   ✅ Valid: ${isValid}`);
+        return isValid;
+      });
+      
+      console.log('✅ After status filter - Valid posts:', filteredProducts.length);
+      console.log('📋 Filtered posts:', filteredProducts.map(p => ({ 
+        id: p.id, 
+        title: p.name, 
+        status: p.status 
+      })));
+      
       // Filter by category (battery/vehicle) - Backend doesn't support this
       if (filters.categories && filters.categories.length > 0) {
         filteredProducts = filteredProducts.filter(product => 
           filters.categories.includes(product.category)
         );
+        console.log('🔖 After category filter:', filteredProducts.length);
       }
 
       setProducts(filteredProducts);
@@ -415,6 +403,7 @@ const Products = () => {
   return (
     <>
       <Header />
+      {console.log('RENDER ProductsPage - products length:', products?.length, 'total:', total, 'loading:', loading)}
       <div className={styles.productsPage}>
         <div className={styles.container}>
           {/* Breadcrumb */}

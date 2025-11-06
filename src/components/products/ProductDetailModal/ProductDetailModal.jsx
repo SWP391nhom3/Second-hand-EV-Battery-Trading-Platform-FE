@@ -83,8 +83,8 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
   // Kiểm tra xem sản phẩm có phải xe máy hoặc ô tô không
   const isVehicle = category === 'motorcycle' || category === 'car' || category === 'vehicle';
 
-  // Get images from product data
-  const images = product.images || [image];
+  // Get images from product data and filter out empty values
+  const images = (product.images || [image]).filter(Boolean);
 
   const getMembershipColor = (level) => {
     switch (level) {
@@ -113,10 +113,11 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
       return;
     }
     
-    onAddToCart({ ...product, quantity });
+    // Mặc định số lượng = 1 cho sản phẩm pin/xe điện (hàng unique)
+    onAddToCart({ ...product, quantity: 1 });
     Modal.success({
       title: 'Thành công!',
-      content: `Đã thêm ${quantity} sản phẩm vào giỏ hàng`,
+      content: `Đã thêm sản phẩm vào giỏ hàng`,
     });
   };
 
@@ -158,19 +159,29 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
             batteryHealth,
             usageYears,
           },
-          quantity: quantity,
+          quantity: 1, // Mặc định 1 cho sản phẩm unique
         },
       });
     }
   };
 
   const handleContactSeller = () => {
+    if (!seller) {
+      Modal.warning({
+        title: 'Không có thông tin',
+        content: 'Thông tin người bán chưa sẵn sàng',
+      });
+      return;
+    }
+
     Modal.info({
       title: 'Liên hệ người bán',
       content: (
         <div>
-          <p><strong>Tên:</strong> {seller?.name || 'Người bán'}</p>
+          {seller?.name && <p><strong>Tên:</strong> {seller.name}</p>}
           {contactInfo && <p><strong>Liên hệ:</strong> {contactInfo}</p>}
+          {seller?.phone && <p><strong>Điện thoại:</strong> {seller.phone}</p>}
+          {seller?.email && <p><strong>Email:</strong> {seller.email}</p>}
           {seller?.address && <p><strong>Địa chỉ:</strong> {seller.address}</p>}
         </div>
       ),
@@ -191,13 +202,19 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
         <Col xs={24} md={12}>
           <div className={styles.imageSection}>
             <div className={styles.mainImage}>
-              <Image
-                src={images[selectedImage]}
-                alt={name}
-                width="100%"
-                height={400}
-                style={{ objectFit: 'cover', borderRadius: '12px' }}
-              />
+              {images.length > 0 ? (
+                <Image
+                  src={images[selectedImage]}
+                  alt={name}
+                  width="100%"
+                  height={400}
+                  style={{ objectFit: 'cover', borderRadius: '12px' }}
+                />
+              ) : (
+                <div className={styles.imagePlaceholderModal} style={{ width: '100%', height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 12, background: '#fafafa' }}>
+                  <ThunderboltOutlined style={{ fontSize: 48, color: '#d9d9d9' }} />
+                </div>
+              )}
               {membershipLevel && (
                 <div
                   className={styles.membershipBadge}
@@ -207,19 +224,21 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
                 </div>
               )}
             </div>
-            <div className={styles.thumbnails}>
-              {images.map((img, index) => (
-                <div
-                  key={index}
-                  className={`${styles.thumbnail} ${
-                    selectedImage === index ? styles.activeThumbnail : ''
-                  }`}
-                  onClick={() => setSelectedImage(index)}
-                >
-                  <img src={img} alt={`${name} ${index + 1}`} />
-                </div>
-              ))}
-            </div>
+            {images.length > 1 && (
+              <div className={styles.thumbnails}>
+                {images.map((img, index) => (
+                  <div
+                    key={index}
+                    className={`${styles.thumbnail} ${
+                      selectedImage === index ? styles.activeThumbnail : ''
+                    }`}
+                    onClick={() => setSelectedImage(index)}
+                  >
+                    <img src={img} alt={`${name} ${index + 1}`} />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </Col>
 
@@ -227,163 +246,73 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
         <Col xs={24} md={12}>
           <div className={styles.detailSection}>
             {/* Seller Info */}
-            <div className={styles.sellerCard}>
-              <Avatar size={48} icon={<UserOutlined />} src={seller?.avatar} />
-              <div className={styles.sellerInfo}>
-                <Text strong style={{ fontSize: '16px' }}>
-                  {seller?.name || 'Người bán'}
-                </Text>
-                <div className={styles.sellerMeta}>
-                  <Rate disabled defaultValue={seller?.rating || 4.5} style={{ fontSize: 12 }} />
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    ({seller?.totalSales || 0} giao dịch)
+            {seller && (
+              <div className={styles.sellerCard}>
+                <Avatar size={48} icon={<UserOutlined />} src={seller?.avatar} />
+                <div className={styles.sellerInfo}>
+                  <Text strong style={{ fontSize: '16px' }}>
+                    {seller?.name}
                   </Text>
+                  {seller?.rating && (
+                    <div className={styles.sellerMeta}>
+                      <Rate disabled defaultValue={seller.rating} style={{ fontSize: 12 }} />
+                      {seller?.totalSales !== undefined && (
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                          ({seller.totalSales} giao dịch)
+                        </Text>
+                      )}
+                    </div>
+                  )}
+                  {location && (
+                    <div className={styles.sellerLocation}>
+                      <EnvironmentOutlined />
+                      <Text type="secondary">{location}</Text>
+                    </div>
+                  )}
                 </div>
-                <div className={styles.sellerLocation}>
-                  <EnvironmentOutlined />
-                  <Text type="secondary">{location}</Text>
-                </div>
+                <Space direction="vertical" size="small">
+                  <Button
+                    icon={<PhoneOutlined />}
+                    size="small"
+                    type="primary"
+                    onClick={handleContactSeller}
+                  >
+                    Gọi
+                  </Button>
+                  <Button icon={<MessageOutlined />} size="small">
+                    Chat
+                  </Button>
+                </Space>
               </div>
-              <Space direction="vertical" size="small">
-                <Button
-                  icon={<PhoneOutlined />}
-                  size="small"
-                  type="primary"
-                  onClick={handleContactSeller}
-                >
-                  Gọi
-                </Button>
-                <Button icon={<MessageOutlined />} size="small">
-                  Chat
-                </Button>
-              </Space>
-            </div>
+            )}
 
             <Divider />
 
-            {/* Package Information */}
+            {/* Package Information - Simplified */}
             {packageInfo && (
               <>
                 <div className={styles.packageSection}>
                   <div className={styles.packageHeader}>
                     <Text strong style={{ fontSize: 18, color: '#faad14' }}>
-                      {packageInfo.priorityLevel >= 3 ? '�' : '�📦'} Gói đăng tin
+                      � Gói đăng tin
                     </Text>
                   </div>
-                  <Space direction="vertical" size="middle" style={{ width: '100%', marginTop: '12px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                      <Tag 
-                        color={
-                          packageInfo.priorityLevel >= 3 ? 'gold' : 
-                          packageInfo.priorityLevel === 2 ? 'blue' : 
-                          packageInfo.priorityLevel === 1 ? 'orange' :
-                          'default'
-                        }
-                        icon={packageInfo.featured ? <FireOutlined /> : <CheckCircleOutlined />}
-                        style={{ 
-                          fontSize: 15, 
-                          padding: '6px 16px',
-                          borderRadius: '8px',
-                          fontWeight: '600',
-                          border: packageInfo.priorityLevel >= 3 ? '2px solid #faad14' : 
-                                 packageInfo.priorityLevel === 2 ? '2px solid #1890ff' : 
-                                 '1px solid #d9d9d9',
-                          boxShadow: packageInfo.priorityLevel >= 3 ? '0 4px 12px rgba(250, 173, 20, 0.3)' : 
-                                    packageInfo.priorityLevel === 2 ? '0 4px 12px rgba(24, 144, 255, 0.2)' : 
-                                    'none'
-                        }}
-                      >
-                        {packageInfo.priorityLevel >= 3 && '👑 '}
-                        {packageInfo.name}
-                      </Tag>
-                      {packageInfo.featured && (
-                        <Tag 
-                          color="red" 
-                          icon={<StarOutlined />}
-                          style={{
-                            fontSize: 13,
-                            padding: '4px 12px',
-                            fontWeight: '600',
-                            animation: 'pulse 2s ease-in-out infinite'
-                          }}
-                        >
-                          ⭐ Nổi bật
-                        </Tag>
-                      )}
-                    </div>
-                    <div style={{ 
-                      display: 'grid', 
-                      gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
-                      gap: '12px',
-                      padding: '12px',
-                      background: '#fafafa',
-                      borderRadius: '8px'
-                    }}>
-                      <div>
-                        <Text type="secondary" style={{ fontSize: 12 }}>Mức ưu tiên</Text>
-                        <div style={{ fontSize: 16, fontWeight: '600', color: '#1890ff', marginTop: '4px' }}>
-                          Level {packageInfo.priorityLevel}
-                        </div>
-                      </div>
-                      <div>
-                        <Text type="secondary" style={{ fontSize: 12 }}>Thời hạn gói</Text>
-                        <div style={{ fontSize: 16, fontWeight: '600', color: '#52c41a', marginTop: '4px' }}>
-                          {packageInfo.durationDay} ngày
-                        </div>
-                      </div>
-                      {packageInfo.price > 0 && (
-                        <div>
-                          <Text type="secondary" style={{ fontSize: 12 }}>Giá gói</Text>
-                          <div style={{ fontSize: 16, fontWeight: '600', color: '#faad14', marginTop: '4px' }}>
-                            {packageInfo.price?.toLocaleString('vi-VN')}₫
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    {packageSubscription && packageSubscription.status && (
-                      <>
-                        <div style={{ 
-                          padding: '12px',
-                          background: packageSubscription.remainingDays > 7 ? '#f6ffed' : 
-                                     packageSubscription.remainingDays > 3 ? '#fffbe6' : '#fff1f0',
-                          borderRadius: '8px',
-                          border: `1px solid ${
-                            packageSubscription.remainingDays > 7 ? '#b7eb8f' : 
-                            packageSubscription.remainingDays > 3 ? '#ffe58f' : '#ffccc7'
-                          }`
-                        }}>
-                          <Text type="secondary" style={{ fontSize: 13, fontWeight: '500' }}>
-                            Thời gian còn lại:
-                          </Text>
-                          <Progress
-                            percent={Math.round((packageSubscription.remainingDays / packageInfo.durationDay) * 100)}
-                            strokeColor={
-                              packageSubscription.remainingDays > 7 ? '#52c41a' :
-                              packageSubscription.remainingDays > 3 ? '#faad14' : '#ff4d4f'
-                            }
-                            strokeWidth={10}
-                            format={() => `${packageSubscription.remainingDays} ngày`}
-                            style={{ marginTop: '8px' }}
-                          />
-                        </div>
-                        <div style={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          gap: '8px',
-                          padding: '8px 12px',
-                          background: '#fafafa',
-                          borderRadius: '6px'
-                        }}>
-                          <CalendarOutlined style={{ color: '#1890ff', fontSize: 16 }} />
-                          <Text type="secondary" style={{ fontSize: 13 }}>
-                            <Text strong>{new Date(packageSubscription.startDate).toLocaleDateString('vi-VN')}</Text>
-                            {' → '}
-                            <Text strong>{new Date(packageSubscription.endDate).toLocaleDateString('vi-VN')}</Text>
-                          </Text>
-                        </div>
-                      </>
-                    )}
-                  </Space>
+                  <div style={{ marginTop: '12px' }}>
+                    <Tag 
+                      color="gold"
+                      icon={<CheckCircleOutlined />}
+                      style={{ 
+                        fontSize: 15, 
+                        padding: '6px 16px',
+                        borderRadius: '8px',
+                        fontWeight: '600',
+                        border: '2px solid #faad14',
+                        boxShadow: '0 4px 12px rgba(250, 173, 20, 0.3)'
+                      }}
+                    >
+                      👑 {packageInfo.name}
+                    </Tag>
+                  </div>
                 </div>
                 <Divider />
               </>
@@ -391,16 +320,26 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
 
             {/* Product Title */}
             <div className={styles.titleSection}>
-              <Tag color="blue">{brand}</Tag>
+              {brand && <Tag color="blue">{brand}</Tag>}
               <Title level={3} style={{ margin: '8px 0' }}>
                 {name}
               </Title>
               <Space>
-                <Rate disabled defaultValue={rating} allowHalf style={{ fontSize: 16 }} />
-                <Text type="secondary">({reviews} đánh giá)</Text>
-                <Divider type="vertical" />
-                <ClockCircleOutlined />
-                <Text type="secondary">{postedDate}</Text>
+                {rating !== undefined && rating !== null && (
+                  <>
+                    <Rate disabled defaultValue={rating} allowHalf style={{ fontSize: 16 }} />
+                    {reviews !== undefined && reviews !== null && (
+                      <Text type="secondary">({reviews} đánh giá)</Text>
+                    )}
+                  </>
+                )}
+                {postedDate && (
+                  <>
+                    <Divider type="vertical" />
+                    <ClockCircleOutlined />
+                    <Text type="secondary">{postedDate}</Text>
+                  </>
+                )}
               </Space>
             </div>
 
@@ -426,38 +365,42 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
             <Divider />
 
             {/* Battery Health */}
-            <div className={styles.healthSection}>
-              <div className={styles.healthHeader}>
-                <SafetyOutlined style={{ fontSize: 20, color: '#52c41a' }} />
-                <Text strong style={{ fontSize: 16 }}>
-                  Tình trạng pin
-                </Text>
+            {batteryHealth && (
+              <div className={styles.healthSection}>
+                <div className={styles.healthHeader}>
+                  <SafetyOutlined style={{ fontSize: 20, color: '#52c41a' }} />
+                  <Text strong style={{ fontSize: 16 }}>
+                    Tình trạng pin
+                  </Text>
+                </div>
+                <div className={styles.healthBar}>
+                  <Text>Độ khỏe pin:</Text>
+                  <Progress
+                    percent={batteryHealth}
+                    strokeColor={{
+                      '0%': '#52c41a',
+                      '100%': '#73d13d',
+                    }}
+                    style={{ flex: 1, margin: '0 12px' }}
+                  />
+                  <Text strong>{batteryHealth}%</Text>
+                </div>
+                {condition && (
+                  <Tag
+                    color={
+                      condition === 'Như mới'
+                        ? 'green'
+                        : condition === 'Tốt'
+                        ? 'blue'
+                        : 'orange'
+                    }
+                    style={{ marginTop: 8 }}
+                  >
+                    {condition}
+                  </Tag>
+                )}
               </div>
-              <div className={styles.healthBar}>
-                <Text>Độ khỏe pin:</Text>
-                <Progress
-                  percent={batteryHealth || 90}
-                  strokeColor={{
-                    '0%': '#52c41a',
-                    '100%': '#73d13d',
-                  }}
-                  style={{ flex: 1, margin: '0 12px' }}
-                />
-                <Text strong>{batteryHealth || 90}%</Text>
-              </div>
-              <Tag
-                color={
-                  condition === 'Như mới'
-                    ? 'green'
-                    : condition === 'Tốt'
-                    ? 'blue'
-                    : 'orange'
-                }
-                style={{ marginTop: 8 }}
-              >
-                {condition}
-              </Tag>
-            </div>
+            )}
 
             <Divider />
 
@@ -544,29 +487,9 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
 
             <Divider />
 
-            {/* Quantity & Actions */}
+            {/* Actions */}
             <div className={styles.actionSection}>
-              {!isVehicle && (
-                <div className={styles.quantitySection}>
-                  <Text strong>Số lượng:</Text>
-                  <InputNumber
-                    min={1}
-                    max={10}
-                    value={quantity}
-                    onChange={setQuantity}
-                    style={{ width: 100, margin: '0 12px' }}
-                  />
-                  {status && (
-                    <Text type="secondary">
-                      {status === 'Active' || status === 'Approved' 
-                        ? '(Còn hàng)' 
-                        : `(${status})`}
-                    </Text>
-                  )}
-                </div>
-              )}
-
-              <Space direction="vertical" size="middle" style={{ width: '100%', marginTop: 16 }}>
+              <Space direction="vertical" size="middle" style={{ width: '100%' }}>
                 <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
                   {!isVehicle && (
                     <Button
@@ -635,22 +558,30 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
             </div>
 
             {/* Additional Info */}
-            <div className={styles.infoBox}>
-              <Space direction="vertical" size="small">
-                <div className={styles.infoItem}>
-                  <CheckCircleOutlined style={{ color: '#52c41a' }} />
-                  <Text>Đã kiểm tra chất lượng</Text>
-                </div>
-                <div className={styles.infoItem}>
-                  <CheckCircleOutlined style={{ color: '#52c41a' }} />
-                  <Text>Giao hàng miễn phí</Text>
-                </div>
-                <div className={styles.infoItem}>
-                  <CheckCircleOutlined style={{ color: '#52c41a' }} />
-                  <Text>Hỗ trợ lắp đặt</Text>
-                </div>
-              </Space>
-            </div>
+            {(product.qualityChecked || product.freeShipping || product.installationSupport) && (
+              <div className={styles.infoBox}>
+                <Space direction="vertical" size="small">
+                  {product.qualityChecked && (
+                    <div className={styles.infoItem}>
+                      <CheckCircleOutlined style={{ color: '#52c41a' }} />
+                      <Text>Đã kiểm tra chất lượng</Text>
+                    </div>
+                  )}
+                  {product.freeShipping && (
+                    <div className={styles.infoItem}>
+                      <CheckCircleOutlined style={{ color: '#52c41a' }} />
+                      <Text>Giao hàng miễn phí</Text>
+                    </div>
+                  )}
+                  {product.installationSupport && (
+                    <div className={styles.infoItem}>
+                      <CheckCircleOutlined style={{ color: '#52c41a' }} />
+                      <Text>Hỗ trợ lắp đặt</Text>
+                    </div>
+                  )}
+                </Space>
+              </div>
+            )}
           </div>
         </Col>
       </Row>
@@ -659,13 +590,11 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
       <Divider />
       <Tabs defaultActiveKey="1">
         <Tabs.TabPane tab="Mô tả chi tiết" key="1">
-          <Paragraph style={{ whiteSpace: 'pre-wrap' }}>
-            {description || `Pin ${brand} ${name} là sản phẩm chất lượng cao${
-              usageYears ? `, đã qua sử dụng ${usageYears} năm` : ''
-            }${
-              batteryHealth ? ` nhưng vẫn giữ được ${batteryHealth}% dung lượng ban đầu` : ''
-            }. Pin được kiểm tra kỹ lưỡng, đảm bảo an toàn và hiệu suất ổn định.`}
-          </Paragraph>
+          {description && (
+            <Paragraph style={{ whiteSpace: 'pre-wrap' }}>
+              {description}
+            </Paragraph>
+          )}
           {(capacity || batteryHealth || cycleCount || manufactureYear) && (
             <List
               header={<Text strong>Thông số kỹ thuật:</Text>}
@@ -689,30 +618,30 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
         </Tabs.TabPane>
         <Tabs.TabPane tab="Chính sách" key="2">
           <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-            <div>
-              <Text strong>Chính sách đổi trả:</Text>
-              <Paragraph>
-                - Đổi trả trong vòng 7 ngày nếu sản phẩm lỗi
-                <br />- Hoàn tiền 100% nếu không đúng mô tả
-              </Paragraph>
-            </div>
-            {warranty && (
+            {product.returnPolicy && (
               <div>
-                <Text strong>Chính sách bảo hành:</Text>
-                <Paragraph>
-                  - Bảo hành {warranty} tháng
-                  <br />- Hỗ trợ kỹ thuật 24/7
+                <Text strong>Chính sách đổi trả:</Text>
+                <Paragraph style={{ whiteSpace: 'pre-wrap' }}>
+                  {product.returnPolicy}
                 </Paragraph>
               </div>
             )}
-            <div>
-              <Text strong>Chính sách vận chuyển:</Text>
-              <Paragraph>
-                - Giao hàng toàn quốc
-                <br />- Miễn phí vận chuyển
-                <br />- Thời gian: 3-5 ngày làm việc
-              </Paragraph>
-            </div>
+            {(warranty || product.warrantyPolicy) && (
+              <div>
+                <Text strong>Chính sách bảo hành:</Text>
+                <Paragraph style={{ whiteSpace: 'pre-wrap' }}>
+                  {product.warrantyPolicy || (warranty && `Bảo hành ${warranty} tháng`)}
+                </Paragraph>
+              </div>
+            )}
+            {product.shippingPolicy && (
+              <div>
+                <Text strong>Chính sách vận chuyển:</Text>
+                <Paragraph style={{ whiteSpace: 'pre-wrap' }}>
+                  {product.shippingPolicy}
+                </Paragraph>
+              </div>
+            )}
           </Space>
         </Tabs.TabPane>
         {seller && (
@@ -722,12 +651,16 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
                 <Avatar size={64} icon={<UserOutlined />} src={seller.avatar} />
                 <div>
                   <Text strong style={{ fontSize: 18 }}>{seller.name}</Text>
-                  <div>
-                    <Rate disabled value={seller.rating || 4.5} style={{ fontSize: 14 }} />
-                    <Text type="secondary" style={{ marginLeft: 8 }}>
-                      ({seller.totalSales || 0} giao dịch)
-                    </Text>
-                  </div>
+                  {seller.rating !== undefined && (
+                    <div>
+                      <Rate disabled value={seller.rating} style={{ fontSize: 14 }} />
+                      {seller.totalSales !== undefined && (
+                        <Text type="secondary" style={{ marginLeft: 8 }}>
+                          ({seller.totalSales} giao dịch)
+                        </Text>
+                      )}
+                    </div>
+                  )}
                   {seller.joinedAt && (
                     <Text type="secondary" style={{ display: 'block' }}>
                       Tham gia: {new Date(seller.joinedAt).toLocaleDateString('vi-VN')}
@@ -741,10 +674,14 @@ const ProductDetailModal = ({ visible, product, onClose, onAddToCart }) => {
                   <Paragraph>{seller.address}</Paragraph>
                 </div>
               )}
-              {contactInfo && (
+              {(contactInfo || seller.phone || seller.email) && (
                 <div>
                   <Text strong>Thông tin liên hệ:</Text>
-                  <Paragraph>{contactInfo}</Paragraph>
+                  <Paragraph>
+                    {contactInfo && <div>{contactInfo}</div>}
+                    {seller.phone && <div>Điện thoại: {seller.phone}</div>}
+                    {seller.email && <div>Email: {seller.email}</div>}
+                  </Paragraph>
                 </div>
               )}
               {seller.verified && (

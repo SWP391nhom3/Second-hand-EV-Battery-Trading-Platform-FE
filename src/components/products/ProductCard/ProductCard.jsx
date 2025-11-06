@@ -23,7 +23,6 @@ const ProductCard = ({ product, onAddToCart, onViewDetails, onContactVehicle }) 
     id,
     name,
     price,
-    originalPrice,
     image,
     capacity,
     voltage,
@@ -96,11 +95,6 @@ const ProductCard = ({ product, onAddToCart, onViewDetails, onContactVehicle }) 
 
   const membershipInfo = getMembershipColor(membershipLevel);
 
-  const discountPercentage = discount || 
-    (originalPrice && price ? 
-      `-${Math.round(((originalPrice - price) / originalPrice) * 100)}%` 
-      : null);
-
   const handleBuyNow = (e) => {
     e.stopPropagation();
     
@@ -133,7 +127,14 @@ const ProductCard = ({ product, onAddToCart, onViewDetails, onContactVehicle }) 
       className={styles.productCard}
       cover={
         <div className={styles.imageContainer}>
-          <img alt={name} src={image} className={styles.productImage} />
+          {image ? (
+            <img alt={name} src={image} className={styles.productImage} />
+          ) : (
+            <div className={styles.imagePlaceholder}>
+              <ThunderboltOutlined style={{ fontSize: 48, color: '#d9d9d9' }} />
+              <div style={{ marginTop: 8, color: '#999' }}>Không có ảnh</div>
+            </div>
+          )}
           {!inStock && (
             <div className={styles.outOfStock}>
               <span>Out of Stock</span>
@@ -183,11 +184,13 @@ const ProductCard = ({ product, onAddToCart, onViewDetails, onContactVehicle }) 
             className={styles.sellerAvatar}
           />
           <div className={styles.sellerDetails}>
-            <div className={styles.sellerName}>{seller?.name || 'Người bán'}</div>
-            <div className={styles.sellerMeta}>
-              <EnvironmentOutlined className={styles.metaIcon} />
-              <span className={styles.metaText}>{location || 'TP.HCM'}</span>
-            </div>
+            <div className={styles.sellerName}>{seller?.name}</div>
+            {location && (
+              <div className={styles.sellerMeta}>
+                <EnvironmentOutlined className={styles.metaIcon} />
+                <span className={styles.metaText}>{location}</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -216,37 +219,49 @@ const ProductCard = ({ product, onAddToCart, onViewDetails, onContactVehicle }) 
         <h3 className={styles.productName}>{name}</h3>
 
         {/* Battery Health & Condition */}
-        <div className={styles.conditionRow}>
-          <div className={styles.healthBadge}>
-            <SafetyOutlined className={styles.healthIcon} />
-            <span className={styles.healthText}>Độ khỏe: {batteryHealth || '90'}%</span>
+        {batteryHealth && (
+          <div className={styles.conditionRow}>
+            <div className={styles.healthBadge}>
+              <SafetyOutlined className={styles.healthIcon} />
+              <span className={styles.healthText}>Độ khỏe: {batteryHealth}%</span>
+            </div>
+            {condition && (
+              <Tag color={condition === 'Như mới' ? 'green' : condition === 'Tốt' ? 'blue' : 'orange'}>
+                {condition}
+              </Tag>
+            )}
           </div>
-          <Tag color={condition === 'Như mới' ? 'green' : condition === 'Tốt' ? 'blue' : 'orange'}>
-            {condition}
-          </Tag>
-        </div>
+        )}
 
         {/* Specifications */}
         <div className={styles.specs}>
-          <div className={styles.specItem}>
-            <ThunderboltOutlined className={styles.specIcon} />
-            <span>{capacity} kWh</span>
-          </div>
-          <div className={styles.specItem}>
-            <SafetyOutlined className={styles.specIcon} />
-            <span>{voltage}V</span>
-          </div>
-          <div className={styles.specItem}>
-            <CalendarOutlined className={styles.specIcon} />
-            <span>{usageYears || warranty} năm SD</span>
-          </div>
+          {capacity && (
+            <div className={styles.specItem}>
+              <ThunderboltOutlined className={styles.specIcon} />
+              <span>{capacity} kWh</span>
+            </div>
+          )}
+          {voltage && (
+            <div className={styles.specItem}>
+              <SafetyOutlined className={styles.specIcon} />
+              <span>{voltage}V</span>
+            </div>
+          )}
+          {(usageYears || warranty) && (
+            <div className={styles.specItem}>
+              <CalendarOutlined className={styles.specIcon} />
+              <span>{usageYears || warranty} năm SD</span>
+            </div>
+          )}
         </div>
 
         {/* Posted Date */}
-        <div className={styles.postedDate}>
-          <ClockCircleOutlined className={styles.dateIcon} />
-          <span>Đăng {postedDate || '2 ngày trước'}</span>
-        </div>
+        {postedDate && (
+          <div className={styles.postedDate}>
+            <ClockCircleOutlined className={styles.dateIcon} />
+            <span>Đăng {postedDate}</span>
+          </div>
+        )}
 
         {/* Package Information */}
         {packageInfo && (
@@ -329,11 +344,6 @@ const ProductCard = ({ product, onAddToCart, onViewDetails, onContactVehicle }) 
             <span className={styles.currentPrice}>
               {typeof price === 'number' ? price.toLocaleString('vi-VN') : price}₫
             </span>
-            {originalPrice && originalPrice > price && (
-              <span className={styles.originalPrice}>
-                {typeof originalPrice === 'number' ? originalPrice.toLocaleString('vi-VN') : originalPrice}₫
-              </span>
-            )}
           </div>
         </div>
 

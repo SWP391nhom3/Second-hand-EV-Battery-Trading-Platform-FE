@@ -1,39 +1,74 @@
 import api from "../configs/axios";
+import { API_ENDPOINTS } from "../constants/apiConstants";
 
+/**
+ * Vehicle Service
+ * Handles all vehicle (individual item) related API calls
+ * @module vehicleService
+ */
 const vehicleService = {
-  // GET /api/Vehicle - Get all vehicles
+  // ==========================================================================
+  // BASIC CRUD OPERATIONS
+  // ==========================================================================
+
+  /**
+   * Get all vehicles
+   * @param {Object} params - Query parameters
+   * @param {number} [params.page] - Page number
+   * @param {number} [params.pageSize] - Items per page
+   * @returns {Promise<Array>} Vehicles list
+   */
   getVehicles: async (params = {}) => {
-    const response = await api.get("/api/Vehicle", { params });
+    const response = await api.get(API_ENDPOINTS.VEHICLE.BASE, { params });
     return response.data;
   },
 
-  // POST /api/Vehicle - Create new vehicle
+  /**
+   * Create new vehicle
+   * @param {Object} vehicleData - Vehicle data
+   * @param {number} vehicleData.memberId - Owner member ID
+   * @param {number} [vehicleData.vehicleModelId] - Vehicle model ID (optional)
+   * @param {string} [vehicleData.vin] - Vehicle Identification Number
+   * @param {number} vehicleData.manufactureYear - Manufacturing year
+   * @param {number} vehicleData.mileageKm - Mileage in kilometers
+   * @param {number} vehicleData.batteryCapacity - Battery capacity in kWh
+   * @param {string} vehicleData.condition - Condition (Excellent/Good/Fair/Poor/New/LikeNew/Used)
+   * @param {string} vehicleData.description - Description
+   * @returns {Promise<Object>} Created vehicle
+   */
   createVehicle: async (vehicleData) => {
-    const response = await api.post("/api/Vehicle", vehicleData);
+    const response = await api.post(API_ENDPOINTS.VEHICLE.BASE, vehicleData);
     return response.data;
   },
 
-  // GET /api/Vehicle/{id} - Get vehicle by ID
+  /**
+   * Get vehicle by ID
+   * @param {number} id - Vehicle ID
+   * @returns {Promise<Object>} Vehicle details
+   */
   getVehicleById: async (id) => {
-    const response = await api.get(`/api/Vehicle/${id}`);
+    const response = await api.get(API_ENDPOINTS.VEHICLE.BY_ID(id));
     return response.data;
   },
 
-  // PUT /api/Vehicle/{id} - Update vehicle
+  /**
+   * Update vehicle
+   * @param {number} id - Vehicle ID
+   * @param {Object} vehicleData - Updated vehicle data
+   * @returns {Promise<Object>} Updated vehicle
+   */
   updateVehicle: async (id, vehicleData) => {
-    const response = await api.put(`/api/Vehicle/${id}`, vehicleData);
+    const response = await api.put(API_ENDPOINTS.VEHICLE.BY_ID(id), vehicleData);
     return response.data;
   },
 
-  // DELETE /api/Vehicle/{id} - Delete vehicle
+  /**
+   * Delete vehicle
+   * @param {number} id - Vehicle ID
+   * @returns {Promise<Object>} Delete response
+   */
   deleteVehicle: async (id) => {
-    const response = await api.delete(`/api/Vehicle/${id}`);
-    return response.data;
-  },
-
-  // GET /api/Vehicle/member/{memberId} - Get vehicles by member
-  getVehiclesByMember: async (memberId) => {
-    const response = await api.get(`/api/Vehicle/member/${memberId}`);
+    const response = await api.delete(API_ENDPOINTS.VEHICLE.BY_ID(id));
     return response.data;
   },
 };

@@ -1,4 +1,8 @@
-// API Constants and Enums based on database schema
+// =============================================================================
+// API CONSTANTS AND ENUMS
+// Based on OpenAPI spec v1 and database schema
+// Last updated: November 7, 2025
+// =============================================================================
 
 // Post Status
 export const POST_STATUS = {
@@ -167,6 +171,159 @@ export const PAGINATION = {
   PAGE_SIZE_OPTIONS: [10, 20, 50, 100],
 };
 
+// =============================================================================
+// API ENDPOINTS
+// =============================================================================
+
+export const API_ENDPOINTS = {
+  // Auth endpoints
+  AUTH: {
+    REGISTER: "/api/Auth/register",
+    LOGIN: "/api/Auth/login",
+    STAFF_LOGIN: "/api/Auth/staff-login",
+    CHANGE_PASSWORD: "/api/Auth/change-password",
+    FORGOT_PASSWORD: "/api/Auth/forgot-password",
+    CREATE_ADMIN: "/api/Auth/create-admin",
+    CREATE_STAFF: "/api/Auth/create-staff",
+    GOOGLE_START: "/api/Auth/google/start",
+    GOOGLE_CALLBACK: "/api/Auth/google/callback",
+    GOOGLE_REGISTER_COMPLETE: "/api/Auth/google/register-complete",
+    GOOGLE_LOGIN_OTP: "/api/Auth/google/login-otp",
+    OTP_VERIFY: "/api/Auth/otp/verify",
+  },
+
+  // Account endpoints
+  ACCOUNT: {
+    BASE: "/api/Account",
+    BY_ID: (id) => `/api/Account/${id}`,
+  },
+
+  // Member endpoints
+  MEMBER: {
+    BASE: "/api/Member",
+    BY_ID: (id) => `/api/Member/${id}`,
+    TOP_RATED: "/api/Member/top-rated",
+  },
+
+  // Post endpoints
+  POST: {
+    BASE: "/api/Post",
+    BY_ID: (id) => `/api/Post/${id}`,
+    BY_MEMBER: (memberId) => `/api/Post/member/${memberId}`,
+    CHECKOUT_URL: (postId) => `/api/Post/${postId}/checkout-url`,
+    ASSIGN_STAFF: (postId, staffId) => `/api/Post/${postId}/assign-staff/${staffId}`,
+    FEATURED: "/api/Post/featured",
+    DIRECT: "/api/Post/direct",
+    STAFF_ASSISTED: "/api/Post/staff-assisted",
+    // Admin endpoints
+    ADMIN_ALL: "/api/Post/admin/all",
+    ADMIN_PENDING: "/api/Post/admin/pending",
+    ADMIN_APPROVE: (id) => `/api/Post/admin/${id}/approve`,
+    ADMIN_REJECT: (id) => `/api/Post/admin/${id}/reject`,
+  },
+
+  // Post Request endpoints
+  POST_REQUEST: {
+    BASE: "/api/PostRequest",
+    BY_ID: (id) => `/api/PostRequest/${id}`,
+    BY_POST: (postId) => `/api/PostRequest/post/${postId}`,
+    BY_BUYER: (buyerId) => `/api/PostRequest/buyer/${buyerId}`,
+    BY_STATUS: (status) => `/api/PostRequest/status/${status}`,
+    UPDATE_STATUS: (id) => `/api/PostRequest/${id}/status`,
+    ACCEPT: (id) => `/api/PostRequest/${id}/accept`,
+    REJECT: (id) => `/api/PostRequest/${id}/reject`,
+    STATISTICS: "/api/PostRequest/statistics",
+    NEGOTIATIONS: (postId) => `/api/PostRequest/negotiations/${postId}`,
+  },
+
+  // Post Package endpoints
+  POST_PACKAGE: {
+    BASE: "/api/PostPackage",
+    BY_ID: (id) => `/api/PostPackage/${id}`,
+    ACTIVE: "/api/PostPackage/active",
+    SUBSCRIPTIONS: (id) => `/api/PostPackage/${id}/subscriptions`,
+    SUBSCRIBE: (packageId) => `/api/PostPackage/${packageId}/subscribe`,
+    STATISTICS: "/api/PostPackage/statistics",
+  },
+
+  // Payment endpoints
+  PAYMENT: {
+    BASE: "/api/Payment",
+    BY_ID: (id) => `/api/Payment/${id}`,
+    BY_BUYER: (buyerId) => `/api/Payment/buyer/${buyerId}`,
+    BY_SELLER: (sellerId) => `/api/Payment/seller/${sellerId}`,
+    BY_STATUS: (status) => `/api/Payment/status/${status}`,
+    UPDATE_STATUS: (id) => `/api/Payment/${id}/status`,
+    STATISTICS: "/api/Payment/statistics",
+    PROCESS: (id) => `/api/Payment/process/${id}`,
+    // Stripe/Payment gateway endpoints
+    CHECKOUT: "/api/Payments/checkout",
+    WEBHOOK: "/api/Payments/webhook",
+    WEBHOOK_TEST: "/api/Payments/webhook/test",
+  },
+
+  // Battery endpoints
+  BATTERY: {
+    BASE: "/api/Battery",
+    BY_ID: (id) => `/api/Battery/${id}`,
+    BY_MEMBER: (memberId) => `/api/Battery/member/${memberId}`,
+    SEARCH: "/api/Battery/search",
+  },
+
+  // Battery Model endpoints
+  BATTERY_MODEL: {
+    LIST: "/api/BatteryModel/list",
+    BY_ID: (id) => `/api/BatteryModel/${id}`,
+    IMAGE: (id) => `/api/BatteryModel/${id}/image`,
+    CUSTOM: "/api/BatteryModel/custom",
+    ALL_FILTERS: "/api/BatteryModel/all-filters",
+    SEARCH: "/api/BatteryModel/search",
+  },
+
+  // Vehicle endpoints
+  VEHICLE: {
+    BASE: "/api/Vehicle",
+    BY_ID: (id) => `/api/Vehicle/${id}`,
+  },
+
+  // Vehicle Model endpoints
+  VEHICLE_MODEL: {
+    LIST: "/api/VehicleModel/list",
+    BY_ID: (id) => `/api/VehicleModel/${id}`,
+    IMAGE: (id) => `/api/VehicleModel/${id}/image`,
+    CUSTOM: "/api/VehicleModel/custom",
+    ALL_FILTERS: "/api/VehicleModel/all-filters",
+    SEARCH: "/api/VehicleModel/search",
+  },
+
+  // Construct endpoints
+  CONSTRUCT: {
+    BASE: "/api/Construct",
+    BY_ID: (id) => `/api/Construct/${id}`,
+    BY_TYPE: (type) => `/api/Construct/type/${type}`,
+    BY_STATUS: (status) => `/api/Construct/status/${status}`,
+    UPDATE_STATUS: (id) => `/api/Construct/${id}/status`,
+    FEES: (id) => `/api/Construct/${id}/fees`,
+    ADD_FEE: (id) => `/api/Construct/${id}/fees`,
+    SEARCH: "/api/Construct/search",
+    STATISTICS: "/api/Construct/statistics",
+    NEARBY: "/api/Construct/nearby",
+  },
+
+  // Role endpoints
+  ROLE: {
+    BASE: "/api/Role",
+    BY_ID: (id) => `/api/Role/${id}`,
+    BY_NAME: (name) => `/api/Role/name/${name}`,
+    BY_STATUS: (status) => `/api/Role/status/${status}`,
+    UPDATE_STATUS: (id) => `/api/Role/${id}/status`,
+    ACCOUNTS: (id) => `/api/Role/${id}/accounts`,
+    STATISTICS: "/api/Role/statistics",
+    INITIALIZE_DEFAULT: "/api/Role/initialize-default",
+    PERMISSIONS: (roleId) => `/api/Role/permissions/${roleId}`,
+  },
+};
+
 export default {
   POST_STATUS,
   POST_TYPE,
@@ -188,4 +345,5 @@ export default {
   BATTERY_FORM_FACTOR,
   API_ERROR_MESSAGES,
   PAGINATION,
+  API_ENDPOINTS,
 };
