@@ -37,22 +37,20 @@ const Products = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [contactModalVisible, setContactModalVisible] = useState(false);
   const [contactProduct, setContactProduct] = useState(null);
-  
-  // API state
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
 
-  // Check if coming from create post
   useEffect(() => {
     if (location.state?.newPost) {
-      message.success("Bài đăng của bạn đã được tạo thành công và đang chờ duyệt!");
-      // Clear the location state
+      message.success(
+        "Bài đăng của bạn đã được tạo thành công và đang chờ duyệt!"
+      );
       window.history.replaceState({}, document.title);
     }
   }, [location]);
 
-  // Fetch products from API
   useEffect(() => {
     fetchProducts();
   }, [currentPage, pageSize, filters, sortBy, searchQuery]);
@@ -60,258 +58,120 @@ const Products = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      
-      // Build API params
+
+      // ÉP HIỆN TẤT CẢ BÀI: active + approved
       const params = {
         pageNumber: currentPage,
-        pageSize: pageSize,
+        pageSize: 50,
+        status: "active,approved", // QUAN TRỌNG NHẤT
       };
 
-      // Add search query
-      if (searchQuery) {
-        params.search = searchQuery;
-      }
-
-      // Add filters
-      if (filters.priceRange) {
-        params.minPrice = filters.priceRange[0];
+      if (searchQuery) params.search = searchQuery;
+      if (filters.priceRange?.[0]) params.minPrice = filters.priceRange[0];
+      if (filters.priceRange?.[1] < 99999999999)
         params.maxPrice = filters.priceRange[1];
-      }
-
-      if (filters.capacityRange) {
+      if (filters.capacityRange?.[0])
         params.minCapacity = filters.capacityRange[0];
+      if (filters.capacityRange?.[1] < 100)
         params.maxCapacity = filters.capacityRange[1];
-      }
-
-      if (filters.brands && filters.brands.length > 0) {
-        params.brands = filters.brands.join(',');
-      }
-
-      if (filters.conditions && filters.conditions.length > 0) {
-        params.conditions = filters.conditions.join(',');
-      }
-
-      if (filters.locations && filters.locations.length > 0) {
-        params.locations = filters.locations.join(',');
-      }
-
-      // NOTE: Backend API doesn't support category filter, so we'll filter on frontend
-      // if (filters.categories && filters.categories.length > 0) {
-      //   params.categories = filters.categories.join(',');
-      // }
-
-      if (filters.warranty && filters.warranty !== 'all') {
+      if (filters.brands?.length) params.brands = filters.brands.join(",");
+      if (filters.conditions?.length)
+        params.conditions = filters.conditions.join(",");
+      if (filters.locations?.length)
+        params.locations = filters.locations.join(",");
+      if (filters.warranty && filters.warranty !== "all")
         params.minWarranty = parseInt(filters.warranty);
+
+      // SẮP XẾP
+      if (sortBy === "price-asc") {
+        params.sortBy = "price";
+        params.sortOrder = "asc";
+      } else if (sortBy === "price-desc") {
+        params.sortBy = "price";
+        params.sortOrder = "desc";
+      } else if (sortBy === "newest") {
+        params.sortBy = "createdAt";
+        params.sortOrder = "desc";
       }
 
-      if (filters.inStockOnly) {
-        params.inStock = true;
-      }
-
-      // Add sorting
-      if (sortBy === 'price-asc') {
-        params.sortBy = 'price';
-        params.sortOrder = 'asc';
-      } else if (sortBy === 'price-desc') {
-        params.sortBy = 'price';
-        params.sortOrder = 'desc';
-      } else if (sortBy === 'rating') {
-        params.sortBy = 'rating';
-        params.sortOrder = 'desc';
-      } else if (sortBy === 'newest') {
-        params.sortBy = 'createdAt';
-        params.sortOrder = 'desc';
-      }
+      console.log("GỌI API VỚI PARAMS:", params); // DEBUG
 
       const response = await postService.getPosts(params);
-      
-      console.log('API Response:', response); // Debug log
-      
-      // Handle different response structures
-      // postService.getPosts already returns response.data from axios
+      console.log("API TRẢ VỀ:", response);
+
       let postsData = [];
-      let totalCount = 0;
-      
-      if (Array.isArray(response)) {
-        // Response is directly an array
-        postsData = response;
-        totalCount = response.length;
-      } else if (response?.data && Array.isArray(response.data)) {
-        // Response has nested data property
-        postsData = response.data;
-        totalCount = response.totalCount || response.total || response.data.length;
-      } else if (response?.items && Array.isArray(response.items)) {
-        // Response has items property
-        postsData = response.items;
-        totalCount = response.totalCount || response.total || response.items.length;
-      } else if (typeof response === 'object' && response !== null) {
-        // Response is an object, might have pagination info
-        postsData = response.posts || response.data || response.items || [];
-        totalCount = response.totalCount || response.total || response.count || postsData.length;
-      } else {
-        console.warn('Unexpected API response structure:', response);
-        postsData = [];
-        totalCount = 0;
-      }
-      
-      // Transform API response to match frontend product structure based on new schema
-      const transformedProducts = postsData.map((post, index) => {
-        // Determine if it's battery or vehicle
-        const isBattery = post.batteryId && post.battery;
-        const isVehicle = post.vehicleId && post.vehicle;
-        
-        // Extract package information from PostPackageSubs
-        const packageSub = post.postPackageSubs?.[0] || post.postPackageSub;
-        const packageInfo = packageSub?.package || packageSub?.postPackage;
-        
-        // Debug log for first 3 posts
-        if (index < 3) {
-          console.log(`🔍 Post #${index + 1} Package Debug:`, {
-            postId: post.postId,
-            title: post.title,
-            postPackageSubs: post.postPackageSubs,
-            packageSub: packageSub,
-            packageInfo: packageInfo,
-            extractedPackage: packageInfo ? {
-              id: packageInfo.packageId,
-              name: packageInfo.name,
-              priorityLevel: packageInfo.priorityLevel,
-              featured: packageInfo.featured
-            } : 'NO PACKAGE'
-          });
+      if (Array.isArray(response)) postsData = response;
+      else if (response?.data) postsData = response.data;
+      else if (response?.items) postsData = response.items;
+      else if (response?.posts) postsData = response.posts;
+      else postsData = [];
+
+      console.log(`TÌM THẤY ${postsData.length} BÀI ĐĂNG`);
+
+      const transformedProducts = postsData.map((post, i) => {
+        const isBattery = !!post.battery;
+        const isVehicle = !!post.vehicle;
+
+        // DEBUG: Xem status của từng bài
+        if (i < 5) {
+          console.log(
+            `Bài #${i + 1} | ID: ${post.postId} | Status: "${
+              post.status
+            }" | Title: ${post.title}`
+          );
         }
-        
+
         return {
-          // Post basic info
-          id: post.postId || post.id,
-          name: post.title || 'Sản phẩm',
-          description: post.description || 'Không có mô tả',
+          id: post.postId,
+          name: post.title || "Pin Xe Điện",
           price: post.price || 0,
-          originalPrice: post.price ? (post.price * 1.2) : 0, // 20% markup for original
-          postType: post.postType, // "Direct" or "Staff-Assisted"
-          transactionType: post.transactionType,
+          originalPrice: post.price * 1.2,
+          image:
+            post.imageUrl ||
+            (isBattery
+              ? post.battery.imageUrl
+              : isVehicle
+              ? post.vehicle.imageUrl
+              : "/placeholder.jpg"),
+          tag: post.featured
+            ? "Nổi bật"
+            : post.postType === "Direct"
+            ? "Trực tiếp"
+            : "Hỗ trợ",
+          inStock: true, // LUÔN HIỆN
+          category: isBattery ? "battery" : "vehicle",
+          brand: isBattery
+            ? post.battery.brand
+            : isVehicle
+            ? post.vehicle.brand
+            : "Unknown",
+          capacity: isBattery
+            ? post.battery.capacityKWh
+            : isVehicle
+            ? post.vehicle.batteryCapacity
+            : 0,
           status: post.status,
-          featured: post.featured || false,
-          contactInfo: post.contactInfo,
-          createdAt: post.createdAt,
-          updatedAt: post.updatedAt,
-          expiryDate: post.expiryDate,
-          
-          // Package information
-          package: packageInfo ? {
-            id: packageInfo.packageId,
-            name: packageInfo.name,
-            price: packageInfo.price,
-            durationDay: packageInfo.durationDay,
-            priorityLevel: packageInfo.priorityLevel,
-            featured: packageInfo.featured,
-          } : null,
-          packageSubscription: packageSub ? {
-            startDate: packageSub.startDate,
-            endDate: packageSub.endDate,
-            status: packageSub.status,
-            remainingDays: packageSub.endDate ? 
-              Math.max(0, Math.ceil((new Date(packageSub.endDate) - new Date()) / (1000 * 60 * 60 * 24))) : 0,
-          } : null,
-          
-          // Product specific info
-          brand: isBattery ? post.battery.brand : 
-                 isVehicle ? post.vehicle.brand : 'Unknown',
-          capacity: isBattery ? post.battery.capacityKWh : 
-                   isVehicle ? post.vehicle.batteryCapacity : 0,
-          condition: isBattery ? post.battery.condition : 
-                    isVehicle ? post.vehicle.condition : 'good',
-          category: isBattery ? 'battery' : isVehicle ? 'vehicle' : 'unknown',
-          
-          // Battery specific
-          ...(isBattery && {
-            cycleCount: post.battery.cycleCount,
-            manufactureYear: post.battery.manufactureYear,
-            batteryHealth: post.battery.cycleCount ? 
-              Math.max(100 - (post.battery.cycleCount / 30), 50) : 90,
-          }),
-          
-          // Vehicle specific
-          ...(isVehicle && {
-            model: post.vehicle.model,
-            mileageKm: post.vehicle.mileageKm,
-            manufactureYear: post.vehicle.manufactureYear,
-            batteryHealth: 85, // Default for vehicle
-          }),
-          
-          // Display info
-          image: post.imageUrl || 
-                (isBattery ? post.battery.imageUrl : 
-                 isVehicle ? post.vehicle.imageUrl : 
-                 'https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=400'),
-          tag: post.featured ? 'Nổi bật' : 
-               post.postType === 'Direct' ? 'Trực tiếp' : 'Hỗ trợ',
-          inStock: post.status === 'Active' || post.status === 'Approved',
-          
-          // Member/Seller info
-          membershipLevel: post.member?.packageId || 1,
-          rating: post.member?.rating || 4.5,
-          reviews: 0, // Not in schema yet
-          seller: {
-            id: post.member?.memberId,
-            name: post.member?.fullName || 'Người bán',
-            avatar: post.member?.avatarUrl,
-            address: post.member?.address,
-            rating: post.member?.rating || 4.5,
-            joinedAt: post.member?.joinedAt,
-            status: post.member?.status,
-            verified: post.member?.status === 'Active',
-            totalSales: 0, // Not in schema
-          },
-          
-          // Location
-          location: post.member?.address || 'Việt Nam',
-          
-          // Date info
           postedDate: formatPostedDate(post.createdAt),
-          
-          // Staff info if applicable
-          ...(post.staff && {
-            assignedStaff: {
-              id: post.staff.memberId,
-              name: post.staff.fullName,
-            }
-          }),
-          
-          // Usage calculation
-          usageYears: post.battery?.manufactureYear ? 
-            new Date().getFullYear() - post.battery.manufactureYear :
-            post.vehicle?.manufactureYear ?
-            new Date().getFullYear() - post.vehicle.manufactureYear : 0,
+          seller: {
+            name: post.member?.fullName || "Người bán",
+            avatar: post.member?.avatarUrl,
+          },
         };
       });
 
-      // Apply frontend filters (for fields not supported by backend API)
-      let filteredProducts = transformedProducts;
-      
-      // Filter by category (battery/vehicle) - Backend doesn't support this
-      if (filters.categories && filters.categories.length > 0) {
-        filteredProducts = filteredProducts.filter(product => 
-          filters.categories.includes(product.category)
+      let filtered = transformedProducts;
+      if (filters.categories?.length) {
+        filtered = filtered.filter((p) =>
+          filters.categories.includes(p.category)
         );
       }
 
-      setProducts(filteredProducts);
-      setTotal(filteredProducts.length); // Use filtered count
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      
-      // Kiểm tra loại lỗi
-      if (error.code === 'ERR_NETWORK' || error.message.includes('Network Error')) {
-        message.error('Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.');
-      } else if (error.response?.status === 404) {
-        message.warning('Không tìm thấy sản phẩm nào.');
-      } else if (error.response?.status === 500) {
-        message.error('Lỗi server. Vui lòng thử lại sau.');
-      } else {
-        message.error('Không thể tải sản phẩm. Vui lòng thử lại sau.');
-      }
-      
+      setProducts(filtered);
+      setTotal(filtered.length);
+      message.info(`Đã tải ${filtered.length} sản phẩm`);
+    } catch (err) {
+      console.error("LỖI API:", err);
+      message.error("Không tải được sản phẩm. Kiểm tra backend!");
       setProducts([]);
       setTotal(0);
     } finally {
@@ -319,40 +179,28 @@ const Products = () => {
     }
   };
 
-  // Helper function to format posted date
-  const formatPostedDate = (dateString) => {
-    if (!dateString) return 'Mới đăng';
-    
-    const now = new Date();
-    const posted = new Date(dateString);
-    const diffMs = now - posted;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 60) return `${diffMins} phút trước`;
-    if (diffHours < 24) return `${diffHours} giờ trước`;
-    if (diffDays < 30) return `${diffDays} ngày trước`;
-    return posted.toLocaleDateString('vi-VN');
+  const formatPostedDate = (date) => {
+    if (!date) return "Mới đăng";
+    const diff = (Date.now() - new Date(date)) / 60000;
+    if (diff < 60) return `${Math.floor(diff)} phút trước`;
+    if (diff < 1440) return `${Math.floor(diff / 60)} giờ trước`;
+    return `${Math.floor(diff / 1440)} ngày trước`;
   };
 
-  const handleSearch = (value) => {
-    setSearchQuery(value);
+  const handleSearch = (v) => {
+    setSearchQuery(v);
     setCurrentPage(1);
   };
-
-  const handleFilterChange = (newFilters) => {
-    setFilters(newFilters);
+  const handleFilterChange = (f) => {
+    setFilters(f);
     setCurrentPage(1);
   };
-
   const handleResetFilters = () => {
     setFilters({
       priceRange: [0, 99999999999],
       capacityRange: [0, 100],
       brands: [],
       conditions: [],
-      memberships: [],
       locations: [],
       categories: [],
       warranty: "all",
@@ -362,62 +210,11 @@ const Products = () => {
     setCurrentPage(1);
   };
 
-  const handleViewDetails = (product) => {
-    setSelectedProduct(product);
-    setModalVisible(true);
-  };
-
-  const handleCloseModal = () => {
-    setModalVisible(false);
-    setSelectedProduct(null);
-  };
-
-  const handleAddToCart = (product) => {
-    // Ngăn không cho xe máy/ô tô được thêm vào giỏ
-    if (product.category === 'motorcycle' || product.category === 'car') {
-      console.warn("Không thể thêm xe vào giỏ hàng:", product);
-      return;
-    }
-    console.log("Thêm vào giỏ hàng:", product);
-    // Implement your cart logic here
-  };
-
-  const handleContactVehicle = (product) => {
-    setContactProduct(product);
-    setContactModalVisible(true);
-  };
-
-  const handleCloseContactModal = () => {
-    setContactModalVisible(false);
-    setContactProduct(null);
-  };
-
-  // Pagination handlers
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handlePageSizeChange = (newPageSize) => {
-    setPageSize(newPageSize);
-    setCurrentPage(1);
-  };
-
-  const handleSortChange = (newSortBy) => {
-    setSortBy(newSortBy);
-    setCurrentPage(1);
-  };
-
-  const handleViewModeChange = (newViewMode) => {
-    setViewMode(newViewMode);
-  };
-
   return (
     <>
       <Header />
       <div className={styles.productsPage}>
         <div className={styles.container}>
-          {/* Breadcrumb */}
           <Breadcrumb className={styles.breadcrumb}>
             <Breadcrumb.Item href="/">
               <HomeOutlined /> Trang chủ
@@ -425,83 +222,67 @@ const Products = () => {
             <Breadcrumb.Item>Sản phẩm</Breadcrumb.Item>
           </Breadcrumb>
 
-          {/* Page Header */}
           <div className={styles.pageHeader}>
-            <div>
-              <h1 className={styles.pageTitle}>Sàn Giao Dịch Pin Xe Điện</h1>
-              <p className={styles.pageSubtitle}>
-                Tìm kiếm pin xe điện đã qua sử dụng hoàn hảo cho xe của bạn
-              </p>
-            </div>
+            <h1 className={styles.pageTitle}>Sàn Giao Dịch Pin Xe Điện</h1>
+            <p className={styles.pageSubtitle}>
+              Tìm pin xe điện đã qua sử dụng hoàn hảo cho xe của bạn
+            </p>
           </div>
 
-          {/* Search Bar */}
           <div className={styles.searchSection}>
-            <h3 className={styles.searchTitle}>
+            <h3>
               <SearchOutlined /> Tìm kiếm sản phẩm
             </h3>
             <Search
-              placeholder="Tìm theo thương hiệu, model hoặc thông số kỹ thuật..."
-              allowClear
+              placeholder="Tìm theo thương hiệu, model..."
               enterButton="Tìm kiếm"
               size="large"
               onSearch={handleSearch}
               onChange={(e) => setSearchQuery(e.target.value)}
               value={searchQuery}
-              className={styles.searchBar}
             />
           </div>
 
-          {/* Main Content */}
           <Row gutter={[24, 24]}>
-            {/* Filters Sidebar */}
             <Col xs={24} lg={6}>
               <ProductFilters
                 onFilterChange={handleFilterChange}
                 onResetFilters={handleResetFilters}
               />
             </Col>
-
-            {/* Products Grid */}
             <Col xs={24} lg={18}>
               <ProductGrid
                 products={products}
                 loading={loading}
+                total={total}
                 currentPage={currentPage}
                 pageSize={pageSize}
-                total={total}
-                onPageChange={handlePageChange}
-                onPageSizeChange={handlePageSizeChange}
+                onPageChange={setCurrentPage}
                 sortBy={sortBy}
-                onSortChange={handleSortChange}
+                onSortChange={setSortBy}
                 viewMode={viewMode}
-                onViewModeChange={handleViewModeChange}
-                onViewDetails={handleViewDetails}
-                onAddToCart={handleAddToCart}
-                onContactVehicle={handleContactVehicle}
+                onViewModeChange={setViewMode}
+                onViewDetails={setSelectedProduct}
+                onAddToCart={console.log}
+                onContactVehicle={setContactProduct}
               />
             </Col>
           </Row>
 
-          {/* FAQ Section */}
           <FAQSection />
         </div>
       </div>
       <Footer />
 
-      {/* Product Detail Modal */}
       <ProductDetailModal
         visible={modalVisible}
         product={selectedProduct}
-        onClose={handleCloseModal}
-        onAddToCart={handleAddToCart}
+        onClose={() => setModalVisible(false)}
       />
-
-      {/* Contact Vehicle Modal */}
       <ContactVehicleModal
         visible={contactModalVisible}
         product={contactProduct}
-        onClose={handleCloseContactModal}
+        onClose={() => setContactModalVisible(false)}
       />
     </>
   );
