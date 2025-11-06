@@ -36,11 +36,14 @@ import {
   CheckCircleOutlined,
   ClockCircleOutlined,
   CloseCircleOutlined,
+  CreditCardOutlined,
+  LinkOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import postService from "../../services/postService";
 import batteryService from "../../services/batteryService";
 import vehicleService from "../../services/vehicleService";
+import paymentService from "../../services/paymentService";
 import { getUser } from "../../utils/sessionStorage";
 import CreatePostModal from "./CreatePostModal";
 import styles from "./NewCustomerDashboard.module.css";
@@ -59,6 +62,7 @@ const NewCustomerDashboard = () => {
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [showRawJson, setShowRawJson] = useState(false);
 
   // Data states
   const [posts, setPosts] = useState([]);
@@ -93,9 +97,17 @@ const NewCustomerDashboard = () => {
     try {
       const response = await postService.getPostsByMember(memberId);
       const postsData = Array.isArray(response) ? response : response.data || [];
+      // Debug: log posts to check for postPackageSubs/payment.checkoutUrl
+      try {
+        console.debug('Fetched posts for member', memberId, postsData);
+      } catch (e) {}
       setPosts(postsData);
       
-      const activePosts = postsData.filter(p => p.status === "Active" || p.status === "Approved");
+      // Map status to check for approved/active posts (case insensitive)
+      const activePosts = postsData.filter(p => {
+        const status = (p.status || "").toLowerCase();
+        return status === "active" || status === "approved";
+      });
       setStatistics(prev => ({
         ...prev,
         totalPosts: postsData.length,
@@ -104,6 +116,54 @@ const NewCustomerDashboard = () => {
     } catch (error) {
       console.error("Error fetching posts:", error);
     }
+  };
+
+  // Helper: try to find checkoutUrl in multiple possible response shapes
+  const findCheckoutUrl = (post) => {
+    if (!post) return null;
+
+    // Common shapes
+    const subs = post.postPackageSubs || post.postPackageSub || post.post_package_subs || post.postPackageSubscriptions;
+    if (Array.isArray(subs)) {
+      for (const s of subs) {
+        if (s?.payment?.checkoutUrl) return s.payment.checkoutUrl;
+        if (s?.checkoutUrl) return s.checkoutUrl;
+        if (s?.paymentUrl) return s.paymentUrl;
+        if (s?.package?.payment?.checkoutUrl) return s.package.payment.checkoutUrl;
+      }
+    }
+
+    // Single object
+    const single = post.postPackageSub || post.packageSub || post.postPackageSubs?.[0];
+    if (single) {
+      if (single?.payment?.checkoutUrl) return single.payment.checkoutUrl;
+      if (single?.checkoutUrl) return single.checkoutUrl;
+      if (single?.paymentUrl) return single.paymentUrl;
+    }
+
+    // fallback: deep search for any key containing 'checkout' or 'checkoutUrl'
+    try {
+      const seen = new WeakSet();
+      const deepFind = (obj) => {
+        if (!obj || typeof obj !== 'object') return null;
+        if (seen.has(obj)) return null;
+        seen.add(obj);
+        for (const key of Object.keys(obj)) {
+          const val = obj[key];
+          if (typeof key === 'string' && key.toLowerCase().includes('checkout') && typeof val === 'string' && val.startsWith('http')) return val;
+          if (typeof val === 'string' && /https?:\/\//.test(val) && key.toLowerCase().includes('url')) return val;
+          if (typeof val === 'object') {
+            const found = deepFind(val);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+      const found = deepFind(post);
+      if (found) return found;
+    } catch (e) {}
+
+    return null;
   };
 
   const fetchBatteries = async () => {
@@ -213,19 +273,29 @@ const NewCustomerDashboard = () => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: (status) => {
+      render: (status, record) => {
+        // Normalize status to handle case variations
+        const normalizedStatus = (status || "").toLowerCase();
         const statusConfig = {
-          Pending: { color: "warning", icon: <ClockCircleOutlined />, text: "Chờ duyệt" },
-          Approved: { color: "success", icon: <CheckCircleOutlined />, text: "Đã duyệt" },
-          Active: { color: "processing", icon: <CheckCircleOutlined />, text: "Đang hoạt động" },
-          Rejected: { color: "error", icon: <CloseCircleOutlined />, text: "Đã từ chối" },
-          Inactive: { color: "default", icon: <CloseCircleOutlined />, text: "Không hoạt động" },
+          pending: { color: "warning", icon: <ClockCircleOutlined />, text: "Chờ duyệt" },
+          approved: { color: "success", icon: <CheckCircleOutlined />, text: "Đã duyệt" },
+          active: { color: "processing", icon: <CheckCircleOutlined />, text: "Đang hoạt động" },
+          rejected: { color: "error", icon: <CloseCircleOutlined />, text: "Đã từ chối" },
+          inactive: { color: "default", icon: <CloseCircleOutlined />, text: "Không hoạt động" },
         };
-        const config = statusConfig[status] || statusConfig.Pending;
+        const config = statusConfig[normalizedStatus] || statusConfig.pending;
+        const checkoutUrl = findCheckoutUrl(record);
         return (
-          <Tag icon={config.icon} color={config.color}>
-            {config.text}
-          </Tag>
+          <span>
+            <Tag icon={config.icon} color={config.color}>
+              {config.text}
+            </Tag>
+            {checkoutUrl && (
+              <Tag color="blue" style={{ marginLeft: 8 }}>
+                Có link thanh toán
+              </Tag>
+            )}
+          </span>
         );
       },
     },
@@ -255,6 +325,28 @@ const NewCustomerDashboard = () => {
               onClick={() => handleDeletePost(record.postId)}
             />
           </Tooltip>
+          {/* Thanh toán: chỉ hiện khi bài đã duyệt và có checkoutUrl */}
+          {((record.status || "").toLowerCase() === "approved") && findCheckoutUrl(record) && (
+            <Tooltip title="Thanh toán">
+              <Button
+                type="text"
+                icon={<DollarOutlined />}
+                onClick={() => {
+                  const checkoutUrl = findCheckoutUrl(record);
+                  if (checkoutUrl) {
+                    try {
+                      paymentService.processPayment(checkoutUrl);
+                    } catch (err) {
+                      console.error('Error opening checkout URL:', err);
+                      message.error('Không thể mở trang thanh toán. Vui lòng thử lại.');
+                    }
+                  } else {
+                    message.error('Không tìm thấy link thanh toán cho bài viết này.');
+                  }
+                }}
+              />
+            </Tooltip>
+          )}
         </Space>
       ),
     },
@@ -618,15 +710,19 @@ const NewCustomerDashboard = () => {
       <Modal
         title="Chi tiết"
         open={detailModalVisible}
-        onCancel={() => setDetailModalVisible(false)}
+        onCancel={() => { setDetailModalVisible(false); setShowRawJson(false); }}
         footer={[
-          <Button key="close" onClick={() => setDetailModalVisible(false)}>
+          <Button key="json" onClick={() => setShowRawJson(prev => !prev)}>
+            {showRawJson ? 'Ẩn JSON' : 'Xem JSON'}
+          </Button>,
+          <Button key="close" onClick={() => { setDetailModalVisible(false); setShowRawJson(false); }}>
             Đóng
           </Button>,
         ]}
         width={700}
       >
         {selectedItem && (
+          <>
           <Descriptions bordered column={1}>
             {selectedItem.type === "post" && (
               <>
@@ -698,6 +794,15 @@ const NewCustomerDashboard = () => {
               </>
             )}
           </Descriptions>
+          {showRawJson && (
+            <div style={{ marginTop: 16 }}>
+              <h4>Raw JSON</h4>
+              <pre style={{ maxHeight: 300, overflow: 'auto', background: '#f7f7f7', padding: 12 }}>
+                {JSON.stringify(selectedItem, null, 2)}
+              </pre>
+            </div>
+          )}
+          </>
         )}
       </Modal>
     </Layout>

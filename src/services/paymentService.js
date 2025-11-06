@@ -1,6 +1,14 @@
 import api from "../configs/axios";
 
 const paymentService = {
+  // Open checkout URL in new tab
+  processPayment: (checkoutUrl) => {
+    if (!checkoutUrl) {
+      throw new Error('Missing checkout URL');
+    }
+    window.open(checkoutUrl, '_blank');
+  },
+
   // GET /api/Payment - Get all payments
   getPayments: async (params = {}) => {
     const response = await api.get("/api/Payment", { params });
