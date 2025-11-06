@@ -60,6 +60,32 @@ const postService = {
     const response = await api.get("/api/Post/staff-assisted");
     return response.data;
   },
+
+  // ===== ADMIN ENDPOINTS =====
+  // GET /api/post/admin/pending - Get pending posts for admin
+  getAdminPendingPosts: async () => {
+    const response = await api.get("/api/post/admin/pending");
+    return response.data;
+  },
+
+  // GET /api/post/admin/all?status=PENDING - Get all posts with filters for admin
+  getAdminAllPosts: async (params = {}) => {
+    const response = await api.get("/api/post/admin/all", { params });
+    return response.data;
+  },
+
+  // PATCH /api/post/admin/{id}/approve - Approve post with optional packageId
+  approvePost: async (id, packageId = null) => {
+    const body = packageId ? { packageId } : {};
+    const response = await api.patch(`/api/post/admin/${id}/approve`, body);
+    return response.data;
+  },
+
+  // PATCH /api/post/admin/{id}/reject - Reject post
+  rejectPost: async (id) => {
+    const response = await api.patch(`/api/post/admin/${id}/reject`);
+    return response.data;
+  },
 };
 
 export default postService;

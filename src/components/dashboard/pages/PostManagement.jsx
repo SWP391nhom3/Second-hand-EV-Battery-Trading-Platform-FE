@@ -1,81 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Table, Input, Select, Space, Tag, Button, DatePicker, Modal, Descriptions, Form, message } from 'antd';
-import { SearchOutlined, EditOutlined, DeleteOutlined, CheckCircleOutlined, StopOutlined, WarningOutlined, UserDeleteOutlined } from '@ant-design/icons';
+import { Typography, Table, Input, Select, Space, Tag, Button, DatePicker, Modal, Descriptions, Form, message, Spin, Card, Divider } from 'antd';
+import { SearchOutlined, EditOutlined, DeleteOutlined, CheckCircleOutlined, StopOutlined, WarningOutlined, UserDeleteOutlined, LinkOutlined, CopyOutlined, DollarOutlined } from '@ant-design/icons';
+import postService from '../../../services/postService';
+import packageService from '../../../services/packageService';
+import paymentService from '../../../services/paymentService';
 
 const { Title } = Typography;
 const { TextArea } = Input;
 
-const fakePosts = [
-  {
-    id: 'p1',
-    title: 'Đánh giá xe điện VinFast VF e34 sau 1 năm sử dụng',
-    author: 'user1',
-    status: 'pending',
-    type: 'review',
-    reports: 5,
-    createdAt: '2025-10-25T10:00:00Z',
-    content: 'Nội dung chi tiết đánh giá về xe VinFast VF e34...',
-    violations: ['spam', 'misleading_info'],
-    reportReasons: ['Thông tin sai lệch', 'Quảng cáo'],
-    metadata: { views: 1200, comments: 45 },
-  },
-  {
-    id: 'p2',
-    title: 'Cần mua pin xe điện cũ cho xe máy Yadea',
-    author: 'user2',
-    status: 'approved',
-    type: 'request',
-    reports: 0,
-    createdAt: '2025-10-20T14:30:00Z',
-    content: 'Tìm mua pin xe điện cũ còn dùng tốt cho xe Yadea, liên hệ 09x-xxx-xxxx',
-    violations: [],
-    reportReasons: [],
-    metadata: { views: 800, comments: 12 },
-  },
-  {
-    id: 'p3',
-    title: 'Bán bộ sạc nhanh xe VinFast VF8',
-    author: 'user3',
-    status: 'rejected',
-    type: 'sale',
-    reports: 1,
-    createdAt: '2025-10-18T09:15:00Z',
-    content: 'Bán bộ sạc nhanh chính hãng cho VinFast VF8, giá thương lượng. Hình ảnh đính kèm.',
-    violations: ['duplicate_post'],
-    reportReasons: ['Trùng lặp bài viết'],
-    metadata: { views: 500, comments: 5 },
-  },
-  {
-    id: 'p4',
-    title: 'Hỏi đáp về trạm sạc công cộng tại TP.HCM',
-    author: 'user4',
-    status: 'pending',
-    type: 'qa',
-    reports: 2,
-    createdAt: '2025-10-28T11:00:00Z',
-    content: 'Có ai biết các trạm sạc công cộng nào uy tín ở TP.HCM không? Chia sẻ kinh nghiệm nhé!',
-    violations: [],
-    reportReasons: ['Nội dung không phù hợp'],
-    metadata: { views: 1500, comments: 60 },
-  },
-  {
-    id: 'p5',
-    title: 'Chia sẻ kinh nghiệm tự thay pin xe đạp điện',
-    author: 'user5',
-    status: 'approved',
-    type: 'guide',
-    reports: 0,
-    createdAt: '2025-10-15T16:00:00Z',
-    content: 'Hướng dẫn chi tiết cách tự thay pin cho xe đạp điện tại nhà, có hình ảnh minh họa.',
-    violations: [],
-    reportReasons: [],
-    metadata: { views: 2500, comments: 90 },
-  },
-];
-
 const PostManagement = () => {
-  const [posts, setPosts] = useState(fakePosts);
-  const [filteredPosts, setFilteredPosts] = useState(fakePosts);
+  const [posts, setPosts] = useState([]);
+  const [filteredPosts, setFilteredPosts] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState(null);
   const [typeFilter, setTypeFilter] = useState(null);
@@ -89,7 +25,117 @@ const PostManagement = () => {
   const [editForm] = Form.useForm();
   const [isWarningModalVisible, setIsWarningModalVisible] = useState(false);
   const [warningForm] = Form.useForm();
+  const [isApproveModalVisible, setIsApproveModalVisible] = useState(false);
+  const [approveForm] = Form.useForm();
+  const [packages, setPackages] = useState([]);
+  const [loadingPackages, setLoadingPackages] = useState(false);
+  const [checkoutInfo, setCheckoutInfo] = useState(null);
+  const [isCheckoutModalVisible, setIsCheckoutModalVisible] = useState(false);
 
+  const fetchPosts = async (status = null) => {
+    try {
+      setLoading(true);
+      
+      // Use admin endpoint to get all posts with status filter
+      // If status parameter is provided, use it; otherwise use statusFilter state
+      const params = {};
+      const filterStatus = status !== null ? status : statusFilter;
+      if (filterStatus) {
+        // Map component status to API status
+        const statusMap = {
+          'pending': 'PENDING',
+          'approved': 'APPROVED',
+          'rejected': 'REJECTED'
+        };
+        params.status = statusMap[filterStatus] || filterStatus.toUpperCase();
+      }
+      
+      const response = await postService.getAdminAllPosts(params);
+      
+      // Handle different response structures
+      let postsData = [];
+      if (Array.isArray(response)) {
+        postsData = response;
+      } else if (response?.data && Array.isArray(response.data)) {
+        postsData = response.data;
+      } else if (response?.items && Array.isArray(response.items)) {
+        postsData = response.items;
+      } else if (typeof response === 'object' && response !== null) {
+        postsData = response.posts || response.data || response.items || [];
+      }
+
+      // Transform API response to match component format
+      const transformedPosts = postsData.map((post) => {
+        // Map status from API format to component format
+        let status = 'pending';
+        if (post.status) {
+          const statusLower = post.status.toLowerCase();
+          if (statusLower === 'approved' || statusLower === 'active') {
+            status = 'approved';
+          } else if (statusLower === 'rejected' || statusLower === 'inactive') {
+            status = 'rejected';
+          } else {
+            status = 'pending';
+          }
+        }
+
+        // Determine type from postType or transactionType
+        let type = 'sale';
+        if (post.postType) {
+          const postTypeLower = post.postType.toLowerCase();
+          if (postTypeLower.includes('staff')) {
+            type = 'request';
+          }
+        }
+        if (post.transactionType) {
+          const transTypeLower = post.transactionType.toLowerCase();
+          if (transTypeLower.includes('request') || transTypeLower.includes('buy')) {
+            type = 'request';
+          } else if (transTypeLower.includes('sale') || transTypeLower.includes('sell')) {
+            type = 'sale';
+          }
+        }
+
+        return {
+          id: post.postId || post.id,
+          title: post.title || 'Không có tiêu đề',
+          author: post.member?.fullName || post.member?.account?.email || post.author || 'Unknown',
+          authorId: post.member?.memberId || post.memberId,
+          status: status,
+          type: type,
+          reports: post.reportCount || 0,
+          createdAt: post.createdAt || new Date().toISOString(),
+          content: post.description || post.content || 'Không có nội dung',
+          violations: post.violations || [],
+          reportReasons: post.reportReasons || [],
+          metadata: {
+            views: post.views || 0,
+            comments: post.comments || 0,
+            price: post.price,
+            postType: post.postType,
+            transactionType: post.transactionType,
+          },
+          // Store original post data for API calls
+          originalPost: post,
+        };
+      });
+
+      setPosts(transformedPosts);
+      setFilteredPosts(transformedPosts);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+      message.error('Không thể tải danh sách bài viết. Vui lòng thử lại.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch posts from API when component mounts or statusFilter changes
+  useEffect(() => {
+    fetchPosts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter]);
+  
   useEffect(() => {
     let tempPosts = posts;
 
@@ -102,10 +148,8 @@ const PostManagement = () => {
       );
     }
 
-    // Filter by status
-    if (statusFilter) {
-      tempPosts = tempPosts.filter((post) => post.status === statusFilter);
-    }
+    // Note: Status filter is handled server-side in fetchPosts()
+    // No need to filter by status here
 
     // Filter by type
     if (typeFilter) {
@@ -135,14 +179,116 @@ const PostManagement = () => {
     setPagination((prev) => ({ ...prev, current: 1 })); // Reset pagination on filter change
   }, [searchText, statusFilter, typeFilter, authorFilter, reportCountFilter, dateRange, posts]);
 
-  const handleApprove = (postId) => {
-    setPosts(posts.map(post => post.id === postId ? { ...post, status: 'approved' } : post));
-    message.success('Bài viết đã được duyệt.');
+  const handleApproveClick = (postId) => {
+    const post = posts.find(p => p.id === postId);
+    setSelectedPost(post);
+    approveForm.resetFields();
+    setIsApproveModalVisible(true);
+    fetchPackages();
   };
 
-  const handleReject = (postId) => {
-    setPosts(posts.map(post => post.id === postId ? { ...post, status: 'rejected' } : post));
-    message.warning('Bài viết đã bị từ chối.');
+  const fetchPackages = async () => {
+    try {
+      setLoadingPackages(true);
+      const response = await packageService.getActivePackages();
+      const packagesData = Array.isArray(response) ? response : response.data || [];
+      setPackages(packagesData);
+    } catch (error) {
+      console.error('Error fetching packages:', error);
+      message.error('Không thể tải danh sách gói.');
+    } finally {
+      setLoadingPackages(false);
+    }
+  };
+
+  const handleApprove = async (values) => {
+    try {
+      const postId = selectedPost.id;
+      const packageId = values.packageId || null;
+
+      // Use admin approve endpoint with packageId
+      const response = await postService.approvePost(postId, packageId);
+
+      // Check if response contains checkoutUrl (package was selected)
+      if (response.checkoutUrl) {
+        setCheckoutInfo({
+          checkoutUrl: response.checkoutUrl,
+          orderCode: response.orderCode,
+          transferContent: response.transferContent,
+          package: response.package,
+          post: response.post,
+        });
+        setIsCheckoutModalVisible(true);
+        setIsApproveModalVisible(false);
+        message.success('Bài viết đã được duyệt và tạo link thanh toán!');
+      } else {
+        message.success('Bài viết đã được duyệt.');
+        setIsApproveModalVisible(false);
+      }
+
+      // Refresh data
+      fetchPosts();
+    } catch (error) {
+      console.error('Error approving post:', error);
+      
+      // Check if error is related to PayOS service
+      const errorMessage = error.response?.data?.message || error.message || '';
+      const isPayOsError = errorMessage.includes('PayOs') || errorMessage.includes('PayOS') || 
+                          errorMessage.includes('Unable to resolve service');
+      
+      if (isPayOsError && values.packageId) {
+        // If PayOS service is not available but package was selected, offer to approve without package
+        Modal.confirm({
+          title: 'Không thể tạo thanh toán PayOS',
+          content: 'Dịch vụ PayOS chưa được cấu hình. Bạn có muốn duyệt bài viết mà không gói đăng tin không?',
+          okText: 'Duyệt không gói',
+          cancelText: 'Hủy',
+          onOk: async () => {
+            try {
+              // Approve without package
+              await postService.approvePost(postId, null);
+              message.success('Bài viết đã được duyệt (không gói).');
+              setIsApproveModalVisible(false);
+              fetchPosts();
+            } catch (retryError) {
+              console.error('Error approving without package:', retryError);
+              message.error('Không thể duyệt bài viết. Vui lòng liên hệ admin.');
+            }
+          },
+        });
+      } else {
+        message.error('Không thể duyệt bài viết. Vui lòng thử lại.');
+      }
+    }
+  };
+
+  const handleCopyCheckoutUrl = () => {
+    if (checkoutInfo?.checkoutUrl) {
+      navigator.clipboard.writeText(checkoutInfo.checkoutUrl);
+      message.success('Đã sao chép link thanh toán!');
+    }
+  };
+
+  const handleOpenCheckout = () => {
+    if (checkoutInfo?.checkoutUrl) {
+      window.open(checkoutInfo.checkoutUrl, '_blank');
+    }
+  };
+
+  const handleReject = async (postId) => {
+    try {
+      // Use admin reject endpoint
+      await postService.rejectPost(postId);
+
+      // Update local state
+      setPosts(posts.map(p => p.id === postId ? { ...p, status: 'rejected' } : p));
+      message.warning('Bài viết đã bị từ chối.');
+      // Refresh data
+      fetchPosts();
+    } catch (error) {
+      console.error('Error rejecting post:', error);
+      message.error('Không thể từ chối bài viết. Vui lòng thử lại.');
+    }
   };
 
   const handleDelete = (postId) => {
@@ -151,9 +297,17 @@ const PostManagement = () => {
       content: 'Bạn có chắc chắn muốn xóa bài viết này?',
       okText: 'Xóa',
       cancelText: 'Hủy',
-      onOk: () => {
-        setPosts(posts.filter(post => post.id !== postId));
-        message.success('Bài viết đã được xóa.');
+      onOk: async () => {
+        try {
+          await postService.deletePost(postId);
+          setPosts(posts.filter(post => post.id !== postId));
+          message.success('Bài viết đã được xóa.');
+          // Refresh data
+          fetchPosts();
+        } catch (error) {
+          console.error('Error deleting post:', error);
+          message.error('Không thể xóa bài viết. Vui lòng thử lại.');
+        }
       },
     });
   };
@@ -164,11 +318,40 @@ const PostManagement = () => {
     setIsEditModalVisible(true);
   };
 
-  const handleEditSubmit = (values) => {
-    setPosts(posts.map(post => post.id === selectedPost.id ? { ...post, ...values } : post));
-    message.success('Bài viết đã được cập nhật.');
-    setIsEditModalVisible(false);
-    setSelectedPost(null);
+  const handleEditSubmit = async (values) => {
+    try {
+      const post = posts.find(p => p.id === selectedPost.id);
+      if (!post || !post.originalPost) {
+        message.error('Không tìm thấy bài viết.');
+        return;
+      }
+
+      // Map form values back to API format
+      const updateData = {
+        ...post.originalPost,
+        title: values.title,
+        description: values.content,
+        status: values.status === 'pending' ? 'Pending' : 
+                values.status === 'approved' ? 'Approved' : 'Rejected',
+      };
+
+      await postService.updatePost(selectedPost.id, updateData);
+      
+      // Update local state
+      setPosts(posts.map(p => 
+        p.id === selectedPost.id 
+          ? { ...p, ...values, originalPost: { ...p.originalPost, ...updateData } } 
+          : p
+      ));
+      message.success('Bài viết đã được cập nhật.');
+      setIsEditModalVisible(false);
+      setSelectedPost(null);
+      // Refresh data
+      fetchPosts();
+    } catch (error) {
+      console.error('Error updating post:', error);
+      message.error('Không thể cập nhật bài viết. Vui lòng thử lại.');
+    }
   };
 
   const handleSendWarning = (post) => {
@@ -196,6 +379,25 @@ const PostManagement = () => {
         message.error(`Người dùng ${userId} đã bị cấm và tất cả bài viết của họ đã bị từ chối.`);
       },
     });
+  };
+
+  const handlePayment = (post) => {
+    try {
+      // Get the first package subscription that has a payment with checkout URL
+      const checkoutUrl = post.originalPost?.postPackageSubs?.find(
+        sub => sub.payment?.checkoutUrl
+      )?.payment?.checkoutUrl;
+      
+      if (!checkoutUrl) {
+        message.error('Không tìm thấy link thanh toán cho bài viết này.');
+        return;
+      }
+
+      paymentService.processPayment(checkoutUrl);
+    } catch (error) {
+      console.error('Error processing payment:', error);
+      message.error('Không thể mở trang thanh toán. Vui lòng thử lại.');
+    }
   };
 
   const columns = [
@@ -270,9 +472,14 @@ const PostManagement = () => {
           }}>Xem</Button>
           {record.status === 'pending' && (
             <>
-              <Button type="primary" icon={<CheckCircleOutlined />} onClick={() => handleApprove(record.id)}>Duyệt</Button>
+              <Button type="primary" icon={<CheckCircleOutlined />} onClick={() => handleApproveClick(record.id)}>Duyệt</Button>
               <Button danger icon={<StopOutlined />} onClick={() => handleReject(record.id)}>Từ chối</Button>
             </>
+          )}
+            {record.status === 'approved' && record.originalPost?.postPackageSubs?.some(sub => sub.payment?.checkoutUrl) && (
+              <Button type="primary" icon={<DollarOutlined />} onClick={() => handlePayment(record)}>
+                Thanh toán
+            </Button>
           )}
           <Button icon={<EditOutlined />} onClick={() => handleEdit(record)}>Chỉnh sửa</Button>
           <Button danger icon={<DeleteOutlined />} onClick={() => handleDelete(record.id)}>Xóa</Button>
@@ -286,7 +493,8 @@ const PostManagement = () => {
   return (
     <div>
       <Title level={3}>Quản lý kiểm duyệt bài viết</Title>
-      <Space style={{ marginBottom: 16, flexWrap: 'wrap' }}>
+      <Spin spinning={loading}>
+        <Space style={{ marginBottom: 16, flexWrap: 'wrap' }}>
         <Input
           placeholder="Tìm kiếm theo tiêu đề hoặc người đăng"
           prefix={<SearchOutlined />}
@@ -332,12 +540,13 @@ const PostManagement = () => {
         <DatePicker.RangePicker onChange={(dates) => setDateRange(dates)}
         />
       </Space>
-      <Table
-        columns={columns}
-        dataSource={filteredPosts}
-        rowKey="id"
-        pagination={{ ...pagination, onChange: (page, pageSize) => setPagination({ page, pageSize }) }}
-      />
+        <Table
+          columns={columns}
+          dataSource={filteredPosts}
+          rowKey="id"
+          pagination={{ ...pagination, onChange: (page, pageSize) => setPagination({ page, pageSize }) }}
+        />
+      </Spin>
 
       <Modal
         title="Chi tiết bài viết"
@@ -442,6 +651,112 @@ const PostManagement = () => {
             <TextArea rows={4} placeholder="Nhập nội dung cảnh báo" />
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* Approve Post Modal with Package Selection */}
+      <Modal
+        title="Duyệt bài viết"
+        open={isApproveModalVisible}
+        onCancel={() => {
+          setIsApproveModalVisible(false);
+          approveForm.resetFields();
+        }}
+        onOk={() => approveForm.submit()}
+        okText="Duyệt"
+        cancelText="Hủy"
+        width={600}
+      >
+        <Form form={approveForm} layout="vertical" onFinish={handleApprove}>
+          <Form.Item
+            name="packageId"
+            label="Chọn gói đăng tin (tùy chọn)"
+            help="Nếu chọn gói, hệ thống sẽ tự động tạo link thanh toán PayOS cho user"
+          >
+            <Select
+              placeholder="Chọn gói hoặc để trống (duyệt không gói)"
+              allowClear
+              loading={loadingPackages}
+            >
+              {packages.map((pkg) => (
+                <Select.Option key={pkg.packageId || pkg.id} value={pkg.packageId || pkg.id}>
+                  {pkg.packageName || pkg.name} - {pkg.price?.toLocaleString('vi-VN')} đ
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+          {selectedPost && (
+            <div style={{ marginTop: 16, padding: 12, background: '#f5f5f5', borderRadius: 4 }}>
+              <strong>Bài viết:</strong> {selectedPost.title}
+              <br />
+              <strong>Người đăng:</strong> {selectedPost.author}
+            </div>
+          )}
+        </Form>
+      </Modal>
+
+      {/* Checkout URL Modal */}
+      <Modal
+        title="Link thanh toán đã được tạo"
+        open={isCheckoutModalVisible}
+        onCancel={() => {
+          setIsCheckoutModalVisible(false);
+          setCheckoutInfo(null);
+        }}
+        footer={[
+          <Button key="copy" icon={<CopyOutlined />} onClick={handleCopyCheckoutUrl}>
+            Sao chép link
+          </Button>,
+          <Button key="open" type="primary" icon={<LinkOutlined />} onClick={handleOpenCheckout}>
+            Mở link thanh toán
+          </Button>,
+          <Button key="close" onClick={() => {
+            setIsCheckoutModalVisible(false);
+            setCheckoutInfo(null);
+          }}>
+            Đóng
+          </Button>,
+        ]}
+        width={700}
+      >
+        {checkoutInfo && (
+          <div>
+            <Card size="small" style={{ marginBottom: 16 }}>
+              <Descriptions column={1} size="small">
+                <Descriptions.Item label="Gói đăng tin">
+                  {checkoutInfo.package?.name || 'N/A'}
+                </Descriptions.Item>
+                <Descriptions.Item label="Giá">
+                  {checkoutInfo.package?.price?.toLocaleString('vi-VN')} đ
+                </Descriptions.Item>
+                <Descriptions.Item label="Mã đơn hàng">
+                  {checkoutInfo.orderCode}
+                </Descriptions.Item>
+                <Descriptions.Item label="Nội dung chuyển khoản">
+                  {checkoutInfo.transferContent}
+                </Descriptions.Item>
+              </Descriptions>
+            </Card>
+            <Divider />
+            <div style={{ marginBottom: 16 }}>
+              <strong>Link thanh toán:</strong>
+              <Input
+                value={checkoutInfo.checkoutUrl}
+                readOnly
+                style={{ marginTop: 8 }}
+                suffix={
+                  <Button
+                    type="text"
+                    icon={<CopyOutlined />}
+                    onClick={handleCopyCheckoutUrl}
+                  />
+                }
+              />
+            </div>
+            <div style={{ padding: 12, background: '#e6f7ff', borderRadius: 4, marginTop: 16 }}>
+              <strong>Lưu ý:</strong> Gửi link này cho user để họ thanh toán. Sau khi thanh toán thành công, bài viết sẽ tự động được kích hoạt.
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );
