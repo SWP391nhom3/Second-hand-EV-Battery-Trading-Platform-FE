@@ -85,7 +85,7 @@ const Dashboard = () => {
           position: "sticky",
           top: 0,
           height: "100vh",
-          boxShadow: "2px 0 8px rgba(0,0,0,0.06)",
+          boxShadow: "2px 0 8px rgba(7, 7, 7, 0.06)",
         }}
       >
         <div
