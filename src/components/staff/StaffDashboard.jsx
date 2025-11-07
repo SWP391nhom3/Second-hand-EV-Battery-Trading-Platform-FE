@@ -16,13 +16,20 @@ import {
   CheckCircle,
   Search,
   Send,
-  Package,
+  LogOut,
+  ChevronDown,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import ContractDetailModal from "./ContractDetailModal";
 import SendLinkModal from "./SendLinkModal";
 import FeeSelectionModal from "./FeeSelection";
 import ConfirmPaymentModal from "./ConfirmPaymentModal";
 import orderAssignmentService from "../../services/orderAssignmentService";
+import vehicleService from "../../services/vehicleService";
+import memberService from "../../services/memberService";
+import authService from "../../services/authService";
+import accountService from "../../services/accountService";
+import { clearSession } from "../../utils/sessionStorage";
 import styles from "./StaffDashboard.module.css";
 
 // === MOCK DATA ===
@@ -270,7 +277,7 @@ const RequestList = ({ requests, selectedRequest, onSelect, searchTerm, onSearch
         <Search className={styles.searchIcon} />
         <input
           type="text"
-          placeholder="Tìm theo tên, biển số..."
+          placeholder="Tìm theo tên, biển số, mã đơn..."
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
           className={styles.searchInput}
@@ -285,7 +292,14 @@ const RequestList = ({ requests, selectedRequest, onSelect, searchTerm, onSearch
           className={`${styles.listItem} ${selectedRequest?.id === r.id ? styles.listItemSelected : ""}`}
         >
           <div className={styles.listItemTop}>
-            <div className={styles.listItemId}>{r.id}</div>
+            <div className={styles.listItemId}>
+              {r.id}
+              {r.orderId && (
+                <span style={{ fontSize: 11, color: "#666", marginLeft: 8 }}>
+                  (Đơn: {r.orderId})
+                </span>
+              )}
+            </div>
             <span className={`${styles.statusBadge} ${statusConfig[r.status]?.badge || styles.statusPending}`}>
               {statusConfig[r.status]?.label || "Chờ xử lý"}
             </span>
@@ -306,6 +320,12 @@ const VehicleInfo = ({ request }) => {
   return (
     <div className={styles.card}>
       <h3 className={styles.sectionTitle}>Thông tin xe</h3>
+      {request.orderId && (
+        <div style={{ marginBottom: 16, padding: 12, background: "#e6f7ff", borderRadius: 4 }}>
+          <div className={styles.muted}>Mã đơn hàng</div>
+          <div className={styles.textStrong}>{request.orderId}</div>
+        </div>
+      )}
       <div className={styles.grid2}>
         <div>
           <div className={styles.muted}>Tên xe</div>
@@ -316,13 +336,27 @@ const VehicleInfo = ({ request }) => {
           <div className={styles.textStrong}>{request.year}</div>
         </div>
         <div>
-          <div className={styles.muted}>Biển số</div>
-          <div className={styles.textStrong}>{request.plateNumber}</div>
+          <div className={styles.muted}>Biển số/VIN</div>
+          <div className={styles.textStrong}>{request.plateNumber || "N/A"}</div>
         </div>
+        {request.mileage > 0 && (
+          <div>
+            <div className={styles.muted}>Số km</div>
+            <div className={styles.textStrong}>{request.mileage.toLocaleString()} km</div>
+          </div>
+        )}
         <div>
           <div className={styles.muted}>Giá đề xuất</div>
           <div className={styles.price}>{formatCurrency(request.price)}</div>
         </div>
+        {request.originalPrice && request.originalPrice !== request.price && (
+          <div>
+            <div className={styles.muted}>Giá gốc</div>
+            <div style={{ textDecoration: "line-through", color: "#999" }}>
+              {formatCurrency(request.originalPrice)}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -435,11 +469,118 @@ export default function StaffDashboard() {
   const [meetingChecks, setMeetingChecks] = useState({ buyer: false, seller: false });
   const [costApprovals, setCostApprovals] = useState({ buyer: false, seller: false });
   const [constructFees, setConstructFees] = useState({});
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [userInfo, setUserInfo] = useState(null);
   
-  // State cho đơn hàng được gán từ Admin
-  const [assignedOrders, setAssignedOrders] = useState([]);
-  const [activeTab, setActiveTab] = useState("contracts"); // "contracts" hoặc "assigned-orders"
+  const navigate = useNavigate();
   const currentStaffId = "staff1"; // TODO: Lấy từ authentication
+  
+  // Load user info
+  useEffect(() => {
+    const loadUserInfo = async () => {
+      try {
+        // Lấy từ sessionStorage hoặc localStorage trước
+        const userStr = sessionStorage.getItem("user") || localStorage.getItem("user");
+        let user = null;
+        let account = null;
+        
+        if (userStr) {
+          user = JSON.parse(userStr);
+        }
+        
+        // Thử lấy thông tin account từ API
+        try {
+          account = await accountService.getCurrentAccount();
+        } catch (error) {
+          console.warn("Could not fetch account from API, using stored user data:", error);
+        }
+        
+        // Ưu tiên dùng data từ API, fallback về data từ storage
+        const accountData = account || user;
+        const name = accountData?.email?.split("@")[0] || 
+                     accountData?.fullName || 
+                     user?.email?.split("@")[0] || 
+                     "Staff";
+        const email = accountData?.email || user?.email || "";
+        
+        // Lấy avatar từ account API hoặc fallback
+        const avatar = accountData?.avatarUrl || 
+                      user?.avatarUrl || 
+                      `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1677ff&color=fff`;
+        
+        setUserInfo({ name, avatar, email });
+      } catch (error) {
+        console.error("Error loading user info:", error);
+        // Fallback nếu có lỗi
+        const userStr = sessionStorage.getItem("user") || localStorage.getItem("user");
+        if (userStr) {
+          try {
+            const user = JSON.parse(userStr);
+            const name = user.email?.split("@")[0] || "Staff";
+            setUserInfo({ 
+              name, 
+              avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1677ff&color=fff`,
+              email: user.email || "" 
+            });
+          } catch (e) {
+            setUserInfo({ 
+              name: "Staff", 
+              avatar: `https://ui-avatars.com/api/?name=Staff&background=1677ff&color=fff`,
+              email: "" 
+            });
+          }
+        } else {
+          setUserInfo({ 
+            name: "Staff", 
+            avatar: `https://ui-avatars.com/api/?name=Staff&background=1677ff&color=fff`,
+            email: "" 
+          });
+        }
+      }
+    };
+    
+    loadUserInfo();
+    
+    // Listen for auth changes
+    const handleAuthChange = () => {
+      loadUserInfo();
+    };
+    window.addEventListener("authChanged", handleAuthChange);
+    
+    return () => {
+      window.removeEventListener("authChanged", handleAuthChange);
+    };
+  }, []);
+  
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      // Clear session
+      clearSession();
+      
+      // Clear localStorage
+      localStorage.removeItem("token");
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("user");
+      localStorage.removeItem("role");
+      localStorage.removeItem("accessToken");
+      
+      // Clear authService
+      authService.logout();
+      
+      // Dispatch event
+      window.dispatchEvent(new Event("authChanged"));
+      
+      // Navigate to login
+      navigate("/login");
+    } catch (error) {
+      console.error("Error during logout:", error);
+      // Fallback: Clear everything and navigate
+      sessionStorage.clear();
+      localStorage.clear();
+      navigate("/login");
+    }
+  };
 
   const formatCurrency = (n) => new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
 
@@ -550,39 +691,143 @@ export default function StaffDashboard() {
       const matchesSearch =
         request.buyer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         request.seller.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        request.plateNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        request.id.toLowerCase().includes(searchTerm.toLowerCase());
+        (request.plateNumber && request.plateNumber.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        request.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (request.orderId && request.orderId.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (request.vehicle && request.vehicle.toLowerCase().includes(searchTerm.toLowerCase()));
       return matchesSearch;
     });
   }, [requests, searchTerm]);
 
-  // Load assigned orders từ Admin
+  // Load contracts từ assignments (đơn hàng được gán từ Admin)
   useEffect(() => {
-    const loadAssignedOrders = async () => {
+    const loadContractsFromAssignments = async () => {
       try {
-        // TODO: Uncomment khi có API
-        // const orders = await orderAssignmentService.getAssignedOrders(currentStaffId);
-        // setAssignedOrders(orders);
+        // Lấy assignments cho staff hiện tại
+        const assignments = orderAssignmentService.getAssignedOrdersSync(currentStaffId);
         
-        // Load từ localStorage tạm thời
-        const orders = orderAssignmentService.getAssignedOrdersSync(currentStaffId);
-        setAssignedOrders(orders);
+        // Chuyển đổi assignments thành contracts
+        const contractPromises = assignments.map(async (assignment) => {
+          try {
+            // Lấy thông tin vehicle từ API nếu có
+            let vehicle = null;
+            if (assignment.vehicleId || assignment.vehicleData) {
+              if (assignment.vehicleData) {
+                vehicle = assignment.vehicleData;
+              } else if (assignment.vehicleId) {
+                try {
+                  vehicle = await vehicleService.getVehicleById(assignment.vehicleId);
+                } catch (error) {
+                  console.warn("Could not fetch vehicle:", error);
+                }
+              }
+            }
+            
+            // Lấy thông tin buyer và seller
+            let buyer = assignment.buyerData || assignment.buyer || {
+              member_id: assignment.buyerId,
+              name: "Unknown Buyer",
+              phone: "",
+              email: "",
+            };
+            let seller = assignment.sellerData || assignment.seller || {
+              member_id: assignment.sellerId,
+              name: "Unknown Seller",
+              phone: "",
+              email: "",
+            };
+            
+            // Nếu chưa có đầy đủ thông tin, thử lấy từ API
+            if (assignment.buyerId && (!buyer.phone || !buyer.email)) {
+              try {
+                const buyerData = await memberService.getMemberById(assignment.buyerId);
+                buyer = { ...buyer, ...buyerData };
+              } catch (error) {
+                console.warn("Could not fetch buyer data:", error);
+              }
+            }
+            if (assignment.sellerId && (!seller.phone || !seller.email)) {
+              try {
+                const sellerData = await memberService.getMemberById(assignment.sellerId);
+                seller = { ...seller, ...sellerData };
+              } catch (error) {
+                console.warn("Could not fetch seller data:", error);
+              }
+            }
+            
+            // Tạo contract từ assignment
+            const contract = {
+              id: assignment.constructId || `CF${assignment.orderId.slice(-3)}`,
+              construct_id: assignment.constructId || `CF${assignment.orderId.slice(-3)}`,
+              orderId: assignment.orderId, // Lưu mã đơn để đồng bộ
+              vehicle: vehicle 
+                ? `${vehicle.vehicleModel?.brand || ""} ${vehicle.vehicleModel?.model || ""}`.trim() || assignment.productName || "N/A"
+                : assignment.productName || "N/A",
+              year: vehicle?.manufactureYear || new Date().getFullYear(),
+              plateNumber: vehicle?.vin || "N/A",
+              price: assignment.offerPrice || 0,
+              originalPrice: assignment.originalPrice || assignment.offerPrice || 0,
+              buyer: {
+                member_id: buyer.member_id || buyer.id || assignment.buyerId,
+                name: buyer.fullName || buyer.name || "Unknown Buyer",
+                full_name: buyer.fullName || buyer.name || "Unknown Buyer",
+                phone: buyer.phone || "",
+                email: buyer.email || "",
+                address: buyer.address || "",
+                avatar_url: buyer.avatarUrl || buyer.avatar_url || "",
+              },
+              seller: {
+                member_id: seller.member_id || seller.id || assignment.sellerId,
+                name: seller.fullName || seller.name || "Unknown Seller",
+                full_name: seller.fullName || seller.name || "Unknown Seller",
+                phone: seller.phone || "",
+                email: seller.email || "",
+                address: seller.address || "",
+                avatar_url: seller.avatarUrl || seller.avatar_url || "",
+              },
+              status: "pending", // Contract mới tạo từ order
+              costs: [], // Sẽ được staff điền sau
+              created_at: assignment.assignedAt || new Date().toISOString().split('T')[0],
+              buyer_token: "",
+              seller_token: "",
+              mileage: vehicle?.mileageKm || 0,
+            };
+            
+            return contract;
+          } catch (error) {
+            console.error("Error converting assignment to contract:", error);
+            return null;
+          }
+        });
+        
+        const contracts = (await Promise.all(contractPromises)).filter(c => c !== null);
+        
+        // Kết hợp với contracts hiện có (tránh trùng lặp)
+        setRequests((prev) => {
+          const existingIds = new Set(prev.map(c => c.id));
+          const newContracts = contracts.filter(c => !existingIds.has(c.id));
+          return [...prev, ...newContracts];
+        });
       } catch (error) {
-        console.error("Error loading assigned orders:", error);
+        console.error("Error loading contracts from assignments:", error);
       }
     };
 
-    loadAssignedOrders();
+    loadContractsFromAssignments();
 
     // Subscribe to storage changes (cross-tab communication)
-    const unsubscribe = orderAssignmentService.subscribeToChanges(() => {
-      loadAssignedOrders();
-    });
+    const handleStorageChange = () => {
+      loadContractsFromAssignments();
+    };
+    
+    window.addEventListener("storage", handleStorageChange);
+    const unsubscribe = orderAssignmentService.subscribeToChanges(loadContractsFromAssignments);
 
     // Poll for updates every 5 seconds
-    const interval = setInterval(loadAssignedOrders, 5000);
+    const interval = setInterval(loadContractsFromAssignments, 5000);
 
     return () => {
+      window.removeEventListener("storage", handleStorageChange);
       unsubscribe();
       clearInterval(interval);
     };
@@ -595,9 +840,8 @@ export default function StaffDashboard() {
         ["pending", "contacting", "waiting_approval", "awaiting_meeting"].includes(r.status)
       ).length,
       completed: requests.filter((r) => r.status === "completed").length,
-      assignedOrders: assignedOrders.length,
     };
-  }, [requests, assignedOrders]);
+  }, [requests]);
 
   // Don't auto-select - let user choose
 
@@ -646,28 +890,121 @@ export default function StaffDashboard() {
     <div className={styles.container}>
       {/* Header */}
       <div className={styles.header}>
-        <div>
-          <h1 className={styles.pageTitle}>Staff Dashboard</h1>
-          <p className={styles.subTitle}>Tổng quan & xử lý hợp đồng từ Admin</p>
-        </div>
-        <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
-          <button
-            className={`${styles.btn} ${activeTab === "contracts" ? styles.btnPrimary : styles.btnGhost}`}
-            onClick={() => setActiveTab("contracts")}
-          >
-            <FileText size={16} /> Hợp đồng
-          </button>
-          <button
-            className={`${styles.btn} ${activeTab === "assigned-orders" ? styles.btnPrimary : styles.btnGhost}`}
-            onClick={() => setActiveTab("assigned-orders")}
-          >
-            <Package size={16} /> Đơn hàng được gán
-            {assignedOrders.length > 0 && (
-              <span style={{ marginLeft: 8, background: "#ff4d4f", color: "white", borderRadius: "10px", padding: "2px 8px", fontSize: 12 }}>
-                {assignedOrders.length}
-              </span>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+          <div>
+            <h1 className={styles.pageTitle}>Staff Dashboard</h1>
+            <p className={styles.subTitle}>Tổng quan & xử lý hợp đồng từ Admin</p>
+          </div>
+          
+          {/* User Avatar Dropdown */}
+          <div style={{ position: "relative" }}>
+            <button
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "8px 12px",
+                background: "transparent",
+                border: "1px solid #e5e7eb",
+                borderRadius: "8px",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#f9fafb";
+                e.currentTarget.style.borderColor = "#d1d5db";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.borderColor = "#e5e7eb";
+              }}
+            >
+              <img
+                src={userInfo?.avatar || `https://ui-avatars.com/api/?name=Staff&background=1677ff&color=fff`}
+                alt="Avatar"
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                }}
+              />
+              <ChevronDown size={16} style={{ color: "#6b7280" }} />
+            </button>
+            
+            {/* Dropdown Menu */}
+            {showUserMenu && (
+              <>
+                <div
+                  style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    zIndex: 999,
+                  }}
+                  onClick={() => setShowUserMenu(false)}
+                />
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "100%",
+                    right: 0,
+                    marginTop: 8,
+                    background: "#ffffff",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "8px",
+                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+                    minWidth: 200,
+                    zIndex: 1000,
+                    overflow: "hidden",
+                  }}
+                >
+                  {/* User Info */}
+                  <div style={{ padding: "12px 16px", borderBottom: "1px solid #e5e7eb" }}>
+                    <div style={{ fontWeight: 600, fontSize: 14, color: "#111827" }}>
+                      {userInfo?.name || "Staff"}
+                    </div>
+                    {userInfo?.email && (
+                      <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4 }}>
+                        {userInfo.email}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Logout Button */}
+                  <button
+                    onClick={handleLogout}
+                    style={{
+                      width: "100%",
+                      padding: "12px 16px",
+                      background: "transparent",
+                      border: "none",
+                      textAlign: "left",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      color: "#dc2626",
+                      fontSize: 14,
+                      transition: "background 0.2s",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "#fef2f2";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "transparent";
+                    }}
+                  >
+                    <LogOut size={16} />
+                    Đăng xuất
+                  </button>
+                </div>
+              </>
             )}
-          </button>
+          </div>
         </div>
       </div>
 
@@ -687,18 +1024,17 @@ export default function StaffDashboard() {
         </div>
       </div>
 
-      {activeTab === "contracts" ? (
-        <div className={styles.columns}>
-          {/* Left: List */}
-          <div className={styles.colLeft}>
-            <RequestList
-              requests={filteredRequests}
-              selectedRequest={selectedRequest}
-              onSelect={handleSelectRequest}
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-            />
-          </div>
+      <div className={styles.columns}>
+        {/* Left: List */}
+        <div className={styles.colLeft}>
+          <RequestList
+            requests={filteredRequests}
+            selectedRequest={selectedRequest}
+            onSelect={handleSelectRequest}
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+          />
+        </div>
 
           {/* Right: Detail */}
           <div className={styles.colRight}>
@@ -877,66 +1213,6 @@ export default function StaffDashboard() {
           )}
         </div>
       </div>
-      ) : (
-        <div className={styles.columns}>
-          <div className={styles.colLeft}>
-            <div className={styles.card}>
-              <div className={styles.cardHeader}>
-                <h2 className={styles.cardTitle}>Đơn hàng được gán từ Admin</h2>
-              </div>
-              <div className={styles.list}>
-                {assignedOrders.length === 0 ? (
-                  <div style={{ padding: "40px", textAlign: "center", color: "#999" }}>
-                    <Package size={48} style={{ marginBottom: 16, opacity: 0.3 }} />
-                    <p>Chưa có đơn hàng nào được gán</p>
-                  </div>
-                ) : (
-                  assignedOrders.map((order) => (
-                    <div
-                      key={order.orderId}
-                      className={styles.listItem}
-                      onClick={() => {
-                        // TODO: Mở modal chi tiết đơn hàng
-                        alert(`Chi tiết đơn hàng: ${order.orderId}\nSản phẩm: ${order.productName}\nGiá đề xuất: ${order.offerPrice.toLocaleString()}₫`);
-                      }}
-                    >
-                      <div className={styles.listItemTop}>
-                        <div className={styles.listItemId}>{order.orderId}</div>
-                        <span className={styles.statusBadge} style={{ background: "#1677ff", color: "white" }}>
-                          Đã gán
-                        </span>
-                      </div>
-                      <div className={styles.listItemVehicle}>{order.productName}</div>
-                      <div className={styles.listItemPeople}>
-                        Giá đề xuất: {order.offerPrice?.toLocaleString()}₫
-                      </div>
-                      <div style={{ marginTop: 8, fontSize: 12, color: "#666" }}>
-                        Gán lúc: {order.assignedAt ? new Date(order.assignedAt).toLocaleString("vi-VN") : "N/A"}
-                      </div>
-                      <button
-                        className={`${styles.btn} ${styles.btnPrimarySm}`}
-                        style={{ marginTop: 12, width: "100%" }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // TODO: Xử lý đơn hàng
-                          alert(`Xử lý đơn hàng: ${order.orderId}`);
-                        }}
-                      >
-                        Xử lý đơn hàng
-                      </button>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-          <div className={styles.colRight}>
-            <div className={styles.empty}>
-              {selectedRequest ? "Chọn một đơn hàng để xem chi tiết" : "Chọn một đơn hàng từ danh sách để xem chi tiết"}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* MODAL: Edit Cost */}
       {showEditCostModal && selectedRequest && (

@@ -36,7 +36,7 @@ const orderAssignmentService = {
   },
 
   /**
-   * Gán đơn hàng cho staff
+   * Gán đơn hàng cho staff và tạo contract (construct)
    * TODO: Thay bằng API: POST /api/OrderAssignment
    */
   assignOrderToStaff: async (orderId, staffId, assignmentData) => {
@@ -50,7 +50,33 @@ const orderAssignmentService = {
       // });
       // return response.data;
 
-      // Mock - lưu vào localStorage
+      // Import constructService để tạo contract
+      const constructService = (await import("./constructService")).default;
+      
+      // Tạo contract từ order data
+      // Construct sẽ lưu thông tin: buyer, seller, vehicle, order code, etc.
+      let constructId = null;
+      try {
+        const constructData = {
+          name: `Hợp đồng cho đơn hàng ${orderId}`,
+          type: "Inspection", // Có thể là Inspection cho giao dịch mua bán
+          status: "Pending",
+          // Lưu thông tin order vào construct (có thể dùng description hoặc custom fields)
+          // Tạm thời lưu vào localStorage cùng với assignment
+        };
+        
+        // TODO: Uncomment khi có BE để tạo construct thật
+        // const construct = await constructService.createConstruct(constructData);
+        // constructId = construct.id;
+        
+        // Mock: Tạo construct ID tạm thời
+        constructId = `CF${orderId.slice(-3)}`;
+      } catch (error) {
+        console.warn("Could not create construct, using mock ID:", error);
+        constructId = `CF${orderId.slice(-3)}`;
+      }
+
+      // Mock - lưu vào localStorage (bao gồm cả construct ID)
       const assignments = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
       const existingIndex = assignments.findIndex((a) => a.orderId === orderId);
 
@@ -58,6 +84,7 @@ const orderAssignmentService = {
         orderId,
         staffId,
         staffName: mockStaffList.find((s) => s.id === staffId)?.name || "Unknown",
+        constructId, // Link contract với order
         ...assignmentData,
         assignedAt: new Date().toISOString(),
         status: "assigned",
@@ -70,6 +97,10 @@ const orderAssignmentService = {
       }
 
       localStorage.setItem(STORAGE_KEY, JSON.stringify(assignments));
+      
+      // Trigger storage event để cập nhật staff dashboard
+      window.dispatchEvent(new Event("storage"));
+      
       return assignment;
     } catch (error) {
       console.error("Error assigning order:", error);
