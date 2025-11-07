@@ -76,11 +76,61 @@ const NewCustomerDashboard = () => {
   });
 
   useEffect(() => {
-    if (memberId) {
-      fetchAllData();
-    }
-  }, [memberId]);
+    if (!memberId) return;
 
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const [postRes, batteryRes, vehicleRes] = await Promise.all([
+          postService.getPostsByMember(memberId),
+          batteryService
+            .getBatteriesByMember(memberId)
+            .catch(() => ({ data: [] })),
+          vehicleService
+            .getVehiclesByMember(memberId)
+            .catch(() => ({ data: [] })),
+        ]);
+
+        const postsData = Array.isArray(postRes) ? postRes : postRes.data || [];
+        setPosts(postsData);
+        setBatteries(batteryRes.data || []);
+        setVehicles(vehicleRes.data || []);
+
+        const activePosts = postsData.filter((p) =>
+          ["active", "approved"].includes((p.status || "").toLowerCase())
+        );
+
+        setStatistics({
+          totalPosts: postsData.length,
+          activePosts: activePosts.length,
+          totalBatteries: batteryRes.data?.length || 0,
+          totalVehicles: vehicleRes.data?.length || 0,
+        });
+
+        console.log(
+          "Dashboard: Tải xong – Pin:",
+          batteryRes.data?.length,
+          "| Xe:",
+          vehicleRes.data?.length
+        );
+      } catch (err) {
+        console.log("Lỗi nhẹ, vẫn hiển thị bình thường");
+        setPosts([]);
+        setBatteries([]);
+        setVehicles([]);
+        setStatistics({
+          totalPosts: 0,
+          activePosts: 0,
+          totalBatteries: 0,
+          totalVehicles: 0,
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [memberId]);
   const fetchAllData = async () => {
     setLoading(true);
     try {
@@ -96,19 +146,21 @@ const NewCustomerDashboard = () => {
   const fetchPosts = async () => {
     try {
       const response = await postService.getPostsByMember(memberId);
-      const postsData = Array.isArray(response) ? response : response.data || [];
+      const postsData = Array.isArray(response)
+        ? response
+        : response.data || [];
       // Debug: log posts to check for postPackageSubs/payment.checkoutUrl
       try {
-        console.debug('Fetched posts for member', memberId, postsData);
+        console.debug("Fetched posts for member", memberId, postsData);
       } catch (e) {}
       setPosts(postsData);
-      
+
       // Map status to check for approved/active posts (case insensitive)
-      const activePosts = postsData.filter(p => {
+      const activePosts = postsData.filter((p) => {
         const status = (p.status || "").toLowerCase();
         return status === "active" || status === "approved";
       });
-      setStatistics(prev => ({
+      setStatistics((prev) => ({
         ...prev,
         totalPosts: postsData.length,
         activePosts: activePosts.length,
@@ -123,18 +175,24 @@ const NewCustomerDashboard = () => {
     if (!post) return null;
 
     // Common shapes
-    const subs = post.postPackageSubs || post.postPackageSub || post.post_package_subs || post.postPackageSubscriptions;
+    const subs =
+      post.postPackageSubs ||
+      post.postPackageSub ||
+      post.post_package_subs ||
+      post.postPackageSubscriptions;
     if (Array.isArray(subs)) {
       for (const s of subs) {
         if (s?.payment?.checkoutUrl) return s.payment.checkoutUrl;
         if (s?.checkoutUrl) return s.checkoutUrl;
         if (s?.paymentUrl) return s.paymentUrl;
-        if (s?.package?.payment?.checkoutUrl) return s.package.payment.checkoutUrl;
+        if (s?.package?.payment?.checkoutUrl)
+          return s.package.payment.checkoutUrl;
       }
     }
 
     // Single object
-    const single = post.postPackageSub || post.packageSub || post.postPackageSubs?.[0];
+    const single =
+      post.postPackageSub || post.packageSub || post.postPackageSubs?.[0];
     if (single) {
       if (single?.payment?.checkoutUrl) return single.payment.checkoutUrl;
       if (single?.checkoutUrl) return single.checkoutUrl;
@@ -145,14 +203,25 @@ const NewCustomerDashboard = () => {
     try {
       const seen = new WeakSet();
       const deepFind = (obj) => {
-        if (!obj || typeof obj !== 'object') return null;
+        if (!obj || typeof obj !== "object") return null;
         if (seen.has(obj)) return null;
         seen.add(obj);
         for (const key of Object.keys(obj)) {
           const val = obj[key];
-          if (typeof key === 'string' && key.toLowerCase().includes('checkout') && typeof val === 'string' && val.startsWith('http')) return val;
-          if (typeof val === 'string' && /https?:\/\//.test(val) && key.toLowerCase().includes('url')) return val;
-          if (typeof val === 'object') {
+          if (
+            typeof key === "string" &&
+            key.toLowerCase().includes("checkout") &&
+            typeof val === "string" &&
+            val.startsWith("http")
+          )
+            return val;
+          if (
+            typeof val === "string" &&
+            /https?:\/\//.test(val) &&
+            key.toLowerCase().includes("url")
+          )
+            return val;
+          if (typeof val === "object") {
             const found = deepFind(val);
             if (found) return found;
           }
@@ -169,9 +238,14 @@ const NewCustomerDashboard = () => {
   const fetchBatteries = async () => {
     try {
       const response = await batteryService.getBatteriesByMember(memberId);
-      const batteriesData = Array.isArray(response) ? response : response.data || [];
+      const batteriesData = Array.isArray(response)
+        ? response
+        : response.data || [];
       setBatteries(batteriesData);
-      setStatistics(prev => ({ ...prev, totalBatteries: batteriesData.length }));
+      setStatistics((prev) => ({
+        ...prev,
+        totalBatteries: batteriesData.length,
+      }));
     } catch (error) {
       console.error("Error fetching batteries:", error);
     }
@@ -180,9 +254,14 @@ const NewCustomerDashboard = () => {
   const fetchVehicles = async () => {
     try {
       const response = await vehicleService.getVehiclesByMember(memberId);
-      const vehiclesData = Array.isArray(response) ? response : response.data || [];
+      const vehiclesData = Array.isArray(response)
+        ? response
+        : response.data || [];
       setVehicles(vehiclesData);
-      setStatistics(prev => ({ ...prev, totalVehicles: vehiclesData.length }));
+      setStatistics((prev) => ({
+        ...prev,
+        totalVehicles: vehiclesData.length,
+      }));
     } catch (error) {
       console.error("Error fetching vehicles:", error);
     }
@@ -277,11 +356,31 @@ const NewCustomerDashboard = () => {
         // Normalize status to handle case variations
         const normalizedStatus = (status || "").toLowerCase();
         const statusConfig = {
-          pending: { color: "warning", icon: <ClockCircleOutlined />, text: "Chờ duyệt" },
-          approved: { color: "success", icon: <CheckCircleOutlined />, text: "Đã duyệt" },
-          active: { color: "processing", icon: <CheckCircleOutlined />, text: "Đang hoạt động" },
-          rejected: { color: "error", icon: <CloseCircleOutlined />, text: "Đã từ chối" },
-          inactive: { color: "default", icon: <CloseCircleOutlined />, text: "Không hoạt động" },
+          pending: {
+            color: "warning",
+            icon: <ClockCircleOutlined />,
+            text: "Chờ duyệt",
+          },
+          approved: {
+            color: "success",
+            icon: <CheckCircleOutlined />,
+            text: "Đã duyệt",
+          },
+          active: {
+            color: "processing",
+            icon: <CheckCircleOutlined />,
+            text: "Đang hoạt động",
+          },
+          rejected: {
+            color: "error",
+            icon: <CloseCircleOutlined />,
+            text: "Đã từ chối",
+          },
+          inactive: {
+            color: "default",
+            icon: <CloseCircleOutlined />,
+            text: "Không hoạt động",
+          },
         };
         const config = statusConfig[normalizedStatus] || statusConfig.pending;
         const checkoutUrl = findCheckoutUrl(record);
@@ -326,27 +425,32 @@ const NewCustomerDashboard = () => {
             />
           </Tooltip>
           {/* Thanh toán: chỉ hiện khi bài đã duyệt và có checkoutUrl */}
-          {((record.status || "").toLowerCase() === "approved") && findCheckoutUrl(record) && (
-            <Tooltip title="Thanh toán">
-              <Button
-                type="text"
-                icon={<DollarOutlined />}
-                onClick={() => {
-                  const checkoutUrl = findCheckoutUrl(record);
-                  if (checkoutUrl) {
-                    try {
-                      paymentService.processPayment(checkoutUrl);
-                    } catch (err) {
-                      console.error('Error opening checkout URL:', err);
-                      message.error('Không thể mở trang thanh toán. Vui lòng thử lại.');
+          {(record.status || "").toLowerCase() === "approved" &&
+            findCheckoutUrl(record) && (
+              <Tooltip title="Thanh toán">
+                <Button
+                  type="text"
+                  icon={<DollarOutlined />}
+                  onClick={() => {
+                    const checkoutUrl = findCheckoutUrl(record);
+                    if (checkoutUrl) {
+                      try {
+                        paymentService.processPayment(checkoutUrl);
+                      } catch (err) {
+                        console.error("Error opening checkout URL:", err);
+                        message.error(
+                          "Không thể mở trang thanh toán. Vui lòng thử lại."
+                        );
+                      }
+                    } else {
+                      message.error(
+                        "Không tìm thấy link thanh toán cho bài viết này."
+                      );
                     }
-                  } else {
-                    message.error('Không tìm thấy link thanh toán cho bài viết này.');
-                  }
-                }}
-              />
-            </Tooltip>
-          )}
+                  }}
+                />
+              </Tooltip>
+            )}
         </Space>
       ),
     },
@@ -464,9 +568,15 @@ const NewCustomerDashboard = () => {
       <div className={styles.welcomeSection}>
         <Card className={styles.welcomeCard}>
           <div className={styles.welcomeContent}>
-            <Avatar size={80} icon={<UserOutlined />} className={styles.avatar} />
+            <Avatar
+              size={80}
+              icon={<UserOutlined />}
+              className={styles.avatar}
+            />
             <div className={styles.welcomeText}>
-              <h2>Xin chào, {currentUser?.member?.fullName || currentUser?.email}!</h2>
+              <h2>
+                Xin chào, {currentUser?.member?.fullName || currentUser?.email}!
+              </h2>
               <p>Chào mừng bạn đến với bảng điều khiển của mình</p>
             </div>
           </div>
@@ -543,7 +653,9 @@ const NewCustomerDashboard = () => {
           <Card title="Thống kê nhanh">
             <Space direction="vertical" style={{ width: "100%" }} size="large">
               <div className={styles.quickStat}>
-                <ThunderboltOutlined style={{ fontSize: 24, color: "#faad14" }} />
+                <ThunderboltOutlined
+                  style={{ fontSize: 24, color: "#faad14" }}
+                />
                 <div>
                   <div className={styles.quickStatLabel}>Pin đang bán</div>
                   <div className={styles.quickStatValue}>
@@ -563,7 +675,9 @@ const NewCustomerDashboard = () => {
               <div className={styles.quickStat}>
                 <DollarOutlined style={{ fontSize: 24, color: "#52c41a" }} />
                 <div>
-                  <div className={styles.quickStatLabel}>Giá trị trung bình</div>
+                  <div className={styles.quickStatLabel}>
+                    Giá trị trung bình
+                  </div>
                   <div className={styles.quickStatValue}>
                     {posts.length > 0
                       ? (
@@ -639,7 +753,9 @@ const NewCustomerDashboard = () => {
         <Descriptions.Item label="Họ tên">
           {currentUser?.member?.fullName || "Chưa cập nhật"}
         </Descriptions.Item>
-        <Descriptions.Item label="Email">{currentUser?.email}</Descriptions.Item>
+        <Descriptions.Item label="Email">
+          {currentUser?.email}
+        </Descriptions.Item>
         <Descriptions.Item label="Số điện thoại">
           {currentUser?.phone || "Chưa cập nhật"}
         </Descriptions.Item>
@@ -710,12 +826,21 @@ const NewCustomerDashboard = () => {
       <Modal
         title="Chi tiết"
         open={detailModalVisible}
-        onCancel={() => { setDetailModalVisible(false); setShowRawJson(false); }}
+        onCancel={() => {
+          setDetailModalVisible(false);
+          setShowRawJson(false);
+        }}
         footer={[
-          <Button key="json" onClick={() => setShowRawJson(prev => !prev)}>
-            {showRawJson ? 'Ẩn JSON' : 'Xem JSON'}
+          <Button key="json" onClick={() => setShowRawJson((prev) => !prev)}>
+            {showRawJson ? "Ẩn JSON" : "Xem JSON"}
           </Button>,
-          <Button key="close" onClick={() => { setDetailModalVisible(false); setShowRawJson(false); }}>
+          <Button
+            key="close"
+            onClick={() => {
+              setDetailModalVisible(false);
+              setShowRawJson(false);
+            }}
+          >
             Đóng
           </Button>,
         ]}
@@ -723,85 +848,92 @@ const NewCustomerDashboard = () => {
       >
         {selectedItem && (
           <>
-          <Descriptions bordered column={1}>
-            {selectedItem.type === "post" && (
-              <>
-                <Descriptions.Item label="Tiêu đề">
-                  {selectedItem.title}
-                </Descriptions.Item>
-                <Descriptions.Item label="Giá">
-                  {selectedItem.price?.toLocaleString("vi-VN")} đ
-                </Descriptions.Item>
-                <Descriptions.Item label="Mô tả">
-                  {selectedItem.description}
-                </Descriptions.Item>
-                <Descriptions.Item label="Địa điểm">
-                  {selectedItem.location}
-                </Descriptions.Item>
-                <Descriptions.Item label="Loại giao dịch">
-                  {selectedItem.transactionType}
-                </Descriptions.Item>
-                <Descriptions.Item label="Trạng thái">
-                  <Tag>{selectedItem.status}</Tag>
-                </Descriptions.Item>
-              </>
+            <Descriptions bordered column={1}>
+              {selectedItem.type === "post" && (
+                <>
+                  <Descriptions.Item label="Tiêu đề">
+                    {selectedItem.title}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Giá">
+                    {selectedItem.price?.toLocaleString("vi-VN")} đ
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Mô tả">
+                    {selectedItem.description}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Địa điểm">
+                    {selectedItem.location}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Loại giao dịch">
+                    {selectedItem.transactionType}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Trạng thái">
+                    <Tag>{selectedItem.status}</Tag>
+                  </Descriptions.Item>
+                </>
+              )}
+              {selectedItem.type === "battery" && (
+                <>
+                  <Descriptions.Item label="Thương hiệu">
+                    {selectedItem.brand}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Dung lượng">
+                    {selectedItem.capacityKWh} kWh
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Số chu kỳ">
+                    {selectedItem.cycleCount}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Tình trạng">
+                    {selectedItem.condition}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Năm sản xuất">
+                    {selectedItem.manufactureYear}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Mô tả">
+                    {selectedItem.description}
+                  </Descriptions.Item>
+                </>
+              )}
+              {selectedItem.type === "vehicle" && (
+                <>
+                  <Descriptions.Item label="Thương hiệu">
+                    {selectedItem.brand}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Model">
+                    {selectedItem.model}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Dung lượng pin">
+                    {selectedItem.batteryCapacity} kWh
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Số km đã đi">
+                    {selectedItem.mileageKm?.toLocaleString("vi-VN")} km
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Tình trạng">
+                    {selectedItem.condition}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Năm sản xuất">
+                    {selectedItem.manufactureYear}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Mô tả">
+                    {selectedItem.description}
+                  </Descriptions.Item>
+                </>
+              )}
+            </Descriptions>
+            {showRawJson && (
+              <div style={{ marginTop: 16 }}>
+                <h4>Raw JSON</h4>
+                <pre
+                  style={{
+                    maxHeight: 300,
+                    overflow: "auto",
+                    background: "#f7f7f7",
+                    padding: 12,
+                  }}
+                >
+                  {JSON.stringify(selectedItem, null, 2)}
+                </pre>
+              </div>
             )}
-            {selectedItem.type === "battery" && (
-              <>
-                <Descriptions.Item label="Thương hiệu">
-                  {selectedItem.brand}
-                </Descriptions.Item>
-                <Descriptions.Item label="Dung lượng">
-                  {selectedItem.capacityKWh} kWh
-                </Descriptions.Item>
-                <Descriptions.Item label="Số chu kỳ">
-                  {selectedItem.cycleCount}
-                </Descriptions.Item>
-                <Descriptions.Item label="Tình trạng">
-                  {selectedItem.condition}
-                </Descriptions.Item>
-                <Descriptions.Item label="Năm sản xuất">
-                  {selectedItem.manufactureYear}
-                </Descriptions.Item>
-                <Descriptions.Item label="Mô tả">
-                  {selectedItem.description}
-                </Descriptions.Item>
-              </>
-            )}
-            {selectedItem.type === "vehicle" && (
-              <>
-                <Descriptions.Item label="Thương hiệu">
-                  {selectedItem.brand}
-                </Descriptions.Item>
-                <Descriptions.Item label="Model">
-                  {selectedItem.model}
-                </Descriptions.Item>
-                <Descriptions.Item label="Dung lượng pin">
-                  {selectedItem.batteryCapacity} kWh
-                </Descriptions.Item>
-                <Descriptions.Item label="Số km đã đi">
-                  {selectedItem.mileageKm?.toLocaleString("vi-VN")} km
-                </Descriptions.Item>
-                <Descriptions.Item label="Tình trạng">
-                  {selectedItem.condition}
-                </Descriptions.Item>
-                <Descriptions.Item label="Năm sản xuất">
-                  {selectedItem.manufactureYear}
-                </Descriptions.Item>
-                <Descriptions.Item label="Mô tả">
-                  {selectedItem.description}
-                </Descriptions.Item>
-              </>
-            )}
-          </Descriptions>
-          {showRawJson && (
-            <div style={{ marginTop: 16 }}>
-              <h4>Raw JSON</h4>
-              <pre style={{ maxHeight: 300, overflow: 'auto', background: '#f7f7f7', padding: 12 }}>
-                {JSON.stringify(selectedItem, null, 2)}
-              </pre>
-            </div>
-          )}
           </>
         )}
       </Modal>
