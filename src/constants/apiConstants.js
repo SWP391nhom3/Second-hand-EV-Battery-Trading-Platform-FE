@@ -284,6 +284,8 @@ export const API_ENDPOINTS = {
   VEHICLE: {
     BASE: "/api/Vehicle",
     BY_ID: (id) => `/api/Vehicle/${id}`,
+    BY_MEMBER: (memberId) => `/api/Vehicle/member/${memberId}`,
+    SEARCH: "/api/Vehicle/search",
   },
 
   // Vehicle Model endpoints

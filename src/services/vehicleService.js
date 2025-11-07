@@ -71,6 +71,30 @@ const vehicleService = {
     const response = await api.delete(API_ENDPOINTS.VEHICLE.BY_ID(id));
     return response.data;
   },
+
+  // ==========================================================================
+  // VEHICLE QUERIES
+  // ==========================================================================
+
+  /**
+   * Get all vehicles owned by a member
+   * @param {number} memberId - Member ID
+   * @returns {Promise<Array>} Member's vehicles
+   */
+  getVehiclesByMember: async (memberId) => {
+    const response = await api.get(API_ENDPOINTS.VEHICLE.BY_MEMBER(memberId));
+    return response.data;
+  },
+
+  /**
+   * Search vehicles
+   * @param {Object} params - Search parameters
+   * @returns {Promise<Array>} Matching vehicles
+   */
+  searchVehicles: async (params) => {
+    const response = await api.get(API_ENDPOINTS.VEHICLE.SEARCH, { params });
+    return response.data;
+  },
 };
 
 export default vehicleService;

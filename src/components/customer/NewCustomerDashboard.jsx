@@ -76,13 +76,18 @@ const NewCustomerDashboard = () => {
   });
 
   useEffect(() => {
-    if (!memberId) return;
+    if (!memberId) {
+      console.warn('⚠️ No memberId found, cannot load posts');
+      return;
+    }
 
     const loadData = async () => {
       setLoading(true);
+      console.log('🚀 Loading customer dashboard data for member:', memberId);
+      
       try {
-        const [postRes, batteryRes, vehicleRes] = await Promise.all([
-          postService.getPostsByMember(memberId),
+        // Load batteries and vehicles in parallel
+        const [batteryRes, vehicleRes] = await Promise.all([
           batteryService
             .getBatteriesByMember(memberId)
             .catch(() => ({ data: [] })),
@@ -91,7 +96,25 @@ const NewCustomerDashboard = () => {
             .catch(() => ({ data: [] })),
         ]);
 
-        const postsData = Array.isArray(postRes) ? postRes : postRes.data || [];
+        // Load posts separately with fallback logic
+        let postsData = [];
+        try {
+          const postRes = await postService.getPostsByMember(memberId);
+          postsData = Array.isArray(postRes) ? postRes : postRes.data || [];
+          console.log(`📦 Loaded ${postsData.length} posts from getPostsByMember`);
+        } catch (postError) {
+          console.warn('⚠️ getPostsByMember failed, using admin endpoint fallback:', postError);
+          try {
+            const allPosts = await postService.getAdminAllPosts();
+            const allPostsData = Array.isArray(allPosts) ? allPosts : allPosts.data || [];
+            postsData = allPostsData.filter(post => post.memberId === memberId);
+            console.log(`📦 Filtered ${postsData.length} posts for member ${memberId} from admin endpoint`);
+          } catch (adminError) {
+            console.error('❌ Both endpoints failed:', adminError);
+            postsData = [];
+          }
+        }
+
         setPosts(postsData);
         setBatteries(batteryRes.data || []);
         setVehicles(vehicleRes.data || []);
@@ -108,13 +131,17 @@ const NewCustomerDashboard = () => {
         });
 
         console.log(
-          "Dashboard: Tải xong – Pin:",
+          "✅ Dashboard loaded – Posts:",
+          postsData.length,
+          "| Active:",
+          activePosts.length,
+          "| Batteries:",
           batteryRes.data?.length,
-          "| Xe:",
+          "| Vehicles:",
           vehicleRes.data?.length
         );
       } catch (err) {
-        console.log("Lỗi nhẹ, vẫn hiển thị bình thường");
+        console.error("❌ Error loading dashboard:", err);
         setPosts([]);
         setBatteries([]);
         setVehicles([]);
@@ -145,28 +172,58 @@ const NewCustomerDashboard = () => {
 
   const fetchPosts = async () => {
     try {
-      const response = await postService.getPostsByMember(memberId);
-      const postsData = Array.isArray(response)
-        ? response
-        : response.data || [];
-      // Debug: log posts to check for postPackageSubs/payment.checkoutUrl
+      console.log('🔄 Fetching posts for member:', memberId);
+      
+      // TODO: Use getPostsByMember when backend fixes the endpoint
+      // Currently using getAdminAllPosts as workaround and filtering by memberId
+      let response;
+      let postsData = [];
+      
       try {
-        console.debug("Fetched posts for member", memberId, postsData);
-      } catch (e) {}
+        // Try member-specific endpoint first
+        response = await postService.getPostsByMember(memberId);
+        postsData = Array.isArray(response) ? response : response.data || [];
+        console.log(`📦 getPostsByMember returned ${postsData.length} posts`);
+      } catch (memberError) {
+        console.warn('⚠️ getPostsByMember failed, trying admin endpoint:', memberError);
+        
+        // Fallback to admin endpoint and filter
+        const allPosts = await postService.getAdminAllPosts();
+        postsData = Array.isArray(allPosts) ? allPosts : allPosts.data || [];
+        
+        // Filter by memberId
+        postsData = postsData.filter(post => post.memberId === memberId);
+        console.log(`📦 Filtered from admin endpoint: ${postsData.length} posts for member ${memberId}`);
+      }
+      
+      console.log('📊 Posts data:', postsData);
       setPosts(postsData);
 
       // Map status to check for approved/active posts (case insensitive)
       const activePosts = postsData.filter((p) => {
         const status = (p.status || "").toLowerCase();
-        return status === "active" || status === "approved";
+        const isActive = status === "active" || status === "approved";
+        if (!isActive) {
+          console.log(`⏭️ Post ${p.postId} not active - status: ${p.status}`);
+        }
+        return isActive;
       });
+      
+      console.log(`✅ Active/Approved posts: ${activePosts.length}`);
+      
       setStatistics((prev) => ({
         ...prev,
         totalPosts: postsData.length,
         activePosts: activePosts.length,
       }));
     } catch (error) {
-      console.error("Error fetching posts:", error);
+      console.error("❌ Error fetching posts:", error);
+      setPosts([]);
+      setStatistics((prev) => ({
+        ...prev,
+        totalPosts: 0,
+        activePosts: 0,
+      }));
     }
   };
 
