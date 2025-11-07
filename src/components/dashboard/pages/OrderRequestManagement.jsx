@@ -27,6 +27,9 @@ import {
 } from "@ant-design/icons";
 import orderRequestService from "../../../services/orderRequestService";
 import orderAssignmentService from "../../../services/orderAssignmentService";
+import vehicleService from "../../../services/vehicleService";
+import postService from "../../../services/postService";
+import memberService from "../../../services/memberService";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -213,7 +216,44 @@ const OrderRequestManagement = () => {
 
     try {
       setLoading(true);
-      // Gán đơn hàng cho staff
+      
+      // Lấy thông tin vehicle từ API nếu là vehicle
+      let vehicleData = null;
+      let buyerData = null;
+      let sellerData = null;
+      
+      try {
+        // Lấy thông tin buyer và seller
+        if (selectedRequest.buyer.memberId) {
+          buyerData = await memberService.getMemberById(selectedRequest.buyer.memberId);
+        }
+        if (selectedRequest.seller.memberId) {
+          sellerData = await memberService.getMemberById(selectedRequest.seller.memberId);
+        }
+        
+        // Lấy thông tin vehicle từ productId (nếu là vehicle)
+        if (selectedRequest.product.type === "Ô tô điện" || selectedRequest.product.type === "Vehicle") {
+          try {
+            // Thử lấy vehicle từ productId
+            vehicleData = await vehicleService.getVehicleById(selectedRequest.product.id);
+          } catch (error) {
+            console.warn("Could not fetch vehicle, productId might be postId:", error);
+            // Nếu productId là postId, lấy post rồi lấy vehicle từ post
+            try {
+              const post = await postService.getPostById(selectedRequest.product.id);
+              if (post.vehicleId) {
+                vehicleData = await vehicleService.getVehicleById(post.vehicleId);
+              }
+            } catch (postError) {
+              console.warn("Could not fetch vehicle from post:", postError);
+            }
+          }
+        }
+      } catch (error) {
+        console.warn("Error fetching vehicle/member data, continuing with available data:", error);
+      }
+      
+      // Gán đơn hàng cho staff và tạo contract
       await orderAssignmentService.assignOrderToStaff(
         selectedRequest.id,
         values.staffId,
@@ -224,8 +264,16 @@ const OrderRequestManagement = () => {
           sellerId: selectedRequest.seller.memberId,
           productId: selectedRequest.product.id,
           productName: selectedRequest.product.name,
+          productType: selectedRequest.product.type,
           offerPrice: selectedRequest.offerPrice,
+          originalPrice: selectedRequest.product.price,
           message: selectedRequest.message,
+          // Thông tin vehicle nếu có
+          vehicleId: vehicleData?.id || vehicleData?.vehicleId || null,
+          vehicleData: vehicleData || null,
+          // Thông tin buyer và seller
+          buyerData: buyerData || selectedRequest.buyer,
+          sellerData: sellerData || selectedRequest.seller,
         }
       );
 
@@ -245,7 +293,7 @@ const OrderRequestManagement = () => {
       );
 
       message.success(
-        `Đã gán đơn hàng cho ${staffList.find((s) => s.id === values.staffId)?.name}`
+        `Đã gán đơn hàng và tạo hợp đồng cho ${staffList.find((s) => s.id === values.staffId)?.name}`
       );
       setIsAssignModalVisible(false);
       setSelectedRequest(null);
