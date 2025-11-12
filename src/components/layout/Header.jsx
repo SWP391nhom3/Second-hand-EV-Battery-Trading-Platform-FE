@@ -196,6 +196,7 @@ export default function Header() {
 
   const navigation = [
     { name: 'Trang chủ', href: '/' },
+    { name: 'Sản phẩm', href: '/products' },
     { name: 'Đấu giá', href: '/auctions' },
     { name: 'Gói tin', href: '/packages' },
   ];

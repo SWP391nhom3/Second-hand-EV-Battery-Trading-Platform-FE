@@ -20,6 +20,9 @@ import EditPostPage from '@/pages/posts/EditPostPage'
 // Search Pages
 import Search from '@/pages/search/Search'
 
+// Product Pages
+import { ProductsPage } from '@/pages/products'
+
 // Auction Pages
 import AuctionsPage from '@/pages/auctions/AuctionsPage'
 
@@ -98,6 +101,10 @@ const router = createBrowserRouter([
   {
     path: '/search',
     element: <Search />
+  },
+  {
+    path: '/products',
+    element: <ProductsPage />
   },
   {
     path: '/auctions',
