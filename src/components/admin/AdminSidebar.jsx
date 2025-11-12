@@ -68,21 +68,21 @@ export default function AdminSidebar({ isOpen, onClose, isCollapsed, onToggleCol
       icon: FileText,
       path: '/admin/contract-templates'
     },
-    {
-      title: 'Tin nhắn',
-      icon: MessageSquare,
-      path: '/admin/messages'
-    },
-    {
-      title: 'Kiểm định',
-      icon: ShieldCheck,
-      path: '/admin/inspections'
-    },
-    {
-      title: 'Cài đặt',
-      icon: Settings,
-      path: '/admin/settings'
-    }
+    // {
+    //   title: 'Tin nhắn',
+    //   icon: MessageSquare,
+    //   path: '/admin/messages'
+    // },
+    // {
+    //   title: 'Kiểm định',
+    //   icon: ShieldCheck,
+    //   path: '/admin/inspections'
+    // },
+    // {
+    //   title: 'Cài đặt',
+    //   icon: Settings,
+    //   path: '/admin/settings'
+    // }
   ]
 
   const isActive = (path, exact = false) => {
