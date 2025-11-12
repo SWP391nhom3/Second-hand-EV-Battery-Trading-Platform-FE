@@ -87,15 +87,38 @@ export default function ContractTemplateManagement() {
       const response = await adminContractTemplateService.getContractTemplates(params)
       
       if (response && response.success) {
-        // Response structure: { success, message, data: [...], pageNumber, pageSize, totalCount, totalPages }
-        // Hoặc có thể là { success, message, data: [...] } (không có pagination)
-        const templatesArray = Array.isArray(response.data) ? response.data : []
+        // Response structure từ BE:
+        // {
+        //   success: true,
+        //   data: {
+        //     pageNumber: 1,
+        //     pageSize: 10,
+        //     totalCount: 3,
+        //     totalPages: 1,
+        //     data: [...] // mảng templates
+        //   }
+        // }
+        
+        const pagedData = response.data
+        
+        // Lấy mảng templates từ data.data
+        const templatesArray = Array.isArray(pagedData?.data) 
+          ? pagedData.data 
+          : (Array.isArray(response.data) ? response.data : [])
         
         // Smooth transition khi data thay đổi
         setTemplates(templatesArray)
         
-        // Set pagination nếu có
-        if (response.pageNumber !== undefined) {
+        // Set pagination từ data object
+        if (pagedData && typeof pagedData === 'object' && 'pageNumber' in pagedData) {
+          setPagination({
+            pageNumber: pagedData.pageNumber || 1,
+            pageSize: pagedData.pageSize || 10,
+            totalCount: pagedData.totalCount || templatesArray.length,
+            totalPages: pagedData.totalPages || 1
+          })
+        } else if (response.pageNumber !== undefined) {
+          // Fallback: nếu pagination ở root level (old format)
           setPagination({
             pageNumber: response.pageNumber || 1,
             pageSize: response.pageSize || 10,

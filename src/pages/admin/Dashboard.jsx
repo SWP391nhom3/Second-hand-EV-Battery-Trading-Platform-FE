@@ -1,16 +1,15 @@
 import { useState, useEffect } from 'react'
-import { Users, FileText, UserCheck, DollarSign, TrendingUp, AlertCircle } from 'lucide-react'
+import { Users, FileText, UserCheck, TrendingUp, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import StatsCard from '@/components/admin/dashboard/StatsCard'
 import PendingPostsWidget from '@/components/admin/dashboard/PendingPostsWidget'
 import RecentLeadsWidget from '@/components/admin/dashboard/RecentLeadsWidget'
-import RevenueChartWidget from '@/components/admin/dashboard/RevenueChartWidget'
+import PostsStatisticsWidget from '@/components/admin/dashboard/PostsStatisticsWidget'
 import ActivityTimeline from '@/components/admin/dashboard/ActivityTimeline'
 import adminDashboardService from '@/api/services/adminDashboard.service'
 import adminPostService from '@/api/services/adminPost.service'
 import adminUserService from '@/api/services/adminUser.service'
 import adminService from '@/api/services/admin.service'
-import { formatPrice } from '@/lib/utils'
 
 /**
  * AdminDashboard Component
@@ -158,14 +157,6 @@ export default function AdminDashboard() {
         changeType: 'neutral',
         icon: UserCheck,
         color: 'green'
-      },
-      {
-        label: 'Doanh thu',
-        value: formatPrice(data.revenue?.total || 0),
-        change: calculateChange(data.revenue?.total, data.revenue?.previousTotal),
-        changeType: getChangeType(data.revenue?.total, data.revenue?.previousTotal),
-        icon: DollarSign,
-        color: 'emerald'
       }
     ]
     setStats(newStats)
@@ -236,14 +227,6 @@ export default function AdminDashboard() {
         changeType: 'neutral',
         icon: UserCheck,
         color: 'blue'
-      },
-      {
-        label: 'Doanh thu',
-        value: 'Đang cập nhật',
-        change: null,
-        changeType: 'neutral',
-        icon: DollarSign,
-        color: 'emerald'
       }
     ]
     setStats(newStats)
@@ -340,7 +323,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {loading ? (
           // Loading skeleton
-          [...Array(6)].map((_, i) => (
+          [...Array(5)].map((_, i) => (
             <div key={i} className="bg-white rounded-lg border border-gray-200 p-6 animate-pulse">
               <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
               <div className="h-8 bg-gray-200 rounded w-1/3 mb-2"></div>
@@ -370,10 +353,8 @@ export default function AdminDashboard() {
 
         {/* Right Column */}
         <div className="space-y-6">
-          <RevenueChartWidget 
-            revenueData={dashboardData?.revenue}
+          <PostsStatisticsWidget 
             loading={loading}
-            chartData={dashboardData?.revenue?.chartData || []}
           />
           <ActivityTimeline 
             activities={recentActivities} 

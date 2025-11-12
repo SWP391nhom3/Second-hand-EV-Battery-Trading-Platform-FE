@@ -173,7 +173,15 @@ export default function ContractTemplateForm({ templateData, open, onOpenChange,
                 <FormItem>
                   <FormLabel>Danh mục</FormLabel>
                   <Select
-                    onValueChange={(value) => field.onChange(value === 'none' ? null : value)}
+                    onValueChange={(value) => {
+                      if (value === 'none' || value === '') {
+                        field.onChange(null)
+                      } else {
+                        // Convert string to number when selecting a category
+                        const numValue = parseInt(value, 10)
+                        field.onChange(isNaN(numValue) ? null : numValue)
+                      }
+                    }}
                     value={field.value ? String(field.value) : 'none'}
                     disabled={loadingCategories}
                   >
