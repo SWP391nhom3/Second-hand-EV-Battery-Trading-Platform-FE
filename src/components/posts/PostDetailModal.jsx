@@ -22,8 +22,7 @@ import {
   AlertCircle,
   CheckCircle,
   Info,
-  Zap,
-  MessageCircle
+  Zap
 } from 'lucide-react'
 import { getImageUrl } from '@/utils/imageHelper'
 import postsService from '@/api/services/posts.service'
@@ -31,7 +30,6 @@ import leadService from '@/api/services/lead.service'
 import authService from '@/api/services/auth.service'
 import { useToast } from '@/components/ui/use-toast'
 import { useNavigate } from 'react-router-dom'
-import PostChatDialog from '@/components/member/chat/PostChatDialog'
 
 /**
  * PostDetailModal Component
@@ -43,7 +41,6 @@ export default function PostDetailModal({ postId, isOpen, onClose }) {
   const [post, setPost] = useState(null)
   const [loading, setLoading] = useState(false)
   const [requesting, setRequesting] = useState(false)
-  const [isChatOpen, setIsChatOpen] = useState(false)
   const { toast } = useToast()
   const navigate = useNavigate()
 
@@ -141,20 +138,6 @@ export default function PostDetailModal({ postId, isOpen, onClose }) {
     }
   }
 
-  const handleOpenChat = () => {
-    if (!authService.isAuthenticated()) {
-      toast({
-        variant: 'destructive',
-        title: 'Yêu cầu đăng nhập',
-        description: 'Vui lòng đăng nhập để sử dụng tính năng chat với Staff.',
-      })
-      navigate('/auth/login', { state: { returnUrl: `/posts/${postId}` } })
-      onClose()
-      return
-    }
-
-    setIsChatOpen(true)
-  }
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -412,13 +395,6 @@ export default function PostDetailModal({ postId, isOpen, onClose }) {
 
           {/* Action Buttons */}
           <div className="flex flex-col gap-3">
-            <Button 
-              className="w-full"
-              onClick={handleOpenChat}
-            >
-              <MessageCircle className="mr-2 h-4 w-4" />
-              Chat với Staff
-            </Button>
             <div className="flex gap-3">
               <Button 
                 variant="outline" 
@@ -438,15 +414,6 @@ export default function PostDetailModal({ postId, isOpen, onClose }) {
         </div>
         </DialogContent>
       </Dialog>
-
-      <PostChatDialog
-        postId={post?.postId}
-        postTitle={post?.title}
-        open={isChatOpen}
-        onOpenChange={setIsChatOpen}
-        onRequestStaff={handleRequestStaff}
-        requestingStaff={requesting}
-      />
     </>
   )
 }

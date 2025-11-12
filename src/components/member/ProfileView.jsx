@@ -141,7 +141,7 @@ export default function ProfileView({ userData }) {
       </Card>
 
       {/* Statistics (if available) */}
-      {(userData.totalPosts !== undefined || userData.totalLeads !== undefined) && (
+      {/* {(userData.totalPosts !== undefined || userData.totalLeads !== undefined) && (
         <Card>
           <CardHeader>
             <CardTitle>Thống kê</CardTitle>
@@ -175,7 +175,7 @@ export default function ProfileView({ userData }) {
             </div>
           </CardContent>
         </Card>
-      )}
+      )} */}
     </div>
   )
 }

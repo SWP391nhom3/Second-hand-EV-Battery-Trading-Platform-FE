@@ -17,15 +17,25 @@ class NotificationService {
    * @returns {Promise<Object>} PagedResponse<NotificationResponse>
    */
   async getNotifications(params = {}) {
+    // Build query params, only include defined values
+    const queryParams = {
+      pageNumber: params.pageNumber || 1,
+      pageSize: params.pageSize || 10,
+      sortBy: params.sortBy || 'CreatedAt',
+      sortOrder: params.sortOrder || 'DESC'
+    }
+    
+    // Only add optional filters if they are defined
+    if (params.notificationType) {
+      queryParams.notificationType = params.notificationType
+    }
+    
+    if (params.isRead !== undefined && params.isRead !== null) {
+      queryParams.isRead = params.isRead
+    }
+    
     const response = await axiosInstance.get('/notifications', {
-      params: {
-        pageNumber: params.pageNumber || 1,
-        pageSize: params.pageSize || 10,
-        notificationType: params.notificationType,
-        isRead: params.isRead,
-        sortBy: params.sortBy || 'CreatedAt',
-        sortOrder: params.sortOrder || 'DESC'
-      }
+      params: queryParams
     })
     return response.data
   }

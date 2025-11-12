@@ -1,47 +1,20 @@
-import { useState, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useToast } from '@/components/ui/use-toast'
-import { bidCreateSchema } from '@/lib/validations/auction.validations'
-import bidService from '@/api/services/bid.service'
-import { Gavel, Loader2 } from 'lucide-react'
+import { MapPin, Calendar, TrendingUp, Loader2, Info } from 'lucide-react'
+import { getImageUrl } from '@/utils/imageHelper'
+import CountdownTimer from './CountdownTimer'
+import AuctionDetailModal from './AuctionDetailModal'
 
 /**
- * BidForm Component
- * Form đặt giá đấu
+ * AuctionList Component
+ * Danh sách đấu giá đang diễn ra
  */
-export default function BidForm({ postId, currentHighestBid, startingBid, onBidSuccess }) {
-  const { toast } = useToast()
-  const [loading, setLoading] = useState(false)
-  const [minBidAmount, setMinBidAmount] = useState(0)
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-    setValue
-  } = useForm({
-    resolver: zodResolver(bidCreateSchema),
-    defaultValues: {
-      postId: postId,
-      bidAmount: 0
-    }
-  })
-
-  useEffect(() => {
-    // Set minimum bid amount
-    const minAmount = currentHighestBid 
-      ? currentHighestBid + 10000 // Tăng tối thiểu 10,000 VND
-      : (startingBid || 0)
-    setMinBidAmount(minAmount)
-    setValue('bidAmount', minAmount)
-  }, [currentHighestBid, startingBid, setValue])
-
+export default function AuctionList({ posts, loading }) {
+  const [selectedPostId, setSelectedPostId] = useState(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
@@ -49,107 +22,156 @@ export default function BidForm({ postId, currentHighestBid, startingBid, onBidS
     }).format(price)
   }
 
-  const onSubmit = async (data) => {
-    try {
-      setLoading(true)
+  const handleViewDetails = (postId, e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setSelectedPostId(postId)
+    setIsModalOpen(true)
+  }
 
-      // Validate bid amount
-      if (data.bidAmount < minBidAmount) {
-        toast({
-          variant: 'destructive',
-          title: 'Lỗi',
-          description: `Giá đấu phải tối thiểu ${formatPrice(minBidAmount)}`
-        })
-        return
-      }
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setSelectedPostId(null)
+  }
 
-      const response = await bidService.createBid({
-        postId: postId,
-        bidAmount: data.bidAmount
-      })
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
 
-      if (response.success) {
-        toast({
-          title: 'Thành công',
-          description: 'Đặt giá đấu thành công!'
-        })
-        reset()
-        if (onBidSuccess) {
-          onBidSuccess(response.data)
-        }
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Lỗi',
-          description: response.message || 'Không thể đặt giá đấu'
-        })
-      }
-    } catch (error) {
-      console.error('Error creating bid:', error)
-      toast({
-        variant: 'destructive',
-        title: 'Lỗi',
-        description: error.response?.data?.message || 'Đã xảy ra lỗi khi đặt giá đấu'
-      })
-    } finally {
-      setLoading(false)
-    }
+  if (!posts || posts.length === 0) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        <p>Chưa có đấu giá nào đang diễn ra</p>
+      </div>
+    )
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Gavel className="h-5 w-5" />
-          Đặt giá đấu
-        </CardTitle>
-        <CardDescription>
-          {currentHighestBid ? (
-            <>Giá cao nhất hiện tại: <strong>{formatPrice(currentHighestBid)}</strong></>
-          ) : (
-            <>Giá khởi điểm: <strong>{formatPrice(startingBid || 0)}</strong></>
-          )}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="bidAmount">Giá đấu (VND)</Label>
-            <Input
-              id="bidAmount"
-              type="number"
-              step="1000"
-              min={minBidAmount}
-              placeholder={formatPrice(minBidAmount)}
-              {...register('bidAmount', {
-                valueAsNumber: true
-              })}
-              className={errors.bidAmount ? 'border-destructive' : ''}
-            />
-            {errors.bidAmount && (
-              <p className="text-sm text-destructive">{errors.bidAmount.message}</p>
-            )}
-            <p className="text-xs text-muted-foreground">
-              Giá đấu tối thiểu: <strong>{formatPrice(minBidAmount)}</strong>
-            </p>
-          </div>
+    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {posts.map((post) => {
+        // Support both postId and id for compatibility
+        const postId = post.postId || post.id
+        const imageUrl = post.imageUrls && post.imageUrls.length > 0 
+          ? getImageUrl(post.imageUrls[0]) 
+          : null
+        const isExpired = post.auctionEndTime && new Date(post.auctionEndTime) < new Date()
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Đang xử lý...
-              </>
-            ) : (
-              <>
-                <Gavel className="h-4 w-4 mr-2" />
-                Đặt giá
-              </>
-            )}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+        if (!postId) {
+          console.warn('Post missing postId and id:', post)
+          return null
+        }
+
+        return (
+          <Card key={postId} className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-orange-500/50 overflow-hidden flex flex-col">
+            <Link to={`/posts/${postId}`} className="block flex-1">
+              {/* Image Section */}
+              <div className="relative h-56 bg-muted overflow-hidden">
+                {imageUrl ? (
+                  <img
+                    src={imageUrl}
+                    alt={post.title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <TrendingUp className="h-24 w-24 text-muted-foreground" />
+                  </div>
+                )}
+
+                {/* Auction Badge */}
+                <div className="absolute top-3 left-3 z-10">
+                  <Badge variant="outline" className="bg-orange-500 text-white border-orange-600">
+                    <TrendingUp className="h-3 w-3 mr-1" />
+                    Đấu giá
+                  </Badge>
+                </div>
+
+                {/* Countdown Timer */}
+                {post.auctionEndTime && !isExpired && (
+                  <div className="absolute top-3 right-3 z-10 bg-white/95 backdrop-blur-sm px-2 py-1 rounded-lg shadow-lg">
+                    <CountdownTimer endTime={post.auctionEndTime} />
+                  </div>
+                )}
+
+                {isExpired && (
+                  <div className="absolute top-3 right-3 z-10">
+                    <Badge variant="destructive">Đã kết thúc</Badge>
+                  </div>
+                )}
+
+                {/* Price Badge */}
+                <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm px-3 py-2 rounded-lg shadow-lg">
+                  <p className="text-xs text-muted-foreground">Giá cao nhất</p>
+                  <p className="text-lg font-bold text-primary">
+                    {post.currentHighestBid 
+                      ? formatPrice(post.currentHighestBid)
+                      : formatPrice(post.startingBid || 0)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Content Section */}
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-bold line-clamp-2 group-hover:text-primary transition-colors">
+                  {post.title}
+                </CardTitle>
+                <div className="flex items-center gap-3 text-sm mt-2">
+                  <div className="flex items-center text-muted-foreground">
+                    <MapPin className="h-4 w-4 mr-1" />
+                    {post.location || 'Chưa cập nhật'}
+                  </div>
+                  <div className="flex items-center text-muted-foreground">
+                    <Calendar className="h-4 w-4 mr-1" />
+                    Năm {post.productionYear}
+                  </div>
+                </div>
+              </CardHeader>
+
+              <CardContent className="space-y-3">
+                {/* Auction Info */}
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="bg-orange-50 p-2 rounded">
+                    <p className="text-xs text-muted-foreground">Giá khởi điểm</p>
+                    <p className="font-semibold">{formatPrice(post.startingBid || 0)}</p>
+                  </div>
+                  {post.buyNowPrice && (
+                    <div className="bg-green-50 p-2 rounded">
+                      <p className="text-xs text-muted-foreground">Mua ngay</p>
+                      <p className="font-semibold text-green-700">{formatPrice(post.buyNowPrice)}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Link>
+            
+            <CardFooter className="pt-3 border-t">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={(e) => handleViewDetails(postId, e)}
+              >
+                <Info className="h-4 w-4 mr-2" />
+                Chi tiết
+              </Button>
+            </CardFooter>
+          </Card>
+        )
+      })}
+      
+      {/* Auction Detail Modal */}
+      {selectedPostId && (
+        <AuctionDetailModal
+          postId={selectedPostId}
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+        />
+      )}
+    </div>
   )
 }
+
 

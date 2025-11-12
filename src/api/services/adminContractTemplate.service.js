@@ -31,6 +31,10 @@ class AdminContractTemplateService {
             isActive: params.isActive
           }
         })
+        
+        // Response từ BE có cấu trúc: { success, data: { pageNumber, pageSize, totalCount, data: [...] } }
+        // Giữ nguyên structure để component xử lý
+        return response.data
       } catch (error) {
         // Fallback to existing endpoint if admin endpoint doesn't exist
         if (error.response?.status === 404) {
@@ -57,20 +61,25 @@ class AdminContractTemplateService {
             const start = (pageNumber - 1) * pageSize
             const end = start + pageSize
             const paginatedTemplates = templates.slice(start, end)
-            response.data = {
-              ...response.data,
-              data: paginatedTemplates,
-              pageNumber,
-              pageSize,
-              totalCount: templates.length,
-              totalPages: Math.ceil(templates.length / pageSize)
+            
+            // Transform to match new nested structure
+            return {
+              success: response.data.success,
+              message: response.data.message || 'Lấy danh sách mẫu hợp đồng thành công',
+              data: {
+                pageNumber,
+                pageSize,
+                totalCount: templates.length,
+                totalPages: Math.ceil(templates.length / pageSize),
+                data: paginatedTemplates
+              }
             }
           }
+          return response.data
         } else {
           throw error
         }
       }
-      return response.data
     } catch (error) {
       console.error('Error fetching contract templates:', error)
       throw error

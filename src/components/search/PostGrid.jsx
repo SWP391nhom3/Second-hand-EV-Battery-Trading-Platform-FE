@@ -16,10 +16,10 @@ export default function PostGrid({
 }) {
   if (loading) {
     return (
-      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 ${className}`}>
-        {[...Array(12)].map((_, index) => (
+      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 ${className}`}>
+        {[...Array(9)].map((_, index) => (
           <div key={index} className="space-y-4">
-            <Skeleton className="h-56 w-full" />
+            <Skeleton className="h-56 w-full rounded-lg" />
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-3/4" />
           </div>
@@ -40,7 +40,7 @@ export default function PostGrid({
   }
 
   return (
-    <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 ${className}`}>
+    <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 ${className}`}>
       {posts.map((post) => (
         <PostCard
           key={post.postId}

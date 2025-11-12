@@ -29,25 +29,48 @@ export default function Notifications() {
   const loadNotifications = async (page = 1) => {
     try {
       setLoading(true)
-      const response = await notificationService.getNotifications({
+      
+      // Convert filter values to match backend expectations
+      const apiParams = {
         pageNumber: page,
         pageSize: 20,
-        ...filters
-      })
+        notificationType: filters.notificationType || undefined,
+        // Convert isRead filter: null = all, true = read, false = unread
+        isRead: filters.isRead === null ? undefined : filters.isRead
+      }
 
+      const response = await notificationService.getNotifications(apiParams)
+
+      // PagedResponse structure: { success, message, data: Array<T>, pageNumber, pageSize, totalCount, ... }
+      // data is directly an array, not an object with items property
       if (response.success && response.data) {
-        const newNotifications = response.data.items || []
+        const newNotifications = Array.isArray(response.data) ? response.data : []
+        
         if (page === 1) {
           setNotifications(newNotifications)
         } else {
           setNotifications((prev) => [...prev, ...newNotifications])
         }
-        setHasMore(newNotifications.length === 20)
+        
+        // Check if there are more pages
+        const hasMorePages = response.hasNext || (newNotifications.length === 20)
+        setHasMore(hasMorePages)
         setPageNumber(page)
+        
+        console.log('Notifications loaded:', {
+          count: newNotifications.length,
+          page,
+          totalCount: response.totalCount,
+          hasMore: hasMorePages
+        })
+      } else {
+        console.error('Failed to load notifications:', response)
+        toast.error(response.message || 'Không thể tải danh sách thông báo')
       }
     } catch (error) {
       console.error('Error loading notifications:', error)
-      toast.error('Không thể tải danh sách thông báo')
+      console.error('Error response:', error.response?.data)
+      toast.error(error.response?.data?.message || 'Không thể tải danh sách thông báo')
     } finally {
       setLoading(false)
     }
@@ -119,10 +142,20 @@ export default function Notifications() {
   }
 
   const handleFilterChange = (key, value) => {
-    setFilters((prev) => ({
-      ...prev,
-      [key]: value === 'all' ? null : value
-    }))
+    setFilters((prev) => {
+      const newFilters = { ...prev }
+      
+      if (value === 'all') {
+        newFilters[key] = null
+      } else if (key === 'isRead') {
+        // Convert "read" -> true, "unread" -> false
+        newFilters[key] = value === 'read' ? true : value === 'unread' ? false : null
+      } else {
+        newFilters[key] = value
+      }
+      
+      return newFilters
+    })
     setPageNumber(1)
   }
 

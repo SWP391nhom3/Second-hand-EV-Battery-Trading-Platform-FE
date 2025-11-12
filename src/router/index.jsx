@@ -16,12 +16,10 @@ import CreatePostPage from '@/pages/posts/CreatePostPage'
 import MyPostsPage from '@/pages/posts/MyPostsPage'
 import PostDetailPage from '@/pages/posts/PostDetailPage'
 import EditPostPage from '@/pages/posts/EditPostPage'
+import PostsPage from '@/pages/posts/PostsPage'
 
 // Search Pages
 import Search from '@/pages/search/Search'
-
-// Product Pages
-import { ProductsPage } from '@/pages/products'
 
 // Auction Pages
 import AuctionsPage from '@/pages/auctions/AuctionsPage'
@@ -103,12 +101,12 @@ const router = createBrowserRouter([
     element: <Search />
   },
   {
-    path: '/products',
-    element: <ProductsPage />
-  },
-  {
     path: '/auctions',
     element: <AuctionsPage />
+  },
+  {
+    path: '/posts',
+    element: <PostsPage />
   },
 
   // ========================================

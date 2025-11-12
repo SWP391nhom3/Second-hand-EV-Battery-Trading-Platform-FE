@@ -32,11 +32,18 @@ export const contractTemplateSearchSchema = z.object({
     .nullable(),
 
   categoryId: z
-    .number({
-      invalid_type_error: 'ID danh mục phải là số'
+    .union([
+      z.string().transform((val) => {
+        if (val === '' || val === 'none' || val === null || val === undefined) return null
+        const num = parseInt(val, 10)
+        return isNaN(num) ? null : num
+      }),
+      z.number().int('ID danh mục phải là số nguyên').positive('ID danh mục phải lớn hơn 0'),
+      z.null()
+    ])
+    .refine((val) => val === null || (typeof val === 'number' && val > 0), {
+      message: 'ID danh mục phải là số nguyên dương'
     })
-    .int('ID danh mục phải là số nguyên')
-    .positive('ID danh mục phải lớn hơn 0')
     .optional()
     .nullable(),
 
@@ -61,11 +68,18 @@ export const contractTemplateCreateSchema = z.object({
     .max(50000, 'Nội dung mẫu hợp đồng không được vượt quá 50000 ký tự'),
 
   categoryId: z
-    .number({
-      invalid_type_error: 'ID danh mục phải là số'
+    .union([
+      z.string().transform((val) => {
+        if (val === '' || val === 'none' || val === null || val === undefined) return null
+        const num = parseInt(val, 10)
+        return isNaN(num) ? null : num
+      }),
+      z.number().int('ID danh mục phải là số nguyên').positive('ID danh mục phải lớn hơn 0'),
+      z.null()
+    ])
+    .refine((val) => val === null || (typeof val === 'number' && val > 0), {
+      message: 'ID danh mục phải là số nguyên dương'
     })
-    .int('ID danh mục phải là số nguyên')
-    .positive('ID danh mục phải lớn hơn 0')
     .optional()
     .nullable(),
 

@@ -196,7 +196,7 @@ export default function Header() {
 
   const navigation = [
     { name: 'Trang chủ', href: '/' },
-    { name: 'Sản phẩm', href: '/products' },
+    { name: 'Sản phẩm', href: '/posts' },
     { name: 'Đấu giá', href: '/auctions' },
     { name: 'Gói tin', href: '/packages' },
   ];
@@ -415,12 +415,12 @@ export default function Header() {
                         Tin đăng của tôi
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
+                    {/* <DropdownMenuItem asChild>
                       <Link to="/transactions" className="cursor-pointer">
                         <Receipt className="mr-2 h-4 w-4" />
                         Lịch sử giao dịch
                       </Link>
-                    </DropdownMenuItem>
+                    </DropdownMenuItem> */}
                     <DropdownMenuItem asChild>
                       <Link to="/payment-history" className="cursor-pointer">
                         <CreditCard className="mr-2 h-4 w-4" />
@@ -563,14 +563,14 @@ export default function Header() {
                       <ShoppingBag className="h-4 w-4" />
                       Tin đăng của tôi
                     </Link>
-                    <Link
+                    {/* <Link
                       to="/transactions"
                       className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary px-3 py-2 rounded-md hover:bg-muted"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       <Receipt className="h-4 w-4" />
                       Lịch sử giao dịch
-                    </Link>
+                    </Link> */}
                     <Link
                       to="/payment-history"
                       className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary px-3 py-2 rounded-md hover:bg-muted"

@@ -116,8 +116,8 @@ export default function Home() {
             pageNumber: 1,
             pageSize: 6,
             auctionOnly: true,
-            sortBy: 'CreatedAt',
-            sortDirection: 'DESC'
+            sortBy: 'createdAt',
+            sortDirection: 'desc'
           })
         ]);
 

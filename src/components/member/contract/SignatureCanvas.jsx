@@ -5,9 +5,18 @@ import { useRef, useEffect, forwardRef, useImperativeHandle } from 'react'
  * Component để vẽ chữ ký trên canvas
  */
 const SignatureCanvas = forwardRef(({ onSignatureChange, className = '' }, ref) => {
+  const log = (...args) => {
+    // eslint-disable-next-line no-console
+    console.log('[SignatureCanvas]', ...args)
+  }
   const canvasRef = useRef(null)
   const isDrawingRef = useRef(false)
   const lastPointRef = useRef({ x: 0, y: 0 })
+  const signatureCallbackRef = useRef(onSignatureChange)
+
+  useEffect(() => {
+    signatureCallbackRef.current = onSignatureChange
+  }, [onSignatureChange])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -16,18 +25,38 @@ const SignatureCanvas = forwardRef(({ onSignatureChange, className = '' }, ref) 
     // Set canvas size based on container
     const setCanvasSize = () => {
       const rect = canvas.getBoundingClientRect()
-      canvas.width = rect.width
-      canvas.height = rect.height
+      
+      // Only set size if rect is valid
+      if (rect.width > 0 && rect.height > 0) {
+        // Set canvas size to match container
+        canvas.width = rect.width
+        canvas.height = rect.height
 
-      const ctx = canvas.getContext('2d')
-      ctx.strokeStyle = '#000000'
-      ctx.lineWidth = 2
-      ctx.lineCap = 'round'
-      ctx.lineJoin = 'round'
+        log('setCanvasSize', {
+          width: rect.width,
+          height: rect.height
+        })
+
+        // Get context and set drawing properties
+        const ctx = canvas.getContext('2d')
+        ctx.strokeStyle = '#000000'
+        ctx.lineWidth = 2
+        ctx.lineCap = 'round'
+        ctx.lineJoin = 'round'
+      }
     }
 
-    setCanvasSize()
+    // Initialize canvas size - use requestAnimationFrame to ensure DOM is ready
+    const initCanvas = () => {
+      requestAnimationFrame(() => {
+        setCanvasSize()
+      })
+    }
+    
+    initCanvas()
+    log('initCanvas')
 
+    // Get context for drawing
     const ctx = canvas.getContext('2d')
     ctx.strokeStyle = '#000000'
     ctx.lineWidth = 2
@@ -36,19 +65,19 @@ const SignatureCanvas = forwardRef(({ onSignatureChange, className = '' }, ref) 
 
     const getPointFromEvent = (e) => {
       const rect = canvas.getBoundingClientRect()
+      
+      let x, y
       if (e.touches && e.touches.length > 0) {
         // Touch event
-        return {
-          x: e.touches[0].clientX - rect.left,
-          y: e.touches[0].clientY - rect.top
-        }
+        x = e.touches[0].clientX - rect.left
+        y = e.touches[0].clientY - rect.top
       } else {
         // Mouse event
-        return {
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top
-        }
+        x = e.clientX - rect.left
+        y = e.clientY - rect.top
       }
+      
+      return { x, y }
     }
 
     const startDrawing = (e) => {
@@ -56,23 +85,35 @@ const SignatureCanvas = forwardRef(({ onSignatureChange, className = '' }, ref) 
       const point = getPointFromEvent(e)
       isDrawingRef.current = true
       lastPointRef.current = point
+      log('startDrawing', point)
     }
 
     const draw = (e) => {
       e.preventDefault()
       if (!isDrawingRef.current) return
 
+      log('draw event')
+
+      // Get fresh context in case canvas was resized
+      const currentCtx = canvas.getContext('2d')
+      currentCtx.strokeStyle = '#000000'
+      currentCtx.lineWidth = 2
+      currentCtx.lineCap = 'round'
+      currentCtx.lineJoin = 'round'
+
       const point = getPointFromEvent(e)
-      ctx.beginPath()
-      ctx.moveTo(lastPointRef.current.x, lastPointRef.current.y)
-      ctx.lineTo(point.x, point.y)
-      ctx.stroke()
+      currentCtx.beginPath()
+      currentCtx.moveTo(lastPointRef.current.x, lastPointRef.current.y)
+      currentCtx.lineTo(point.x, point.y)
+      currentCtx.stroke()
 
       lastPointRef.current = point
+      log('draw line to', point)
 
       // Notify parent of signature change
-      if (onSignatureChange) {
-        onSignatureChange(canvas.toDataURL('image/png'))
+      if (signatureCallbackRef.current) {
+        signatureCallbackRef.current(canvas.toDataURL('image/png'))
+        log('signature updated')
       }
     }
 
@@ -80,6 +121,7 @@ const SignatureCanvas = forwardRef(({ onSignatureChange, className = '' }, ref) 
       e.preventDefault()
       if (isDrawingRef.current) {
         isDrawingRef.current = false
+        log('stopDrawing')
       }
     }
 
@@ -112,16 +154,17 @@ const SignatureCanvas = forwardRef(({ onSignatureChange, className = '' }, ref) 
       canvas.removeEventListener('touchcancel', stopDrawing)
       window.removeEventListener('resize', handleResize)
     }
-  }, [onSignatureChange])
+  }, [])
 
   const clear = () => {
     const canvas = canvasRef.current
     if (canvas) {
       const ctx = canvas.getContext('2d')
       ctx.clearRect(0, 0, canvas.width, canvas.height)
-      if (onSignatureChange) {
-        onSignatureChange('')
+      if (signatureCallbackRef.current) {
+        signatureCallbackRef.current('')
       }
+      log('clear signature')
     }
   }
 
@@ -156,7 +199,9 @@ const SignatureCanvas = forwardRef(({ onSignatureChange, className = '' }, ref) 
     <canvas
       ref={canvasRef}
       className={`w-full h-48 border rounded bg-white cursor-crosshair ${className}`}
-      style={{ touchAction: 'none' }}
+      style={{ touchAction: 'none', display: 'block' }}
+      width={400}
+      height={192}
     />
   )
 })

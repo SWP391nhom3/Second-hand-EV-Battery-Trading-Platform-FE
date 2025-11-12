@@ -51,9 +51,74 @@ export default function Search() {
       auctionOnly: searchParams.get('auctionOnly') === 'true' ? true : searchParams.get('auctionOnly') === 'false' ? false : null,
       pageNumber: searchParams.get('pageNumber') ? parseInt(searchParams.get('pageNumber'), 10) : 1,
       pageSize: searchParams.get('pageSize') ? parseInt(searchParams.get('pageSize'), 10) : 12,
-      sortBy: searchParams.get('sortBy') || 'createdAt',
+      sortBy: searchParams.get('sortBy') || 'priorityLevel',
       sortDirection: searchParams.get('sortDirection') || 'desc'
     }
+  }
+
+  const sortPostsForDisplay = (items, sortBy, sortDirection) => {
+    if (!Array.isArray(items)) {
+      return []
+    }
+
+    const direction = (sortDirection || 'desc').toString().toLowerCase() === 'asc' ? 1 : -1
+    const normalizedSortBy = (sortBy || 'priorityLevel').toString().toLowerCase()
+
+    const getPriority = (post) => {
+      const value = Number(post?.priorityLevel)
+      return Number.isFinite(value) ? value : 0
+    }
+
+    const getDate = (post) => {
+      const dateValue = post?.approvedAt || post?.createdAt || post?.updatedAt
+      const timestamp = dateValue ? new Date(dateValue).getTime() : 0
+      return Number.isFinite(timestamp) ? timestamp : 0
+    }
+
+    const getPrice = (post) => {
+      const value = Number(post?.price)
+      return Number.isFinite(value) ? value : 0
+    }
+
+    const compareDates = (a, b) => {
+      const diff = getDate(a) - getDate(b)
+      if (diff !== 0) {
+        return diff * direction
+      }
+      return (getPriority(a) - getPriority(b)) * direction
+    }
+
+    const sorted = [...items].sort((a, b) => {
+      switch (normalizedSortBy) {
+        case 'prioritylevel': {
+          const priorityDiff = getPriority(a) - getPriority(b)
+          if (priorityDiff !== 0) {
+            return priorityDiff * direction
+          }
+          return compareDates(a, b)
+        }
+        case 'price': {
+          const priceDiff = getPrice(a) - getPrice(b)
+          if (priceDiff !== 0) {
+            return priceDiff * direction
+          }
+          return compareDates(a, b)
+        }
+        case 'approvedat':
+        case 'createdat': {
+          const dateDiff = getDate(a) - getDate(b)
+          if (dateDiff !== 0) {
+            return dateDiff * direction
+          }
+          return (getPriority(a) - getPriority(b)) * direction
+        }
+        default: {
+          return compareDates(a, b)
+        }
+      }
+    })
+
+    return sorted
   }
 
   // Fetch posts
@@ -84,9 +149,14 @@ export default function Search() {
 
       // PagedResponse structure: { success, data: [...], pageNumber, pageSize, totalCount, totalPages }
       if (response.success && response.data) {
-        // response.data is already an array, not an object with items property
-        const postsData = Array.isArray(response.data) ? response.data : [];
-        setPosts(postsData);
+        // response.data may be array or an object with items property
+        const postsData = Array.isArray(response.data)
+          ? response.data
+          : Array.isArray(response.data?.items)
+            ? response.data.items
+            : [];
+        const sortedPosts = sortPostsForDisplay(postsData, filters.sortBy, filters.sortDirection);
+        setPosts(sortedPosts);
         setTotalCount(response.totalCount || 0);
         setCurrentPage(response.pageNumber || 1);
         setTotalPages(response.totalPages || 1);
@@ -174,7 +244,7 @@ export default function Search() {
   }
 
   const filters = getFiltersFromParams()
-  const sortValue = `${filters.sortBy}:${filters.sortDirection}`
+  const sortValue = `${filters.sortBy || 'priorityLevel'}:${filters.sortDirection || 'desc'}`
 
   return (
     <div className="min-h-screen bg-background">

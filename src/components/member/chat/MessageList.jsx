@@ -15,7 +15,17 @@ export default function MessageList({
   const listRef = useRef(null)
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const listElement = listRef.current
+
+    if (!listElement) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+      return
+    }
+
+    listElement.scrollTo({
+      top: listElement.scrollHeight,
+      behavior: 'smooth'
+    })
   }
 
   useEffect(() => {

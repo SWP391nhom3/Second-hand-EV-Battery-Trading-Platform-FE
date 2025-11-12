@@ -19,8 +19,8 @@ class PostsService {
    * @param {string} params.brand - Thương hiệu
    * @param {number} params.minSoh - SOH tối thiểu
    * @param {number} params.maxSoh - SOH tối đa
-   * @param {string} params.sortBy - Sắp xếp theo (Price, CreatedAt, SOH)
-   * @param {string} params.sortDirection - Chiều sắp xếp (ASC, DESC)
+   * @param {string} params.sortBy - Sắp xếp theo (priorityLevel, price, createdAt)
+   * @param {string} params.sortDirection - Chiều sắp xếp (asc, desc)
    * @returns {Promise<Object>} PagedResponse<PostResponse>
    */
   async searchPosts(params = {}) {
@@ -38,8 +38,8 @@ class PostsService {
         minSoh: params.minSoh,
         maxSoh: params.maxSoh,
         auctionOnly: params.auctionOnly,
-        sortBy: params.sortBy || 'CreatedAt',
-        sortDirection: params.sortDirection || 'DESC'
+        sortBy: params.sortBy || 'priorityLevel',
+        sortDirection: params.sortDirection || 'desc'
       }
     })
     return response.data
@@ -57,8 +57,8 @@ class PostsService {
         pageNumber: 1,
         pageSize: limit,
         packageType: packageType,
-        sortBy: 'CreatedAt',
-        sortDirection: 'DESC'
+        sortBy: 'priorityLevel',
+        sortDirection: 'desc'
       }
     })
     return response.data

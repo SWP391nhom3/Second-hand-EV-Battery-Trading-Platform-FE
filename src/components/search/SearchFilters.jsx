@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Filter, X } from 'lucide-react'
+import { Filter, X, ChevronDown, ChevronUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -10,12 +10,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import { Badge } from '@/components/ui/badge'
 
 /**
  * SearchFilters Component
- * Component để lọc sản phẩm theo các tiêu chí
+ * Component để lọc sản phẩm theo các tiêu chí - Thiết kế compact và hiện đại
  */
 export default function SearchFilters({ filters, onFiltersChange, onReset }) {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -33,56 +34,72 @@ export default function SearchFilters({ filters, onFiltersChange, onReset }) {
     }
   }
 
-  const hasActiveFilters = Object.values(filters).some(
-    (value) => value !== null && value !== undefined && value !== ''
-  )
+  const activeFiltersCount = Object.values(filters).filter(
+    (v) => v !== null && v !== undefined && v !== '' && v !== 'all'
+  ).length
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
+    <Card className="sticky top-4 border bg-card shadow-sm">
+      <CardHeader className="pb-3 px-4 pt-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            <CardTitle className="text-lg">Bộ lọc</CardTitle>
-            {hasActiveFilters && (
-              <span className="text-xs text-muted-foreground">
-                ({Object.values(filters).filter(v => v !== null && v !== undefined && v !== '').length} bộ lọc đang áp dụng)
-              </span>
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-semibold">Bộ lọc</span>
+            {activeFiltersCount > 0 && (
+              <Badge variant="secondary" className="h-5 px-1.5 text-xs">
+                {activeFiltersCount}
+              </Badge>
             )}
           </div>
-          <div className="flex items-center gap-2">
-            {hasActiveFilters && (
-              <Button variant="ghost" size="sm" onClick={handleReset}>
-                <X className="h-4 w-4 mr-1" />
-                Xóa bộ lọc
+          <div className="flex items-center gap-1">
+            {activeFiltersCount > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleReset}
+                className="h-7 px-2 text-xs hover:bg-destructive/10 hover:text-destructive"
+              >
+                <X className="h-3 w-3 mr-1" />
+                Xóa
               </Button>
             )}
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
+              className="h-7 px-2 text-xs"
             >
-              {isExpanded ? 'Thu gọn' : 'Mở rộng'}
+              {isExpanded ? (
+                <>
+                  Thu gọn
+                  <ChevronUp className="h-3 w-3 ml-1" />
+                </>
+              ) : (
+                <>
+                  Mở rộng
+                  <ChevronDown className="h-3 w-3 ml-1" />
+                </>
+              )}
             </Button>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="px-4 pb-4 space-y-3">
         {/* Basic Filters - Always visible */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="space-y-3">
           {/* Category */}
-          <div className="space-y-2">
-            <Label>Danh mục</Label>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium text-muted-foreground">Danh mục</Label>
             <Select
-              value={filters.categoryId?.toString() || ''}
-              onValueChange={(value) => handleFilterChange('categoryId', value ? parseInt(value, 10) : null)}
+              value={filters.categoryId?.toString() || 'all'}
+              onValueChange={(value) => handleFilterChange('categoryId', value === 'all' ? null : parseInt(value, 10))}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Tất cả danh mục" />
+              <SelectTrigger className="h-9 text-sm">
+                <SelectValue placeholder="Tất cả" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Tất cả danh mục</SelectItem>
+                <SelectItem value="all">Tất cả danh mục</SelectItem>
                 <SelectItem value="1">Xe điện</SelectItem>
                 <SelectItem value="2">Pin</SelectItem>
               </SelectContent>
@@ -90,22 +107,24 @@ export default function SearchFilters({ filters, onFiltersChange, onReset }) {
           </div>
 
           {/* Brand */}
-          <div className="space-y-2">
-            <Label>Thương hiệu</Label>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium text-muted-foreground">Thương hiệu</Label>
             <Input
-              placeholder="Nhập thương hiệu"
+              placeholder="VD: VinFast, Tesla..."
               value={filters.brand || ''}
               onChange={(e) => handleFilterChange('brand', e.target.value || null)}
+              className="h-9 text-sm"
             />
           </div>
 
           {/* Model */}
-          <div className="space-y-2">
-            <Label>Model</Label>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium text-muted-foreground">Model</Label>
             <Input
               placeholder="Nhập model"
               value={filters.model || ''}
               onChange={(e) => handleFilterChange('model', e.target.value || null)}
+              className="h-9 text-sm"
             />
           </div>
         </div>
@@ -113,122 +132,122 @@ export default function SearchFilters({ filters, onFiltersChange, onReset }) {
         {/* Expanded Filters */}
         {isExpanded && (
           <>
-            <Separator />
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Separator className="my-3" />
+            
+            <div className="space-y-3">
               {/* Location */}
-              <div className="space-y-2">
-                <Label>Địa điểm</Label>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-muted-foreground">Địa điểm</Label>
                 <Input
-                  placeholder="Nhập địa điểm"
+                  placeholder="VD: Hà Nội, TP.HCM..."
                   value={filters.location || ''}
                   onChange={(e) => handleFilterChange('location', e.target.value || null)}
+                  className="h-9 text-sm"
                 />
               </div>
 
               {/* Price Range */}
-              <div className="space-y-2">
-                <Label>Giá tối thiểu (VNĐ)</Label>
-                <Input
-                  type="number"
-                  placeholder="0"
-                  value={filters.minPrice || ''}
-                  onChange={(e) => handleFilterChange('minPrice', e.target.value ? parseFloat(e.target.value) : null)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Giá tối đa (VNĐ)</Label>
-                <Input
-                  type="number"
-                  placeholder="Không giới hạn"
-                  value={filters.maxPrice || ''}
-                  onChange={(e) => handleFilterChange('maxPrice', e.target.value ? parseFloat(e.target.value) : null)}
-                />
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-muted-foreground">Khoảng giá (VNĐ)</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    type="number"
+                    placeholder="Từ"
+                    value={filters.minPrice || ''}
+                    onChange={(e) => handleFilterChange('minPrice', e.target.value ? parseFloat(e.target.value) : null)}
+                    className="h-9 text-sm"
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Đến"
+                    value={filters.maxPrice || ''}
+                    onChange={(e) => handleFilterChange('maxPrice', e.target.value ? parseFloat(e.target.value) : null)}
+                    className="h-9 text-sm"
+                  />
+                </div>
               </div>
 
               {/* Production Year */}
-              <div className="space-y-2">
-                <Label>Năm sản xuất từ</Label>
-                <Input
-                  type="number"
-                  placeholder="1900"
-                  min="1900"
-                  max="2100"
-                  value={filters.minProductionYear || ''}
-                  onChange={(e) => handleFilterChange('minProductionYear', e.target.value ? parseInt(e.target.value, 10) : null)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Năm sản xuất đến</Label>
-                <Input
-                  type="number"
-                  placeholder="2100"
-                  min="1900"
-                  max="2100"
-                  value={filters.maxProductionYear || ''}
-                  onChange={(e) => handleFilterChange('maxProductionYear', e.target.value ? parseInt(e.target.value, 10) : null)}
-                />
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-muted-foreground">Năm sản xuất</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    type="number"
+                    placeholder="Từ"
+                    min="1900"
+                    max="2100"
+                    value={filters.minProductionYear || ''}
+                    onChange={(e) => handleFilterChange('minProductionYear', e.target.value ? parseInt(e.target.value, 10) : null)}
+                    className="h-9 text-sm"
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Đến"
+                    min="1900"
+                    max="2100"
+                    value={filters.maxProductionYear || ''}
+                    onChange={(e) => handleFilterChange('maxProductionYear', e.target.value ? parseInt(e.target.value, 10) : null)}
+                    className="h-9 text-sm"
+                  />
+                </div>
               </div>
 
               {/* Battery Capacity */}
-              <div className="space-y-2">
-                <Label>Dung lượng pin tối thiểu (kWh)</Label>
-                <Input
-                  type="number"
-                  placeholder="0"
-                  value={filters.minBatteryCapacity || ''}
-                  onChange={(e) => handleFilterChange('minBatteryCapacity', e.target.value ? parseFloat(e.target.value) : null)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Dung lượng pin tối đa (kWh)</Label>
-                <Input
-                  type="number"
-                  placeholder="Không giới hạn"
-                  value={filters.maxBatteryCapacity || ''}
-                  onChange={(e) => handleFilterChange('maxBatteryCapacity', e.target.value ? parseFloat(e.target.value) : null)}
-                />
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-muted-foreground">Dung lượng pin (kWh)</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    type="number"
+                    placeholder="Từ"
+                    value={filters.minBatteryCapacity || ''}
+                    onChange={(e) => handleFilterChange('minBatteryCapacity', e.target.value ? parseFloat(e.target.value) : null)}
+                    className="h-9 text-sm"
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Đến"
+                    value={filters.maxBatteryCapacity || ''}
+                    onChange={(e) => handleFilterChange('maxBatteryCapacity', e.target.value ? parseFloat(e.target.value) : null)}
+                    className="h-9 text-sm"
+                  />
+                </div>
               </div>
 
               {/* Mileage (only for vehicles) */}
               {filters.categoryId === 1 && (
-                <>
-                  <div className="space-y-2">
-                    <Label>Số km tối thiểu</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium text-muted-foreground">Số km đã đi</Label>
+                  <div className="grid grid-cols-2 gap-2">
                     <Input
                       type="number"
-                      placeholder="0"
+                      placeholder="Từ"
                       value={filters.minMileage || ''}
                       onChange={(e) => handleFilterChange('minMileage', e.target.value ? parseInt(e.target.value, 10) : null)}
+                      className="h-9 text-sm"
                     />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Số km tối đa</Label>
                     <Input
                       type="number"
-                      placeholder="Không giới hạn"
+                      placeholder="Đến"
                       value={filters.maxMileage || ''}
                       onChange={(e) => handleFilterChange('maxMileage', e.target.value ? parseInt(e.target.value, 10) : null)}
+                      className="h-9 text-sm"
                     />
                   </div>
-                </>
+                </div>
               )}
 
               {/* Condition */}
-              <div className="space-y-2">
-                <Label>Tình trạng</Label>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-muted-foreground">Tình trạng</Label>
                 <Select
-                  value={filters.condition || ''}
-                  onValueChange={(value) => handleFilterChange('condition', value || null)}
+                  value={filters.condition || 'all'}
+                  onValueChange={(value) => handleFilterChange('condition', value === 'all' ? null : value)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-9 text-sm">
                     <SelectValue placeholder="Tất cả" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Tất cả</SelectItem>
+                    <SelectItem value="all">Tất cả</SelectItem>
                     <SelectItem value="Mới">Mới</SelectItem>
                     <SelectItem value="Cũ">Cũ</SelectItem>
                     <SelectItem value="Đã qua sử dụng">Đã qua sử dụng</SelectItem>
@@ -237,17 +256,17 @@ export default function SearchFilters({ filters, onFiltersChange, onReset }) {
               </div>
 
               {/* Auction Only */}
-              <div className="space-y-2">
-                <Label>Loại đăng</Label>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-muted-foreground">Loại đăng</Label>
                 <Select
-                  value={filters.auctionOnly === true ? 'true' : filters.auctionOnly === false ? 'false' : ''}
+                  value={filters.auctionOnly === true ? 'true' : filters.auctionOnly === false ? 'false' : 'all'}
                   onValueChange={(value) => handleFilterChange('auctionOnly', value === 'true' ? true : value === 'false' ? false : null)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-9 text-sm">
                     <SelectValue placeholder="Tất cả" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Tất cả</SelectItem>
+                    <SelectItem value="all">Tất cả</SelectItem>
                     <SelectItem value="false">Mua bán thường</SelectItem>
                     <SelectItem value="true">Chỉ đấu giá</SelectItem>
                   </SelectContent>
@@ -260,5 +279,3 @@ export default function SearchFilters({ filters, onFiltersChange, onReset }) {
     </Card>
   )
 }
-
-

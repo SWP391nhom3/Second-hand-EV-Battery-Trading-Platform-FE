@@ -37,6 +37,7 @@ import { getImageUrl } from '@/utils/imageHelper'
 import AuctionDetail from '@/components/auction/AuctionDetail'
 import FavoriteButton from '@/components/member/favorite/FavoriteButton'
 import PostChatDialog from '@/components/member/chat/PostChatDialog'
+import SellerChatDialog from '@/components/member/chat/SellerChatDialog'
 
 /**
  * Trang chi tiết bài đăng
@@ -52,6 +53,7 @@ export default function PostDetailPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [requesting, setRequesting] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)
+  const [isSellerChatOpen, setIsSellerChatOpen] = useState(false)
 
   useEffect(() => {
     fetchPostDetail()
@@ -193,6 +195,20 @@ export default function PostDetailPage() {
     setIsChatOpen(true)
   }
 
+  const handleOpenSellerChat = () => {
+    if (!authService.isAuthenticated()) {
+      toast({
+        variant: 'destructive',
+        title: 'Yêu cầu đăng nhập',
+        description: 'Vui lòng đăng nhập để chat với người bán.'
+      })
+      navigate('/auth/login', { state: { returnUrl: `/posts/${id}` } })
+      return
+    }
+
+    setIsSellerChatOpen(true)
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -234,6 +250,14 @@ export default function PostDetailPage() {
   const images = post.imageUrls || []
   const currentImage = images.length > 0 ? getImageUrl(images[currentImageIndex]) : null
   const seller = post.seller || post.user
+  
+  // Cho phép chat với người bán nếu là Pin (battery)
+  // Yêu cầu: chỉ Pin mới có tính năng chat trực tiếp với người bán
+  // Kiểm tra cả categoryId === 2 và categoryName chứa "Pin" để đảm bảo
+  const canChatWithSeller = isBattery || (post.categoryName && post.categoryName.toLowerCase().includes('pin'))
+  
+  // Lấy tên người bán từ nhiều nguồn
+  const sellerName = post.sellerName || seller?.fullName || seller?.sellerName || 'Người bán'
 
   return (
     <div className="min-h-screen bg-background">
@@ -481,35 +505,50 @@ export default function PostDetailPage() {
               <CardContent className="space-y-4">
                 {/* Chat & Support Buttons */}
                 <div className="space-y-2">
-                  <Button
-                    className="w-full"
-                    size="lg"
-                    onClick={handleOpenChat}
-                  >
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                    Chat với Staff
-                  </Button>
-
-                  {isVehicle && (
-                    <Button 
-                      variant="outline"
+                  {/* Chat với người bán - chỉ hiển thị cho Pin (battery) */}
+                  {canChatWithSeller && (
+                    <Button
                       className="w-full"
                       size="lg"
-                      onClick={handleRequestStaff}
-                      disabled={requesting}
+                      onClick={handleOpenSellerChat}
                     >
-                      {requesting ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Đang gửi yêu cầu...
-                        </>
-                      ) : (
-                        <>
-                          <User className="h-4 w-4 mr-2" />
-                          Gửi yêu cầu Staff hỗ trợ
-                        </>
-                      )}
+                      <MessageCircle className="h-4 w-4 mr-2" />
+                      Chat với người bán
                     </Button>
+                  )}
+
+                  {/* Chat với Staff - chỉ hiển thị cho Vehicle */}
+                  {isVehicle && (
+                    <>
+                      <Button
+                        className="w-full"
+                        size="lg"
+                        onClick={handleOpenChat}
+                      >
+                        <MessageCircle className="h-4 w-4 mr-2" />
+                        Chat với Staff
+                      </Button>
+
+                      <Button 
+                        variant="outline"
+                        className="w-full"
+                        size="lg"
+                        onClick={handleRequestStaff}
+                        disabled={requesting}
+                      >
+                        {requesting ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Đang gửi yêu cầu...
+                          </>
+                        ) : (
+                          <>
+                            <User className="h-4 w-4 mr-2" />
+                            Gửi yêu cầu Staff hỗ trợ
+                          </>
+                        )}
+                      </Button>
+                    </>
                   )}
                 </div>
 
@@ -609,6 +648,16 @@ export default function PostDetailPage() {
         onRequestStaff={handleRequestStaff}
         requestingStaff={requesting}
       />
+
+      {canChatWithSeller && (
+        <SellerChatDialog
+          postId={post?.postId}
+          postTitle={post?.title}
+          sellerName={sellerName}
+          open={isSellerChatOpen}
+          onOpenChange={setIsSellerChatOpen}
+        />
+      )}
     </div>
   )
 }

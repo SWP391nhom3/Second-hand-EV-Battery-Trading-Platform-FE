@@ -215,7 +215,8 @@ export default function ContractViewer({ contractId, onSign }) {
                 </>
               )}
             </Button>
-            {contract.status === 'PENDING_SIGNATURE' && onSign && (
+            {(contract.status === 'PENDING_SIGNATURE' || contract.status === 'DRAFT') && 
+             onSign && (
               <Button onClick={onSign}>
                 Ký hợp đồng
               </Button>

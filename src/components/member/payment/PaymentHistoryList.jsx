@@ -44,19 +44,30 @@ export default function PaymentHistoryList({ filters = {}, onFiltersChange }) {
       setLoading(true)
       setError(null)
 
+      // Convert 'all' values to null/undefined so they are not sent to API
+      const apiFilters = Object.keys(filters).reduce((acc, key) => {
+        const value = filters[key]
+        // Only include filter if it's not 'all', not empty string, and not null
+        if (value !== 'all' && value !== '' && value !== null && value !== undefined) {
+          acc[key] = value
+        }
+        return acc
+      }, {})
+
       const response = await paymentService.getPaymentHistory({
         pageNumber,
         pageSize: pagination.pageSize,
-        ...filters
+        ...apiFilters
       })
 
       if (response.success) {
-        setPayments(response.data.items || [])
+        // PagedResponse structure: data is the list directly, pagination is at root level
+        setPayments(response.data || [])
         setPagination({
-          pageNumber: response.data.pageNumber || pageNumber,
-          pageSize: response.data.pageSize || pagination.pageSize,
-          totalCount: response.data.totalCount || 0,
-          totalPages: response.data.totalPages || 0
+          pageNumber: response.pageNumber || pageNumber,
+          pageSize: response.pageSize || pagination.pageSize,
+          totalCount: response.totalCount || 0,
+          totalPages: response.totalPages || 0
         })
       } else {
         setError(response.message || 'Không thể tải lịch sử thanh toán')
@@ -71,6 +82,7 @@ export default function PaymentHistoryList({ filters = {}, onFiltersChange }) {
 
   useEffect(() => {
     fetchPayments(1)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters])
 
   const handlePageChange = (newPage) => {

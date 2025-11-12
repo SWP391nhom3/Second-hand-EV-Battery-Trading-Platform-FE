@@ -158,7 +158,7 @@ export default function AppointmentCreateModal({
                     </FormControl>
                     <SelectContent>
                       {leads.length === 0 ? (
-                        <SelectItem value="" disabled>
+                        <SelectItem value="none" disabled>
                           Không có Lead nào
                         </SelectItem>
                       ) : (

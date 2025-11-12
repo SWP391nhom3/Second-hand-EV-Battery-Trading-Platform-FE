@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, Loader2, Save, X } from 'lucide-react'
+import { useParams, useNavigate, Link } from 'react-router-dom'
+import { ChevronLeft, ChevronRight, Loader2, Save, X, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Header from '@/components/layout/Header'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -307,7 +307,19 @@ export default function EditPostPage() {
           return false
         }
         
-        if (formData.auctionEnabled) {
+        // Validate auction fields if auction is enabled (only for vehicles with priority_level >= 3)
+        // Map packageType to priorityLevel
+        const getPriorityLevel = (packageType) => {
+          if (!packageType) return 0
+          const type = String(packageType).toUpperCase()
+          if (type.includes('LUXURY')) return 3
+          if (type.includes('PREMIUM')) return 2
+          if (type.includes('BASIC')) return 1
+          return 0
+        }
+        const selectedPriorityLevel = getPriorityLevel(formData.packageType)
+        
+        if (formData.categoryId === 1 && formData.auctionEnabled && selectedPriorityLevel >= 3) {
           if (!formData.startingBid || parseFloat(formData.startingBid) <= 0) {
             toast({
               variant: "destructive",
@@ -410,6 +422,22 @@ export default function EditPostPage() {
         !existingImages.includes(url)
       ) || []
 
+      // Map packageType to priorityLevel
+      const getPriorityLevel = (packageType) => {
+        if (!packageType) return 0
+        const type = String(packageType).toUpperCase()
+        if (type.includes('LUXURY')) return 3
+        if (type.includes('PREMIUM')) return 2
+        if (type.includes('BASIC')) return 1
+        return 0
+      }
+      const selectedPriorityLevel = getPriorityLevel(formData.packageType)
+      
+      // For batteries (categoryId === 2) or packages with priority_level < 3, always set auctionEnabled to false
+      const auctionEnabled = formData.categoryId === 1 && selectedPriorityLevel >= 3 
+        ? (formData.auctionEnabled || false) 
+        : false
+
       // Prepare JSON request body
       const requestBody = {
         title: formData.title,
@@ -423,10 +451,10 @@ export default function EditPostPage() {
         productionYear: parseInt(formData.yearOfManufacture),
         condition: formData.condition,
         mileage: formData.categoryId === 1 ? parseInt(formData.kilometers) : null,
-        auctionEnabled: formData.auctionEnabled,
-        startingBid: formData.auctionEnabled && formData.startingBid ? parseFloat(formData.startingBid) : null,
-        buyNowPrice: formData.auctionEnabled && formData.buyNowPrice ? parseFloat(formData.buyNowPrice) : null,
-        auctionEndTime: formData.auctionEnabled && formData.auctionEndTime ? new Date(formData.auctionEndTime).toISOString() : null,
+        auctionEnabled: auctionEnabled,
+        startingBid: auctionEnabled && formData.startingBid ? parseFloat(formData.startingBid) : null,
+        buyNowPrice: auctionEnabled && formData.buyNowPrice ? parseFloat(formData.buyNowPrice) : null,
+        auctionEndTime: auctionEnabled && formData.auctionEndTime ? new Date(formData.auctionEndTime).toISOString() : null,
         newImages: newImageDtos.length > 0 ? newImageDtos : null,
         newProofImage: newProofImageDtos.length > 0 ? newProofImageDtos[0] : null,
         imagesToDelete: imagesToDelete.length > 0 ? imagesToDelete : null
@@ -883,50 +911,106 @@ export default function EditPostPage() {
         )}
 
         {/* Step 4: Gói tin và Đấu giá */}
-        {currentStep === 4 && (
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Chọn gói tin</CardTitle>
-                <CardDescription>
-                  Chọn gói tin phù hợp để bài đăng của bạn được nhiều người xem hơn
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <PostPackageSelector
-                  selectedPackage={formData.packageType}
-                  onSelect={(pkg) => handleInputChange('packageType', pkg)}
-                />
-              </CardContent>
-            </Card>
+        {currentStep === 4 && (() => {
+          // Map packageType to priorityLevel: LUXURY=3, PREMIUM=2, BASIC=1
+          const getPriorityLevel = (packageType) => {
+            if (!packageType) return 0
+            const type = String(packageType).toUpperCase()
+            if (type.includes('LUXURY')) return 3
+            if (type.includes('PREMIUM')) return 2
+            if (type.includes('BASIC')) return 1
+            return 0
+          }
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Tính năng đấu giá (Tùy chọn)</CardTitle>
-                <CardDescription>
-                  Cho phép người mua đấu giá sản phẩm của bạn
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                  <div className="flex-1">
-                    <Label htmlFor="auction" className="text-base font-semibold cursor-pointer">
-                      Bật chế độ đấu giá
-                    </Label>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Người mua có thể đặt giá thầu và cạnh tranh với nhau
-                    </p>
-                  </div>
-                  <input
-                    id="auction"
-                    type="checkbox"
-                    checked={formData.auctionEnabled}
-                    onChange={(e) => handleInputChange('auctionEnabled', e.target.checked)}
-                    className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+          const selectedPriorityLevel = getPriorityLevel(formData.packageType)
+          const canUseAuction = formData.categoryId === 1 && selectedPriorityLevel >= 3
+
+          return (
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Chọn gói tin</CardTitle>
+                  <CardDescription>
+                    Chọn gói tin phù hợp để bài đăng của bạn được nhiều người xem hơn
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <PostPackageSelector
+                    selectedPackage={formData.packageType}
+                    onSelect={(pkg) => handleInputChange('packageType', pkg)}
                   />
-                </div>
+                </CardContent>
+              </Card>
 
-                {formData.auctionEnabled && (
+              {/* Auction Section - Always show for vehicles, but disable if priority_level < 3 */}
+              {formData.categoryId === 1 && (
+                <Card className={`border-2 border-dashed ${!canUseAuction ? 'opacity-75' : ''}`}>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      🔨 Chế độ Đấu giá (Tùy chọn)
+                    </CardTitle>
+                    <CardDescription>
+                      Cho phép người mua đấu giá sản phẩm của bạn để có thể đạt giá tốt hơn
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Info message if package doesn't support auction */}
+                    {!canUseAuction && selectedPriorityLevel > 0 && (
+                      <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg mb-4">
+                        <div className="space-y-3">
+                          <p className="text-sm text-amber-800">
+                            <strong>💡 Gợi ý:</strong> Chế độ đấu giá chỉ khả dụng cho gói Luxury (priority_level {'>='} 3). 
+                            Gói hiện tại của bạn có priority_level = {selectedPriorityLevel}.
+                          </p>
+                          <p className="text-xs text-amber-700">
+                            Nâng cấp lên gói Luxury để sử dụng tính năng đấu giá, giúp bạn có thể đạt được giá tốt hơn cho sản phẩm.
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              type="button"
+                              variant="default"
+                              size="sm"
+                              className="bg-amber-600 hover:bg-amber-700 text-white"
+                              asChild
+                            >
+                              <Link to="/packages">
+                                <Sparkles className="h-4 w-4 mr-2" />
+                                Mua gói Luxury để sử dụng đấu giá
+                              </Link>
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className={`flex items-center justify-between p-4 bg-muted rounded-lg ${!canUseAuction ? 'opacity-60' : ''}`}>
+                      <div className="flex-1">
+                        <Label 
+                          htmlFor="auction" 
+                          className={`text-base font-semibold ${canUseAuction ? 'cursor-pointer' : 'cursor-not-allowed'}`}
+                        >
+                          Bật chế độ đấu giá
+                          {!canUseAuction && <span className="text-amber-600 ml-2">(Cần gói Luxury)</span>}
+                        </Label>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Người mua có thể đặt giá thầu và cạnh tranh với nhau
+                        </p>
+                      </div>
+                      <input
+                        id="auction"
+                        type="checkbox"
+                        checked={formData.auctionEnabled}
+                        onChange={(e) => {
+                          if (canUseAuction) {
+                            handleInputChange('auctionEnabled', e.target.checked)
+                          }
+                        }}
+                        disabled={!canUseAuction}
+                        className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                      />
+                    </div>
+
+                    {formData.auctionEnabled && canUseAuction && (
                   <>
                     <Separator />
                     <div className="grid grid-cols-2 gap-4">
@@ -940,6 +1024,7 @@ export default function EditPostPage() {
                           value={formData.startingBid}
                           onChange={(e) => handleInputChange('startingBid', e.target.value)}
                           placeholder="400000000"
+                          disabled={!canUseAuction}
                         />
                         <p className="text-xs text-muted-foreground">
                           Phải nhỏ hơn hoặc bằng giá bán thường
@@ -954,6 +1039,7 @@ export default function EditPostPage() {
                           value={formData.buyNowPrice}
                           onChange={(e) => handleInputChange('buyNowPrice', e.target.value)}
                           placeholder="550000000"
+                          disabled={!canUseAuction}
                         />
                         <p className="text-xs text-muted-foreground">
                           Phải lớn hơn giá khởi điểm
@@ -961,26 +1047,29 @@ export default function EditPostPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="auctionEndTime">
-                        Thời gian kết thúc đấu giá <span className="text-red-500">*</span>
-                      </Label>
-                      <Input
-                        id="auctionEndTime"
-                        type="datetime-local"
-                        value={formData.auctionEndTime || ''}
-                        onChange={(e) => handleInputChange('auctionEndTime', e.target.value)}
-                      />
+                      <div className="space-y-2">
+                        <Label htmlFor="auctionEndTime">
+                          Thời gian kết thúc đấu giá <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="auctionEndTime"
+                          type="datetime-local"
+                          value={formData.auctionEndTime || ''}
+                          onChange={(e) => handleInputChange('auctionEndTime', e.target.value)}
+                          disabled={!canUseAuction}
+                        />
                       <p className="text-xs text-muted-foreground">
                         Tối thiểu 1 ngày kể từ bây giờ
                       </p>
                     </div>
                   </>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        )}
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )
+        })()}
 
         {/* Navigation Buttons */}
         <div className="flex justify-between mt-8">

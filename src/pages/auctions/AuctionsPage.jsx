@@ -34,16 +34,19 @@ export default function AuctionsPage() {
         pageSize: 12,
         keyword: searchKeyword || undefined,
         auctionOnly: true, // Chỉ lấy bài đăng có đấu giá
-        sortBy: 'CreatedAt',
-        sortDirection: 'DESC'
+        sortBy: 'createdAt',
+        sortDirection: 'desc'
       })
 
       console.log('Auctions API Response:', response);
 
       // PagedResponse structure: { success, data: [...], pageNumber, pageSize, totalCount, totalPages }
       if (response.success && response.data) {
-        // response.data is already an array, not an object with items property
-        const postsData = Array.isArray(response.data) ? response.data : [];
+        const postsData = Array.isArray(response.data)
+          ? response.data
+          : Array.isArray(response.data?.items)
+            ? response.data.items
+            : [];
         setPosts(postsData);
         setTotalPages(response.totalPages || 1);
         console.log('Auctions loaded:', postsData.length, 'items');

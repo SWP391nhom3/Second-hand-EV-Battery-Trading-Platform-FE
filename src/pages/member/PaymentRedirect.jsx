@@ -29,6 +29,7 @@ export default function PaymentRedirect() {
   const [qrCodeUrl, setQrCodeUrl] = useState(null) // PayOS QR code URL from backend (when available)
   const [polling, setPolling] = useState(false)
   const [qrCodeData, setQrCodeData] = useState(null) // QR code data to generate QR locally
+  const [paymentUrl, setPaymentUrl] = useState(null) // PayOS payment URL
 
   // Define checkPaymentStatus before using it in useEffect
   const checkPaymentStatus = useCallback(async () => {
@@ -75,10 +76,26 @@ export default function PaymentRedirect() {
           try {
             const payOSResponse = await paymentService.getPayOSPaymentLink(paymentId)
             if (payOSResponse.success && payOSResponse.data) {
+              // Store payment URL if available
+              if (payOSResponse.data.paymentUrl) {
+                setPaymentUrl(payOSResponse.data.paymentUrl)
+              }
+              
+              // PayOS returns qrCodeUrl which can be either:
+              // 1. A QR code data string (starts with numbers/letters, no http/https)
+              // 2. An image URL (starts with http/https)
               if (payOSResponse.data.qrCodeUrl) {
-                // Backend returned QR code URL from PayOS
-                setQrCodeUrl(payOSResponse.data.qrCodeUrl)
-                setQrCodeData(null)
+                const qrCodeValue = payOSResponse.data.qrCodeUrl
+                // Check if it's a URL (starts with http/https) or QR code data string
+                if (qrCodeValue.startsWith('http://') || qrCodeValue.startsWith('https://')) {
+                  // It's an image URL, display as image
+                  setQrCodeUrl(qrCodeValue)
+                  setQrCodeData(null)
+                } else {
+                  // It's QR code data string, generate QR code from it
+                  setQrCodeUrl(null)
+                  setQrCodeData(qrCodeValue)
+                }
               } else if (payOSResponse.data.paymentUrl) {
                 // Backend returned payment URL, generate QR code from it
                 setQrCodeUrl(null)
@@ -307,7 +324,7 @@ export default function PaymentRedirect() {
                   </p>
                 </div>
               ) : qrCodeData ? (
-                // Generated QR code from payment data (temporary solution)
+                // Generated QR code from PayOS QR code data string
                 <div className="flex flex-col items-center space-y-4">
                   <div className="p-4 bg-white rounded-lg border-2 border-primary/20">
                     <QRCodeSVG
@@ -317,20 +334,9 @@ export default function PaymentRedirect() {
                       includeMargin={true}
                     />
                   </div>
-                  <div className="text-center space-y-2">
-                    <p className="text-sm text-muted-foreground">
-                      Quét QR code bằng ứng dụng ngân hàng của bạn để thanh toán
-                    </p>
-                    <Alert variant="default" className="max-w-md">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertTitle className="text-xs">Lưu ý</AlertTitle>
-                      <AlertDescription className="text-xs">
-                        QR code này được tạo tạm thời từ thông tin thanh toán. 
-                        Backend đang được tích hợp với PayOS API. 
-                        QR code chính thức từ PayOS sẽ được hiển thị khi tích hợp hoàn tất.
-                      </AlertDescription>
-                    </Alert>
-                  </div>
+                  <p className="text-sm text-muted-foreground text-center">
+                    Quét QR code bằng ứng dụng ngân hàng của bạn để thanh toán
+                  </p>
                 </div>
               ) : (
                 // No QR code available
@@ -386,31 +392,42 @@ export default function PaymentRedirect() {
           </Card>
 
           {/* Action Buttons */}
-          <div className="flex gap-4">
-            <Button
-              variant="outline"
-              onClick={fetchPaymentDetails}
-              disabled={polling}
-              className="flex-1"
-            >
-              {polling ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Đang kiểm tra...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Làm mới trạng thái
-                </>
-              )}
-            </Button>
-            {payment && payment.status === 'SUCCESS' && (
+          <div className="flex flex-col gap-4">
+            <div className="flex gap-4">
               <Button
-                onClick={() => navigate(`/payments/${paymentId}`)}
+                variant="outline"
+                onClick={fetchPaymentDetails}
+                disabled={polling}
                 className="flex-1"
               >
-                Xem chi tiết thanh toán
+                {polling ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Đang kiểm tra...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Làm mới trạng thái
+                  </>
+                )}
+              </Button>
+              {payment && payment.status === 'SUCCESS' && (
+                <Button
+                  onClick={() => navigate(`/payments/${paymentId}`)}
+                  className="flex-1"
+                >
+                  Xem chi tiết thanh toán
+                </Button>
+              )}
+            </div>
+            {paymentUrl && payment && payment.status === 'PENDING' && (
+              <Button
+                onClick={() => window.open(paymentUrl, '_blank')}
+                className="w-full"
+                variant="default"
+              >
+                Thanh toán qua trình duyệt
               </Button>
             )}
           </div>

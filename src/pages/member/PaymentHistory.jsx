@@ -11,9 +11,9 @@ import { Receipt, Filter, X } from 'lucide-react'
 
 export default function PaymentHistory() {
   const [filters, setFilters] = useState({
-    paymentType: '',
-    status: '',
-    paymentGateway: '',
+    paymentType: 'all',
+    status: 'all',
+    paymentGateway: 'all',
     fromDate: null,
     toDate: null
   })
@@ -27,16 +27,16 @@ export default function PaymentHistory() {
 
   const handleResetFilters = () => {
     setFilters({
-      paymentType: '',
-      status: '',
-      paymentGateway: '',
+      paymentType: 'all',
+      status: 'all',
+      paymentGateway: 'all',
       fromDate: null,
       toDate: null
     })
   }
 
   const activeFiltersCount = Object.values(filters).filter(v => 
-    v !== '' && v !== null
+    v !== 'all' && v !== '' && v !== null
   ).length
 
   return (
@@ -86,14 +86,14 @@ export default function PaymentHistory() {
               <div>
                 <label className="text-sm font-medium mb-2 block">Loại thanh toán</label>
                 <Select
-                  value={filters.paymentType}
+                  value={filters.paymentType || 'all'}
                   onValueChange={(value) => handleFilterChange('paymentType', value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Tất cả" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Tất cả</SelectItem>
+                    <SelectItem value="all">Tất cả</SelectItem>
                     <SelectItem value="PACKAGE">Gói tin</SelectItem>
                     <SelectItem value="TRANSACTION">Giao dịch</SelectItem>
                   </SelectContent>
@@ -104,14 +104,14 @@ export default function PaymentHistory() {
               <div>
                 <label className="text-sm font-medium mb-2 block">Trạng thái</label>
                 <Select
-                  value={filters.status}
+                  value={filters.status || 'all'}
                   onValueChange={(value) => handleFilterChange('status', value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Tất cả" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Tất cả</SelectItem>
+                    <SelectItem value="all">Tất cả</SelectItem>
                     <SelectItem value="PENDING">Chờ thanh toán</SelectItem>
                     <SelectItem value="SUCCESS">Thành công</SelectItem>
                     <SelectItem value="FAILED">Thất bại</SelectItem>
@@ -123,14 +123,14 @@ export default function PaymentHistory() {
               <div>
                 <label className="text-sm font-medium mb-2 block">Cổng thanh toán</label>
                 <Select
-                  value={filters.paymentGateway}
+                  value={filters.paymentGateway || 'all'}
                   onValueChange={(value) => handleFilterChange('paymentGateway', value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Tất cả" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Tất cả</SelectItem>
+                    <SelectItem value="all">Tất cả</SelectItem>
                     <SelectItem value="PAYOS">PayOS</SelectItem>
                   </SelectContent>
                 </Select>
@@ -142,15 +142,45 @@ export default function PaymentHistory() {
                 <div className="flex items-center gap-2">
                   <Input
                     type="date"
-                    value={filters.fromDate ? new Date(filters.fromDate).toISOString().split('T')[0] : ''}
-                    onChange={(e) => handleFilterChange('fromDate', e.target.value ? new Date(e.target.value) : null)}
+                    value={filters.fromDate ? (() => {
+                      const date = filters.fromDate instanceof Date ? filters.fromDate : new Date(filters.fromDate)
+                      const year = date.getFullYear()
+                      const month = String(date.getMonth() + 1).padStart(2, '0')
+                      const day = String(date.getDate()).padStart(2, '0')
+                      return `${year}-${month}-${day}`
+                    })() : ''}
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        // Create date at midnight local time to avoid timezone issues
+                        const [year, month, day] = e.target.value.split('-').map(Number)
+                        const date = new Date(year, month - 1, day, 0, 0, 0, 0)
+                        handleFilterChange('fromDate', date)
+                      } else {
+                        handleFilterChange('fromDate', null)
+                      }
+                    }}
                     className="flex-1"
                   />
                   <span className="text-muted-foreground">-</span>
                   <Input
                     type="date"
-                    value={filters.toDate ? new Date(filters.toDate).toISOString().split('T')[0] : ''}
-                    onChange={(e) => handleFilterChange('toDate', e.target.value ? new Date(e.target.value) : null)}
+                    value={filters.toDate ? (() => {
+                      const date = filters.toDate instanceof Date ? filters.toDate : new Date(filters.toDate)
+                      const year = date.getFullYear()
+                      const month = String(date.getMonth() + 1).padStart(2, '0')
+                      const day = String(date.getDate()).padStart(2, '0')
+                      return `${year}-${month}-${day}`
+                    })() : ''}
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        // Create date at end of day local time to avoid timezone issues
+                        const [year, month, day] = e.target.value.split('-').map(Number)
+                        const date = new Date(year, month - 1, day, 23, 59, 59, 999) // End of day
+                        handleFilterChange('toDate', date)
+                      } else {
+                        handleFilterChange('toDate', null)
+                      }
+                    }}
                     className="flex-1"
                   />
                 </div>

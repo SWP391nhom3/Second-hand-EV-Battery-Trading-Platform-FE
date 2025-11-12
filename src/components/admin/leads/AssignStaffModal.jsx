@@ -144,7 +144,7 @@ export default function AssignStaffModal({
               </SelectTrigger>
               <SelectContent>
                 {staffList.length === 0 ? (
-                  <SelectItem value="" disabled>
+                  <SelectItem value="none" disabled>
                     {loadingStaff ? 'Đang tải...' : 'Không có Staff nào'}
                   </SelectItem>
                 ) : (
